@@ -1,0 +1,2 @@
+# Disable Jekyll processing for GitHub Pages
+# This forces GitHub to use our custom GitHub Actions workflow instead
