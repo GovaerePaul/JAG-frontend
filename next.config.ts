@@ -7,6 +7,18 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   distDir: 'out',
+  webpack: (config) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+    };
+    return config;
+  },
+  experimental: {
+    esmExternals: 'loose',
+  },
 };
 
 export default nextConfig;
