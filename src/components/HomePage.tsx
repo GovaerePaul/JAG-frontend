@@ -11,10 +11,12 @@ import {
   Paper
 } from '@mui/material';
 import { Redeem, Favorite, Groups } from '@mui/icons-material';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function HomePage() {
   const { user } = useAuth();
+  const router = useRouter();
 
   return (
     <Box sx={{ flexGrow: 1, py: 4 }}>
@@ -50,6 +52,7 @@ export default function HomePage() {
               variant="contained"
               size="large"
               sx={{ borderRadius: 3, px: 4, py: 1.5 }}
+              onClick={() => router.push('/auth')}
             >
               Commencer maintenant
             </Button>

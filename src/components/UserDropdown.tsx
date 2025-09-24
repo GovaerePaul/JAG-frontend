@@ -19,12 +19,13 @@ import {
   Logout,
   Login
 } from '@mui/icons-material';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
+import { logout } from '@/lib/auth';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function UserDropdown() {
   const { user, loading } = useAuth();
+  const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -38,7 +39,7 @@ export default function UserDropdown() {
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      await logout();
       handleClose();
     } catch (error) {
       console.error('Erreur déconnexion:', error);
@@ -46,8 +47,7 @@ export default function UserDropdown() {
   };
 
   const handleSignIn = () => {
-    // TODO: Ouvrir modal de connexion
-    console.log('Ouvrir modal de connexion');
+    router.push('/auth');
     handleClose();
   };
 
