@@ -115,38 +115,36 @@ export default function UserDropdown() {
           },
         }}
       >
-        {user ? (
-          <>
-            <Box sx={{ px: 2, py: 1 }}>
+        {user ? [
+            <Box key="user-info" sx={{ px: 2, py: 1 }}>
               <Typography variant="subtitle2" noWrap>
                 {user.displayName || 'Utilisateur'}
               </Typography>
               <Typography variant="body2" color="text.secondary" noWrap>
                 {user.email}
               </Typography>
-            </Box>
-            <Divider />
-            <MenuItem onClick={handleClose}>
+            </Box>,
+            <Divider key="divider-1" />,
+            <MenuItem key="profile" onClick={handleClose}>
               <ListItemIcon>
                 <AccountCircle fontSize="small" />
               </ListItemIcon>
               <ListItemText>Profil</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
+            </MenuItem>,
+            <MenuItem key="settings" onClick={handleClose}>
               <ListItemIcon>
                 <Settings fontSize="small" />
               </ListItemIcon>
               <ListItemText>Paramètres</ListItemText>
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleSignOut}>
+            </MenuItem>,
+            <Divider key="divider-2" />,
+            <MenuItem key="logout" onClick={handleSignOut}>
               <ListItemIcon>
                 <Logout fontSize="small" />
               </ListItemIcon>
               <ListItemText>Déconnexion</ListItemText>
             </MenuItem>
-          </>
-        ) : (
+        ] : (
           <MenuItem onClick={handleSignIn}>
             <ListItemIcon>
               <Login fontSize="small" />
