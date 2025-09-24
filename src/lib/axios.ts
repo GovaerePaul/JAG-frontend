@@ -1,11 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
+// ApiResponse interface moved to api-client.ts
 
 const createAxiosInstance = (): AxiosInstance => {
   const baseURL = process.env.NODE_ENV === 'development'
@@ -35,17 +30,17 @@ const createAxiosInstance = (): AxiosInstance => {
     }
   );
 
-  instance.interceptors.response.use(
-    (response) => {
-      return {
-        ...response,
-        data: {
-          success: true,
-          data: response.data.data || response.data,
-          message: response.data.message,
-        } as ApiResponse,
-      };
-    },
+      instance.interceptors.response.use(
+        (response) => {
+          return {
+            ...response,
+            data: {
+              success: true,
+              data: response.data.data || response.data,
+              message: response.data.message,
+            },
+          };
+        },
     (error: AxiosError) => {
       const response = error.response;
       const errorMessage = (response?.data as any)?.error || 

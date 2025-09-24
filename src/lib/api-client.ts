@@ -1,6 +1,26 @@
 'use client';
 
-import apiClient, { ApiResponse } from './axios';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { initializeApp, getApps } from 'firebase/app';
+
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+};
+
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const functions = getFunctions(app, 'europe-west1');
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
 
 export interface UpdateProfileRequest {
   displayName?: string;
@@ -23,37 +43,69 @@ class AuthApiClient {
 
   public async getUserProfile(): Promise<ApiResponse> {
     try {
-      const response = await apiClient.get('/auth/profile');
-      return response.data;
+      const getUserProfile = httpsCallable(functions, 'getUserProfileFunction');
+      const result = await getUserProfile();
+      
+      return {
+        success: true,
+        data: result.data
+      };
     } catch (error: any) {
       return {
         success: false,
-        error: error.error || 'Failed to get user profile'
+        error: error.message || 'Failed to get user profile'
       };
     }
   }
 
   public async updateUserProfile(data: UpdateProfileRequest): Promise<ApiResponse> {
     try {
-      const response = await apiClient.put('/auth/profile', data);
-      return response.data;
+      const updateUserProfile = httpsCallable(functions, 'updateUserProfileFunction');
+      const result = await updateUserProfile(data);
+      
+      return {
+        success: true,
+        data: result.data
+      };
     } catch (error: any) {
       return {
         success: false,
-        error: error.error || 'Failed to update user profile'
+        error: error.message || 'Failed to update user profile'
       };
     }
   }
 
   public async deleteUserAccount(): Promise<ApiResponse> {
     try {
-      const response = await apiClient.delete('/auth/profile');
+      const deleteUserAccount = httpsCallable(functions, 'deleteUserAccountFunction');
+      const result = await deleteUserAccount();
+      
       this.clearAuthToken();
-      return response.data;
+      return {
+        success: true,
+        data: result.data
+      };
     } catch (error: any) {
       return {
         success: false,
-        error: error.error || 'Failed to delete user account'
+        error: error.message || 'Failed to delete user account'
+      };
+    }
+  }
+
+  public async getUserStats(): Promise<ApiResponse> {
+    try {
+      const getUserStats = httpsCallable(functions, 'getUserStatsFunction');
+      const result = await getUserStats();
+      
+      return {
+        success: true,
+        data: result.data
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Failed to get user stats'
       };
     }
   }

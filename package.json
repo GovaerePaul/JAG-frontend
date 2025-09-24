@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "build:pages": "next build",
     "build:mobile": "next build && npx cap sync",
     "build:desktop": "next build && next export",
     "start": "next start",
