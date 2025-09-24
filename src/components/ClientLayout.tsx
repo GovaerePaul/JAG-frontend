@@ -2,8 +2,9 @@
 
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { Box } from '@mui/material';
-import Navbar from './Navbar';
+import { CircularProgress, Box } from '@mui/material';
+import { useEffect, useState } from 'react';
+import AuthGuard from './auth/AuthGuard';
 
 const theme = createTheme({
   palette: {
@@ -21,15 +22,34 @@ interface ClientLayoutProps {
 }
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box 
+          display="flex" 
+          justifyContent="center" 
+          alignItems="center" 
+          minHeight="100vh"
+        >
+          <CircularProgress size={40} />
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Navbar />
-        <Box component="main" sx={{ flexGrow: 1 }}>
-          {children}
-        </Box>
-      </Box>
+      <AuthGuard>
+        {children}
+      </AuthGuard>
     </ThemeProvider>
   );
 }
