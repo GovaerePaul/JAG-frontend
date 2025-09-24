@@ -4,7 +4,6 @@ import {
   Container,
   Typography,
   Box,
-  Grid,
   Card,
   CardContent,
   Button,
@@ -60,8 +59,13 @@ export default function HomePage() {
         </Box>
 
         {/* Section Fonctionnalités */}
-        <Grid container spacing={4} sx={{ mb: 6 }}>
-          <Grid item xs={12} md={4}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          gap: 4, 
+          mb: 6 
+        }}>
+          <Box sx={{ flex: 1 }}>
             <Card 
               sx={{ 
                 height: '100%', 
@@ -80,9 +84,9 @@ export default function HomePage() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} md={4}>
+          <Box sx={{ flex: 1 }}>
             <Card 
               sx={{ 
                 height: '100%', 
@@ -101,9 +105,9 @@ export default function HomePage() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} md={4}>
+          <Box sx={{ flex: 1 }}>
             <Card 
               sx={{ 
                 height: '100%', 
@@ -122,8 +126,8 @@ export default function HomePage() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {/* Section Statistiques */}
         {user && (
@@ -131,32 +135,38 @@ export default function HomePage() {
             <Typography variant="h6" gutterBottom>
               Votre tableau de bord
             </Typography>
-            <Grid container spacing={3} sx={{ mt: 2 }}>
-              <Grid item xs={12} sm={4}>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' }, 
+              gap: 3, 
+              mt: 2,
+              justifyContent: 'space-around' 
+            }}>
+              <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" color="primary">
                   0
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Cadeaux planifiés
                 </Typography>
-              </Grid>
-              <Grid item xs={12} sm={4}>
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" color="secondary">
                   0
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Listes créées
                 </Typography>
-              </Grid>
-              <Grid item xs={12} sm={4}>
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" color="success.main">
                   0
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Amis connectés
                 </Typography>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Paper>
         )}
       </Container>
