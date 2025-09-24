@@ -5,43 +5,27 @@ import {
   updateProfile,
   User
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { auth } from './firebase';
+import authApiClient from './api-client';
 
-// Interface pour les données d'inscription
 export interface SignUpData {
   email: string;
   password: string;
   displayName: string;
 }
 
-// Interface pour les données de connexion
 export interface SignInData {
   email: string;
   password: string;
 }
 
-// Inscription avec email/password
 export const signUp = async ({ email, password, displayName }: SignUpData) => {
   try {
-    // Créer le compte utilisateur
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Mettre à jour le profil avec le nom d'affichage
     await updateProfile(user, {
       displayName: displayName
-    });
-
-    // Créer le profil utilisateur dans Firestore
-    await setDoc(doc(db, 'users', user.uid), {
-      uid: user.uid,
-      email: user.email,
-      displayName: displayName,
-      photoURL: user.photoURL || '',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isActive: true
     });
 
     return { user, error: null };
@@ -50,27 +34,47 @@ export const signUp = async ({ email, password, displayName }: SignUpData) => {
   }
 };
 
-// Connexion avec email/password
 export const signIn = async ({ email, password }: SignInData) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    
+    const token = await userCredential.user.getIdToken();
+    authApiClient.setAuthToken(token);
+    
     return { user: userCredential.user, error: null };
   } catch (error: any) {
     return { user: null, error: error.message };
   }
 };
 
-// Déconnexion
 export const logout = async () => {
   try {
     await signOut(auth);
+    authApiClient.clearAuthToken();
     return { error: null };
   } catch (error: any) {
     return { error: error.message };
   }
 };
 
-// Traduire les erreurs Firebase en français
+export const getUserProfileFromBackend = async () => {
+  const result = await authApiClient.getUserProfile();
+  if (result.success) {
+    return { profile: result.data, error: null };
+  }
+  return { profile: null, error: result.error };
+};
+
+export const updateUserProfileOnBackend = async (data: { displayName?: string; photoURL?: string }) => {
+  const result = await authApiClient.updateUserProfile(data);
+  return { success: result.success, error: result.error };
+};
+
+export const deleteUserAccountOnBackend = async () => {
+  const result = await authApiClient.deleteUserAccount();
+  return { success: result.success, error: result.error };
+};
+
 export const translateFirebaseError = (errorCode: string): string => {
   switch (errorCode) {
     case 'auth/email-already-in-use':
