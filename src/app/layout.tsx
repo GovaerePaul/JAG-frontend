@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
-import ClientLayout from '@/components/ClientLayout';
+import ClientAppWrapper from '../components/ClientAppWrapper';
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -21,10 +21,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={roboto.className}>
-        <ClientLayout>
+      <head>
+        <meta name="emotion-insertion-point" content="" />
+      </head>
+      <body className={roboto.className} suppressHydrationWarning>
+        <ClientAppWrapper>
           {children}
-        </ClientLayout>
+        </ClientAppWrapper>
       </body>
     </html>
   );

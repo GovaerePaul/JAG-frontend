@@ -7,18 +7,19 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   distDir: 'out',
-  webpack: (config) => {
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      net: false,
-      tls: false,
-    };
-    return config;
+  // Improve CSS optimization for emotion/MUI
+  compiler: {
+    emotion: true,
   },
-  experimental: {
-    esmExternals: 'loose',
-  },
+  // Optimize for static export with SSG
+  reactStrictMode: true,
+  // Turbopack configuration (replaces webpack config)
+  turbopack: {
+    // Turbopack-specific configuration if needed
+    resolveAlias: {
+      // Add any alias configurations here if needed
+    }
+  }
 };
 
 export default nextConfig;
