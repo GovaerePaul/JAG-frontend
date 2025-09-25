@@ -43,8 +43,9 @@ const createAxiosInstance = (): AxiosInstance => {
         },
     (error: AxiosError) => {
       const response = error.response;
-      const errorMessage = (response?.data as any)?.error || 
-                          (response?.data as any)?.message || 
+      const responseData = response?.data as { error?: string; message?: string } | undefined;
+      const errorMessage = responseData?.error || 
+                          responseData?.message || 
                           error.message || 
                           'An error occurred';
 

@@ -2,8 +2,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  updateProfile,
-  User
+  updateProfile
 } from 'firebase/auth';
 import { auth } from './firebase';
 import authApiClient from './api-client';
@@ -29,8 +28,8 @@ export const signUp = async ({ email, password, displayName }: SignUpData) => {
     });
 
     return { user, error: null };
-  } catch (error: any) {
-    return { user: null, error: error.message };
+  } catch (error: unknown) {
+    return { user: null, error: error instanceof Error ? error.message : 'Authentication failed' };
   }
 };
 
@@ -42,8 +41,8 @@ export const signIn = async ({ email, password }: SignInData) => {
     authApiClient.setAuthToken(token);
     
     return { user: userCredential.user, error: null };
-  } catch (error: any) {
-    return { user: null, error: error.message };
+  } catch (error: unknown) {
+    return { user: null, error: error instanceof Error ? error.message : 'Authentication failed' };
   }
 };
 
@@ -52,8 +51,8 @@ export const logout = async () => {
     await signOut(auth);
     authApiClient.clearAuthToken();
     return { error: null };
-  } catch (error: any) {
-    return { error: error.message };
+  } catch (error: unknown) {
+    return { error: error instanceof Error ? error.message : 'Logout failed' };
   }
 };
 

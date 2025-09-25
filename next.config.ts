@@ -14,13 +14,13 @@ const nextConfig: NextConfig = {
   // Optimize for static export with SSG
   reactStrictMode: true,
   // Disable ESLint during builds
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  // Disable TypeScript checks during builds
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // eslint: {
+  //   ignoreDuringBuilds: true,
+  // },
+  // // Disable TypeScript checks during builds
+  // typescript: {
+  //   ignoreBuildErrors: true,
+  // },
   // Turbopack configuration (replaces webpack config)
   turbopack: {
     // Turbopack-specific configuration if needed

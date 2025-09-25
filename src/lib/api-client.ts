@@ -2,6 +2,7 @@
 
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { initializeApp, getApps } from 'firebase/app';
+import { AxiosError } from 'axios';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,7 +16,7 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const functions = getFunctions(app, 'europe-west1');
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -50,10 +51,10 @@ class AuthApiClient {
         success: true,
         data: result.data
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
-        error: error.message || 'Failed to get user profile'
+        error: error instanceof AxiosError ? error.message : 'Failed to get user profile'
       };
     }
   }
@@ -67,10 +68,10 @@ class AuthApiClient {
         success: true,
         data: result.data
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
-        error: error.message || 'Failed to update user profile'
+        error: error instanceof AxiosError ? error.message : 'Failed to update user profile'
       };
     }
   }
@@ -85,10 +86,10 @@ class AuthApiClient {
         success: true,
         data: result.data
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
-        error: error.message || 'Failed to delete user account'
+        error: error instanceof AxiosError ? error.message : 'Failed to delete user account'
       };
     }
   }
@@ -102,10 +103,10 @@ class AuthApiClient {
         success: true,
         data: result.data
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
-        error: error.message || 'Failed to get user stats'
+        error: error instanceof AxiosError ? error.message : 'Failed to get user stats'
       };
     }
   }

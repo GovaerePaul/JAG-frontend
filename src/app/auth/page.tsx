@@ -6,9 +6,7 @@ import {
   Container,
   Paper,
   Box,
-  Slide,
-  useTheme,
-  useMediaQuery
+  Slide
 } from '@mui/material';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
@@ -19,8 +17,6 @@ export default function AuthPage() {
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
   const { user } = useAuth();
   const router = useRouter();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Rediriger si déjà connecté
   useEffect(() => {

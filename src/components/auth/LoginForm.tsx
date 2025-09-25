@@ -130,7 +130,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
             disabled={loading}
             sx={{ textTransform: 'none' }}
           >
-            S'inscrire
+            S&apos;inscrire
           </Button>
         </Typography>
       </Box>
