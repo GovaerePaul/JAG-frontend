@@ -65,7 +65,6 @@ export default function AuthPage() {
             background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
           }}
         >
-          {/* Decorative shapes */}
           <Box
             sx={{
               position: 'absolute',
@@ -91,7 +90,6 @@ export default function AuthPage() {
             }}
           />
 
-          {/* Main content */}
           <Box sx={{ position: 'relative', zIndex: 1 }}>
             <Slide
               direction={slideDirection}

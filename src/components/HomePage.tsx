@@ -22,7 +22,6 @@ export default function HomePage() {
   return (
     <Box sx={{ py: 4 }}>
       <Container maxWidth="lg">
-        {/* Section Hero */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography
             variant="h2"
@@ -131,7 +130,6 @@ export default function HomePage() {
           </Box>
         </Box>
 
-        {/* User Dashboard Section */}
         {user && (
           <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'background.default' }}>
             <Typography variant="h6" gutterBottom>

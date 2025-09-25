@@ -11,7 +11,7 @@ export async function generateMetadata(locale: Locale) {
       title: t('title'),
       description: t('description'),
       type: 'website',
-      locale: locale,
+      locale,
       alternateLocale: locale === 'fr' ? 'en' : 'fr',
     },
     twitter: {

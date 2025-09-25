@@ -1,7 +1,7 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { locales, type Locale } from '@/i18n/request';
+import { locales } from '@/i18n/request';
 import { isValidLocale } from '@/i18n/utils';
 import { generateMetadata as generateI18nMetadata } from '@/i18n/metadata';
 

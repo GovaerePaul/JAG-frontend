@@ -22,7 +22,6 @@ export default function Navbar() {
     <AppBar position="sticky" elevation={1}>
       <Container maxWidth="lg">
         <Toolbar disableGutters>
-          {/* Logo */}
           <Typography
             variant="h6"
             noWrap
