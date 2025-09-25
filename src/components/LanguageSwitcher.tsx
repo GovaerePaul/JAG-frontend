@@ -2,9 +2,8 @@
 
 import { Button, Menu, MenuItem } from '@mui/material';
 import { LanguageOutlined } from '@mui/icons-material';
-import { useState } from 'react';
-import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from '@/i18n/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { locales, type Locale } from '@/i18n/request';
 
 const localeNames: Record<Locale, string> = {
@@ -13,11 +12,19 @@ const localeNames: Record<Locale, string> = {
 };
 
 export default function LanguageSwitcher() {
-  const locale = useLocale() as Locale;
+  const [currentLocale, setCurrentLocale] = useState<Locale>('fr');
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
+  useEffect(() => {
+    const pathSegments = pathname.split('/');
+    const localeFromUrl = pathSegments[1];
+    if (locales.includes(localeFromUrl as Locale)) {
+      setCurrentLocale(localeFromUrl as Locale);
+    }
+  }, [pathname]);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -28,7 +35,17 @@ export default function LanguageSwitcher() {
   };
 
   const handleLocaleSwitch = (newLocale: Locale) => {
-    router.push(pathname, { locale: newLocale });
+    const pathSegments = pathname.split('/');
+    const currentLocaleInPath = pathSegments[1];
+    
+    if (locales.includes(currentLocaleInPath as Locale)) {
+      pathSegments[1] = newLocale;
+    } else {
+      pathSegments.splice(1, 0, newLocale);
+    }
+    
+    const newPath = pathSegments.join('/') || `/${newLocale}`;
+    router.push(newPath);
     handleClose();
   };
 
@@ -39,8 +56,16 @@ export default function LanguageSwitcher() {
         startIcon={<LanguageOutlined />}
         variant="outlined"
         size="small"
+        sx={{ 
+          color: 'white', 
+          borderColor: 'rgba(255,255,255,0.3)',
+          '&:hover': {
+            borderColor: 'rgba(255,255,255,0.5)',
+            backgroundColor: 'rgba(255,255,255,0.1)'
+          }
+        }}
       >
-        {localeNames[locale]}
+        {localeNames[currentLocale]}
       </Button>
       <Menu
         anchorEl={anchorEl}
@@ -59,7 +84,7 @@ export default function LanguageSwitcher() {
           <MenuItem
             key={loc}
             onClick={() => handleLocaleSwitch(loc)}
-            selected={loc === locale}
+            selected={loc === currentLocale}
           >
             {localeNames[loc]}
           </MenuItem>
