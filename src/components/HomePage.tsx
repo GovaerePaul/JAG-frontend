@@ -13,7 +13,6 @@ import { Redeem, Favorite, Groups } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations } from 'next-intl';
-import LocalizedNavbar from './LocalizedNavbar';
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -21,9 +20,7 @@ export default function HomePage() {
   const t = useTranslations('home');
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <LocalizedNavbar />
-      <Box sx={{ flexGrow: 1, py: 4 }}>
+    <Box sx={{ py: 4 }}>
       <Container maxWidth="lg">
         {/* Section Hero */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>
@@ -175,7 +172,6 @@ export default function HomePage() {
           </Paper>
         )}
       </Container>
-      </Box>
     </Box>
   );
 }

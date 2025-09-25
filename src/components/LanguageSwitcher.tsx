@@ -8,8 +8,8 @@ import { useRouter, usePathname } from '@/i18n/navigation';
 import { locales, type Locale } from '@/i18n/request';
 
 const localeNames: Record<Locale, string> = {
-  en: 'English',
-  fr: 'Français'
+  fr: 'Français',
+  en: 'English'
 };
 
 export default function LanguageSwitcher() {

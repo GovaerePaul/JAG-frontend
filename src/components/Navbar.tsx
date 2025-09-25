@@ -9,6 +9,17 @@ import {
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import UserDropdown from './UserDropdown';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useLocale } from 'next-intl';
+
+function SafeLanguageSwitcher() {
+  try {
+    const locale = useLocale();
+    return <LanguageSwitcher />;
+  } catch {
+    return null;
+  }
+}
 
 export default function Navbar() {
   const router = useRouter();
@@ -48,6 +59,7 @@ export default function Navbar() {
           <Box sx={{ flexGrow: 1 }} />
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <SafeLanguageSwitcher />
             <UserDropdown />
           </Box>
         </Toolbar>

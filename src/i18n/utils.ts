@@ -5,7 +5,7 @@ export function isValidLocale(locale: string): locale is Locale {
 }
 
 export function getDefaultLocale(): Locale {
-  return 'en';
+  return 'fr';
 }
 
 export function getLocalizedPath(path: string, locale: Locale): string {
