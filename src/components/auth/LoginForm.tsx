@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Box,
   TextField,
@@ -19,6 +20,7 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
+  const t = useTranslations('auth');
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -59,11 +61,11 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
       <Typography variant="h4" component="h1" gutterBottom textAlign="center">
-        Connexion
+        {t('login.title')}
       </Typography>
-      
+
       <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
-        Connectez-vous à votre compte JustGift
+        {t('login.subtitle')}
       </Typography>
 
       {error && (
@@ -74,7 +76,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
 
       <TextField
         fullWidth
-        label="Email"
+        label={t('login.emailLabel')}
         name="email"
         type="email"
         value={formData.email}
@@ -87,7 +89,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
 
       <TextField
         fullWidth
-        label="Mot de passe"
+        label={t('login.passwordLabel')}
         name="password"
         type={showPassword ? 'text' : 'password'}
         value={formData.password}
@@ -103,6 +105,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
                 onClick={togglePasswordVisibility}
                 edge="end"
                 disabled={loading}
+                aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -118,19 +121,19 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
         sx={{ mt: 3, mb: 2, py: 1.5 }}
         disabled={loading || !formData.email || !formData.password}
       >
-        {loading ? 'Connexion...' : 'Se connecter'}
+        {loading ? t('login.loadingButton') : t('login.loginButton')}
       </Button>
 
       <Box textAlign="center">
         <Typography variant="body2">
-          Pas encore de compte ?{' '}
+          {t('login.noAccount')}{' '}
           <Button
             variant="text"
             onClick={onSwitchToRegister}
             disabled={loading}
             sx={{ textTransform: 'none' }}
           >
-            S&apos;inscrire
+            {t('login.signUp')}
           </Button>
         </Typography>
       </Box>

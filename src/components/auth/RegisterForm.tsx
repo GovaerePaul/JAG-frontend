@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Box,
   TextField,
@@ -19,6 +20,7 @@ interface RegisterFormProps {
 }
 
 export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) {
+  const t = useTranslations('auth');
   const [formData, setFormData] = useState({
     displayName: '',
     email: '',
@@ -41,15 +43,15 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
   const validateForm = () => {
     if (formData.password !== formData.confirmPassword) {
-      setError('Les mots de passe ne correspondent pas.');
+      setError(t('common.errors.passwordMismatch'));
       return false;
     }
     if (formData.password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères.');
+      setError(t('common.errors.passwordTooShort'));
       return false;
     }
     if (!formData.displayName.trim()) {
-      setError('Le nom est requis.');
+      setError(t('common.errors.required'));
       return false;
     }
     return true;
@@ -95,11 +97,11 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
       <Typography variant="h4" component="h1" gutterBottom textAlign="center">
-        Inscription
+        {t('register.title')}
       </Typography>
-      
+
       <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
-        Créez votre compte JustGift
+        {t('register.subtitle')}
       </Typography>
 
       {error && (
@@ -110,7 +112,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       <TextField
         fullWidth
-        label="Nom complet"
+        label={t('register.nameLabel')}
         name="displayName"
         value={formData.displayName}
         onChange={handleChange}
@@ -122,7 +124,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       <TextField
         fullWidth
-        label="Email"
+        label={t('register.emailLabel')}
         name="email"
         type="email"
         value={formData.email}
@@ -135,7 +137,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       <TextField
         fullWidth
-        label="Mot de passe"
+        label={t('register.passwordLabel')}
         name="password"
         type={showPassword ? 'text' : 'password'}
         value={formData.password}
@@ -151,6 +153,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
                 onClick={togglePasswordVisibility}
                 edge="end"
                 disabled={loading}
+                aria-label={showPassword ? t('register.hidePassword') : t('register.showPassword')}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -161,7 +164,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
 
       <TextField
         fullWidth
-        label="Confirmer le mot de passe"
+        label={t('register.confirmPasswordLabel')}
         name="confirmPassword"
         type={showConfirmPassword ? 'text' : 'password'}
         value={formData.confirmPassword}
@@ -177,6 +180,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
                 onClick={toggleConfirmPasswordVisibility}
                 edge="end"
                 disabled={loading}
+                aria-label={showConfirmPassword ? t('register.hidePassword') : t('register.showPassword')}
               >
                 {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -192,19 +196,19 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
         sx={{ mt: 3, mb: 2, py: 1.5 }}
         disabled={loading || !isFormValid}
       >
-        {loading ? 'Création du compte...' : 'S\'inscrire'}
+        {loading ? t('register.loadingButton') : t('register.registerButton')}
       </Button>
 
       <Box textAlign="center">
         <Typography variant="body2">
-          Déjà un compte ?{' '}
+          {t('register.hasAccount')}{' '}
           <Button
             variant="text"
             onClick={onSwitchToLogin}
             disabled={loading}
             sx={{ textTransform: 'none' }}
           >
-            Se connecter
+            {t('register.signIn')}
           </Button>
         </Typography>
       </Box>

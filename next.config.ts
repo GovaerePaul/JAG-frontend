@@ -1,4 +1,12 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from 'next-intl/plugin';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const nextConfig: NextConfig = {
   output: 'export',
@@ -23,6 +31,7 @@ const nextConfig: NextConfig = {
   // },
   // Turbopack configuration (replaces webpack config)
   turbopack: {
+    root: __dirname, // Use current directory dynamically
     // Turbopack-specific configuration if needed
     resolveAlias: {
       // Add any alias configurations here if needed
@@ -30,4 +39,4 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

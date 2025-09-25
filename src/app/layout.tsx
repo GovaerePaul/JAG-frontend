@@ -19,6 +19,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Root layout - internationalization is handled by middleware and [locale] routes
+
   return (
     <html lang="fr">
       <head>

@@ -1,0 +1,54 @@
+{
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Sign in to your JustGift account",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "loginButton": "Sign In",
+      "loadingButton": "Signing In...",
+      "noAccount": "Don't have an account yet?",
+      "signUp": "Sign Up",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "register": {
+      "title": "Sign Up",
+      "subtitle": "Create your JustGift account",
+      "nameLabel": "Full Name",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "registerButton": "Sign Up",
+      "loadingButton": "Signing Up...",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign In",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "common": {
+      "errors": {
+        "required": "This field is required",
+        "emailInvalid": "Invalid email",
+        "passwordTooShort": "Password must be at least 6 characters long",
+        "passwordMismatch": "Passwords do not match",
+        "loginFailed": "Login failed",
+        "registrationFailed": "Registration failed"
+      }
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back"
+  },
+  "metadata": {
+    "title": "JustGift - Organize Your Gifts",
+    "description": "Platform to organize and plan your gifts"
+  }
+}
