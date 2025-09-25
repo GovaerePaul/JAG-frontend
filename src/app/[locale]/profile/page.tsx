@@ -39,7 +39,6 @@ import {
 export default function ProfilePage() {
   const t = useTranslations('profile');
   const { user } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
 
@@ -55,13 +54,11 @@ export default function ProfilePage() {
   const handleSaveProfile = () => {
     // TODO: Implement profile update logic
     setEditDialogOpen(false);
-    setIsEditing(false);
   };
 
   const handleCancelEdit = () => {
     setEditedName(user.displayName || '');
     setEditDialogOpen(false);
-    setIsEditing(false);
   };
 
   const getAccountAge = () => {

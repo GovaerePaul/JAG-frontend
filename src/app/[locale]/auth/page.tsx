@@ -8,13 +8,11 @@ import {
   Box,
   Slide
 } from '@mui/material';
-import { useTranslations } from 'next-intl';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function AuthPage() {
-  const t = useTranslations('auth');
   const [isLogin, setIsLogin] = useState(true);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
   const { user } = useAuth();
