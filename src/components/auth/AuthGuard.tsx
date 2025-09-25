@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { CircularProgress } from '@mui/material';
-import { useRouter } from '@/i18n/navigation';
+import { useRouter, usePathname } from '@/i18n/navigation';
 import { useEffect } from 'react';
 import Navbar from '../Navbar';
 
@@ -13,12 +13,15 @@ interface AuthGuardProps {
 export default function AuthGuard({ children }: AuthGuardProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  
+  const isAuthPage = pathname.includes('/auth');
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !isAuthPage) {
       router.push('/auth');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, isAuthPage]);
 
   if (loading) {
     return (
@@ -35,8 +38,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  if (!user) {
+  if (!user && !isAuthPage) {
     return null;
+  }
+
+  if (isAuthPage) {
+    return <>{children}</>;
   }
 
   return (

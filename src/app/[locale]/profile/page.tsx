@@ -137,7 +137,7 @@ export default function ProfilePage() {
         <Divider sx={{ mb: 4 }} />
 
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h6" gutterBottom color="primary">
@@ -179,7 +179,7 @@ export default function ProfilePage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h6" gutterBottom color="primary">
@@ -218,7 +218,7 @@ export default function ProfilePage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h6" gutterBottom color="primary">
