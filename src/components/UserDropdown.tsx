@@ -15,17 +15,19 @@ import {
 } from '@mui/material';
 import {
   AccountCircle,
-  Settings,
+  Person,
   Logout,
   Login
 } from '@mui/icons-material';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { logout } from '@/lib/auth';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslations } from 'next-intl';
 
 export default function UserDropdown() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const t = useTranslations('common');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -42,12 +44,17 @@ export default function UserDropdown() {
       await logout();
       handleClose();
     } catch (error) {
-      console.error('Erreur déconnexion:', error);
+      console.error('Logout error:', error);
     }
   };
 
   const handleSignIn = () => {
     router.push('/auth');
+    handleClose();
+  };
+
+  const handleProfile = () => {
+    router.push('/profile');
     handleClose();
   };
 
@@ -118,38 +125,32 @@ export default function UserDropdown() {
         {user ? [
             <Box key="user-info" sx={{ px: 2, py: 1 }}>
               <Typography variant="subtitle2" noWrap>
-                {user.displayName || 'Utilisateur'}
+                {user.displayName || t('user')}
               </Typography>
               <Typography variant="body2" color="text.secondary" noWrap>
                 {user.email}
               </Typography>
             </Box>,
             <Divider key="divider-1" />,
-            <MenuItem key="profile" onClick={handleClose}>
+            <MenuItem key="profile" onClick={handleProfile}>
               <ListItemIcon>
-                <AccountCircle fontSize="small" />
+                <Person fontSize="small" />
               </ListItemIcon>
-              <ListItemText>Profil</ListItemText>
-            </MenuItem>,
-            <MenuItem key="settings" onClick={handleClose}>
-              <ListItemIcon>
-                <Settings fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Paramètres</ListItemText>
+              <ListItemText>{t('profile')}</ListItemText>
             </MenuItem>,
             <Divider key="divider-2" />,
             <MenuItem key="logout" onClick={handleSignOut}>
               <ListItemIcon>
                 <Logout fontSize="small" />
               </ListItemIcon>
-              <ListItemText>Déconnexion</ListItemText>
+              <ListItemText>{t('logout')}</ListItemText>
             </MenuItem>
         ] : (
           <MenuItem onClick={handleSignIn}>
             <ListItemIcon>
               <Login fontSize="small" />
             </ListItemIcon>
-            <ListItemText>Se connecter</ListItemText>
+              <ListItemText>{t('login')}</ListItemText>
           </MenuItem>
         )}
       </Menu>

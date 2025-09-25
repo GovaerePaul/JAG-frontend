@@ -5,7 +5,6 @@ import { CacheProvider } from '@emotion/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import createEmotionCache from '@/lib/emotion-cache';
-import AuthGuard from './auth/AuthGuard';
 
 const theme = createTheme({
   palette: {
@@ -44,9 +43,7 @@ export default function ClientAppWrapper({ children }: ClientAppWrapperProps) {
     <CacheProvider value={emotionCache}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <AuthGuard>
-          {children}
-        </AuthGuard>
+        {children}
       </ThemeProvider>
     </CacheProvider>
   );

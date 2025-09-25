@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { locales } from '@/i18n/request';
 import { isValidLocale } from '@/i18n/utils';
 import { generateMetadata as generateI18nMetadata } from '@/i18n/metadata';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
@@ -42,7 +43,9 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
-      {children}
+      <AuthGuard>
+        {children}
+      </AuthGuard>
     </NextIntlClientProvider>
   );
 }

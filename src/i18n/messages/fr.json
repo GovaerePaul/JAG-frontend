@@ -45,7 +45,12 @@
     "save": "Enregistrer",
     "delete": "Supprimer",
     "edit": "Modifier",
-    "back": "Retour"
+    "back": "Retour",
+    "user": "Utilisateur",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "logout": "Se déconnecter",
+    "login": "Se connecter"
   },
   "metadata": {
     "title": "JustGift - Organisez vos cadeaux",
@@ -74,5 +79,30 @@
       "title": "Votre tableau de bord",
       "description": "Gérez vos cadeaux et consultez votre activité"
     }
+  },
+  "profile": {
+    "noDisplayName": "Utilisateur",
+    "emailVerified": "Email Vérifié",
+    "editProfile": "Modifier le Profil",
+    "accountInformation": "Informations du Compte",
+    "displayName": "Nom d'Affichage",
+    "emailAddress": "Adresse Email",
+    "memberSince": "Membre Depuis",
+    "accountSecurity": "Sécurité du Compte",
+    "accountAgeLabel": "Âge du Compte",
+    "emailVerification": "Vérification Email",
+    "lastSignIn": "Dernière Connexion",
+    "providerInformation": "Informations du Fournisseur",
+    "provider": "Fournisseur",
+    "providerId": "ID Fournisseur",
+    "uid": "ID Utilisateur",
+    "email": "Email",
+    "notSet": "Non défini",
+    "unknown": "Inconnu",
+    "never": "Jamais",
+    "verified": "Vérifié",
+    "notVerified": "Non vérifié",
+    "cancel": "Annuler",
+    "save": "Enregistrer"
   }
 }

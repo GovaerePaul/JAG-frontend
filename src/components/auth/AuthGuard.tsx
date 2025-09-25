@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { CircularProgress } from '@mui/material';
-import { redirect } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useEffect } from 'react';
 import Navbar from '../Navbar';
 
@@ -12,12 +12,13 @@ interface AuthGuardProps {
 
 export default function AuthGuard({ children }: AuthGuardProps) {
   const { user, loading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (!loading && !user) {
-      redirect('/auth');
+      router.push('/auth');
     }
-  }, [user, loading]);
+  }, [user, loading, router]);
 
   if (loading) {
     return (

@@ -45,7 +45,12 @@
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
-    "back": "Back"
+    "back": "Back",
+    "user": "User",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "login": "Login"
   },
   "metadata": {
     "title": "JustGift - Organize Your Gifts",
@@ -74,5 +79,30 @@
       "title": "Your Dashboard",
       "description": "Manage your gifts and view your activity"
     }
+  },
+  "profile": {
+    "noDisplayName": "User",
+    "emailVerified": "Email Verified",
+    "editProfile": "Edit Profile",
+    "accountInformation": "Account Information",
+    "displayName": "Display Name",
+    "emailAddress": "Email Address",
+    "memberSince": "Member Since",
+    "accountSecurity": "Account Security",
+    "accountAgeLabel": "Account Age",
+    "emailVerification": "Email Verification",
+    "lastSignIn": "Last Sign In",
+    "providerInformation": "Provider Information",
+    "provider": "Provider",
+    "providerId": "Provider ID",
+    "uid": "User ID",
+    "email": "Email",
+    "notSet": "Not set",
+    "unknown": "Unknown",
+    "never": "Never",
+    "verified": "Verified",
+    "notVerified": "Not verified",
+    "cancel": "Cancel",
+    "save": "Save"
   }
 }
