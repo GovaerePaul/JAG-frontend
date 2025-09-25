@@ -10,8 +10,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "JustGift - Organisez vos cadeaux",
-  description: "Plateforme pour organiser et planifier vos cadeaux",
+  title: "JustGift - Organize Your Gifts",
+  description: "Platform to organize and plan your gifts",
 };
 
 export default function RootLayout({
@@ -22,7 +22,7 @@ export default function RootLayout({
   // Root layout - internationalization is handled by middleware and [locale] routes
 
   return (
-    <html lang="fr">
+    <html lang="en">
       <head>
         <meta name="emotion-insertion-point" content="" />
       </head>

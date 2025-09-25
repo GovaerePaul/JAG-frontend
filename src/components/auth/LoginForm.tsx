@@ -34,7 +34,6 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
       ...formData,
       [e.target.name]: e.target.value
     });
-    // Effacer l'erreur quand l'utilisateur tape
     if (error) setError('');
   };
 

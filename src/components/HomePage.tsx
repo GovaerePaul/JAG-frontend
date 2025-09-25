@@ -10,15 +10,20 @@ import {
   Paper
 } from '@mui/material';
 import { Redeem, Favorite, Groups } from '@mui/icons-material';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslations } from 'next-intl';
+import LocalizedNavbar from './LocalizedNavbar';
 
 export default function HomePage() {
   const { user } = useAuth();
   const router = useRouter();
+  const t = useTranslations('home');
 
   return (
-    <Box sx={{ flexGrow: 1, py: 4 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <LocalizedNavbar />
+      <Box sx={{ flexGrow: 1, py: 4 }}>
       <Container maxWidth="lg">
         {/* Section Hero */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>
@@ -34,7 +39,7 @@ export default function HomePage() {
               fontSize: { xs: '2.5rem', md: '3.5rem' }
             }}
           >
-            Bienvenue sur JustGift
+{t('title')}
           </Typography>
           <Typography
             variant="h5"
@@ -42,8 +47,8 @@ export default function HomePage() {
             sx={{ mb: 4, fontSize: { xs: '1.2rem', md: '1.5rem' } }}
           >
             {user 
-              ? `Salut ${user.displayName || user.email} ! 👋`
-              : 'La plateforme pour organiser vos cadeaux'
+              ? t('welcomeUser', { name: user.displayName || user.email || 'User' })
+              : t('subtitle')
             }
           </Typography>
           {!user && (
@@ -53,7 +58,7 @@ export default function HomePage() {
               sx={{ borderRadius: 3, px: 4, py: 1.5 }}
               onClick={() => router.push('/auth')}
             >
-              Commencer maintenant
+{t('getStarted')}
             </Button>
           )}
         </Box>
@@ -77,10 +82,10 @@ export default function HomePage() {
               <CardContent sx={{ p: 3 }}>
                 <Redeem sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
-                  Gérer vos cadeaux
+                  {t('features.manage.title')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Organisez et planifiez tous vos cadeaux en un seul endroit
+                  {t('features.manage.description')}
                 </Typography>
               </CardContent>
             </Card>
@@ -98,10 +103,10 @@ export default function HomePage() {
               <CardContent sx={{ p: 3 }}>
                 <Favorite sx={{ fontSize: 48, color: 'secondary.main', mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
-                  Listes de souhaits
+                  {t('features.discover.title')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Créez et partagez vos listes de souhaits avec vos proches
+                  {t('features.discover.description')}
                 </Typography>
               </CardContent>
             </Card>
@@ -119,21 +124,21 @@ export default function HomePage() {
               <CardContent sx={{ p: 3 }}>
                 <Groups sx={{ fontSize: 48, color: 'success.main', mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
-                  Partage familial
+                  {t('features.share.title')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Partagez avec votre famille et évitez les doublons
+                  {t('features.share.description')}
                 </Typography>
               </CardContent>
             </Card>
           </Box>
         </Box>
 
-        {/* Section Statistiques */}
+        {/* User Dashboard Section */}
         {user && (
           <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'background.default' }}>
             <Typography variant="h6" gutterBottom>
-              Votre tableau de bord
+              {t('userDashboard.title')}
             </Typography>
             <Box sx={{ 
               display: 'flex', 
@@ -147,7 +152,7 @@ export default function HomePage() {
                   0
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Cadeaux planifiés
+                  Planned Gifts
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'center' }}>
@@ -155,7 +160,7 @@ export default function HomePage() {
                   0
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Listes créées
+                  Created Lists
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'center' }}>
@@ -163,13 +168,14 @@ export default function HomePage() {
                   0
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Amis connectés
+                  Connected Friends
                 </Typography>
               </Box>
             </Box>
           </Paper>
         )}
       </Container>
+      </Box>
     </Box>
   );
 }

@@ -7,10 +7,11 @@ import {
   Box,
   Container
 } from '@mui/material';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import UserDropdown from './UserDropdown';
+import LanguageSwitcher from './LanguageSwitcher';
 
-export default function Navbar() {
+export default function LocalizedNavbar() {
   const router = useRouter();
 
   const handleLogoClick = () => {
@@ -21,7 +22,6 @@ export default function Navbar() {
     <AppBar position="sticky" elevation={1}>
       <Container maxWidth="lg">
         <Toolbar disableGutters>
-          {/* Logo */}
           <Typography
             variant="h6"
             noWrap
@@ -48,6 +48,7 @@ export default function Navbar() {
           <Box sx={{ flexGrow: 1 }} />
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <LanguageSwitcher />
             <UserDropdown />
           </Box>
         </Toolbar>

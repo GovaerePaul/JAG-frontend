@@ -50,5 +50,29 @@
   "metadata": {
     "title": "JustGift - Organisez vos cadeaux",
     "description": "Plateforme pour organiser et planifier vos cadeaux"
+  },
+  "home": {
+    "title": "Bienvenue sur JustGift",
+    "subtitle": "La plateforme pour organiser vos cadeaux",
+    "welcomeUser": "Salut {name} ! 👋",
+    "getStarted": "Commencer maintenant",
+    "features": {
+      "manage": {
+        "title": "Gérer vos cadeaux",
+        "description": "Organisez et suivez tous vos cadeaux en un seul endroit"
+      },
+      "discover": {
+        "title": "Découvrir des idées",
+        "description": "Trouvez le cadeau parfait pour vos proches"
+      },
+      "share": {
+        "title": "Partager avec des amis",
+        "description": "Collaborez avec vos amis et votre famille"
+      }
+    },
+    "userDashboard": {
+      "title": "Votre tableau de bord",
+      "description": "Gérez vos cadeaux et consultez votre activité"
+    }
   }
 }

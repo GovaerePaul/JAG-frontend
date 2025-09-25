@@ -2,7 +2,8 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { CircularProgress } from '@mui/material';
-import AuthPage from '@/app/auth/page';
+import { redirect } from '@/i18n/navigation';
+import { useEffect } from 'react';
 import Navbar from '../Navbar';
 
 interface AuthGuardProps {
@@ -11,6 +12,12 @@ interface AuthGuardProps {
 
 export default function AuthGuard({ children }: AuthGuardProps) {
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      redirect('/auth');
+    }
+  }, [user, loading]);
 
   if (loading) {
     return (
@@ -28,10 +35,9 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   }
 
   if (!user) {
-    return <AuthPage />;
+    return null;
   }
 
-  // Show protected content with layout if authenticated
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />

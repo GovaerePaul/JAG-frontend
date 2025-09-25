@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import {
   Container,
   Paper,
@@ -20,7 +20,6 @@ export default function AuthPage() {
   const { user } = useAuth();
   const router = useRouter();
 
-  // Rediriger si déjà connecté
   useEffect(() => {
     if (user) {
       router.push('/');
@@ -42,7 +41,7 @@ export default function AuthPage() {
   };
 
   if (user) {
-    return null; // Ou un loading spinner
+    return null;
   }
 
   return (
@@ -66,7 +65,7 @@ export default function AuthPage() {
             background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
           }}
         >
-          {/* Formes décoratives */}
+          {/* Decorative shapes */}
           <Box
             sx={{
               position: 'absolute',
@@ -92,7 +91,7 @@ export default function AuthPage() {
             }}
           />
 
-          {/* Contenu principal */}
+          {/* Main content */}
           <Box sx={{ position: 'relative', zIndex: 1 }}>
             <Slide
               direction={slideDirection}

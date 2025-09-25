@@ -50,5 +50,29 @@
   "metadata": {
     "title": "JustGift - Organize Your Gifts",
     "description": "Platform to organize and plan your gifts"
+  },
+  "home": {
+    "title": "Welcome to JustGift",
+    "subtitle": "The platform to organize your gifts",
+    "welcomeUser": "Hi {name}! 👋",
+    "getStarted": "Get Started Now",
+    "features": {
+      "manage": {
+        "title": "Manage Your Gifts",
+        "description": "Organize and track all your gifts in one place"
+      },
+      "discover": {
+        "title": "Discover Ideas",
+        "description": "Find the perfect gift for your loved ones"
+      },
+      "share": {
+        "title": "Share with Friends",
+        "description": "Collaborate with friends and family"
+      }
+    },
+    "userDashboard": {
+      "title": "Your Dashboard",
+      "description": "Manage your gifts and view your activity"
+    }
   }
 }
