@@ -7,7 +7,11 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https'
   },
+  // Remove basePath for mobile builds
   plugins: {
+    CapacitorHttp: {
+      enabled: true
+    },
     SplashScreen: {
       launchShowDuration: 2000,
       backgroundColor: '#1976d2',

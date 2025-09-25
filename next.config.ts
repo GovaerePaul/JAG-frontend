@@ -11,6 +11,7 @@ const __dirname = dirname(__filename);
 const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
+  basePath: process.env.NODE_ENV === 'production' ? '/JAG-frontend' : '',
   images: {
     unoptimized: true,
   },
