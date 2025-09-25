@@ -9,12 +9,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const nextConfig: NextConfig = {
-  // output: 'export', // Temporarily disabled for debugging
-  // trailingSlash: true,
-  // images: {
-  //   unoptimized: true,
-  // },
-  // distDir: 'out',
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
+  },
+  distDir: 'out',
   // Improve CSS optimization for emotion/MUI
   compiler: {
     emotion: true,
