@@ -7,7 +7,7 @@ import { generateMetadata as generateI18nMetadata } from '@/i18n/metadata';
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }
 
 export function generateStaticParams() {
@@ -15,10 +15,12 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ 
-  params: { locale } 
+  params 
 }: { 
-  params: { locale: string } 
+  params: Promise<{ locale: string }> 
 }) {
+  const { locale } = await params;
+  
   if (!isValidLocale(locale)) {
     return {};
   }
@@ -28,16 +30,18 @@ export async function generateMetadata({
 
 export default async function LocaleLayout({
   children,
-  params: { locale }
+  params
 }: LocaleLayoutProps) {
+  const { locale } = await params;
+  
   if (!isValidLocale(locale)) {
     notFound();
   }
 
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
 
   return (
-    <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider messages={messages} locale={locale}>
       {children}
     </NextIntlClientProvider>
   );
