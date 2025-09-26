@@ -1,0 +1,29 @@
+{
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.suggest.autoImports": false,
+  "typescript.validate.enable": true,
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "files.exclude": {
+    "**/__tests__/**": true,
+    "**/*.test.ts": true,
+    "**/*.test.tsx": true
+  },
+  "search.exclude": {
+    "**/__tests__/**": true,
+    "**/*.test.ts": true,
+    "**/*.test.tsx": true
+  },
+  "files.watcherExclude": {
+    "**/__tests__/**": true,
+    "**/*.test.ts": true,
+    "**/*.test.tsx": true
+  },
+  "eslint.workingDirectories": ["."],
+  "eslint.options": {
+    "ignorePattern": [
+      "**/__tests__/**",
+      "**/*.test.ts",
+      "**/*.test.tsx"
+    ]
+  }
+}
