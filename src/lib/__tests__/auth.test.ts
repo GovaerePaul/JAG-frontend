@@ -54,7 +54,7 @@ describe('Auth Utilities', () => {
       }
       const mockUserCredential = { user: mockUser }
 
-      mockCreateUser.mockResolvedValue(mockUserCredential as any)
+      mockCreateUser.mockResolvedValue(mockUserCredential as unknown)
       mockUpdateProfile.mockResolvedValue(undefined)
 
       const result = await signUp({
@@ -112,7 +112,7 @@ describe('Auth Utilities', () => {
       }
       const mockUserCredential = { user: mockUser }
 
-      mockSignInUser.mockResolvedValue(mockUserCredential as any)
+      mockSignInUser.mockResolvedValue(mockUserCredential as unknown)
 
       const result = await signIn({
         email: 'test@example.com',
@@ -192,7 +192,7 @@ describe('Auth Utilities', () => {
 
     it('should handle empty or undefined error codes', () => {
       expect(translateFirebaseError('')).toBe('Une erreur est survenue. Veuillez réessayer.')
-      expect(translateFirebaseError(undefined as any)).toBe('Une erreur est survenue. Veuillez réessayer.')
+      expect(translateFirebaseError(undefined as unknown)).toBe('Une erreur est survenue. Veuillez réessayer.')
     })
   })
 

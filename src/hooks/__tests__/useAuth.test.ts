@@ -1,7 +1,6 @@
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { useAuth } from '../useAuth'
 import { onAuthStateChanged } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
 
 // Mock Firebase auth
 jest.mock('firebase/auth', () => ({
@@ -41,7 +40,7 @@ describe('useAuth Hook', () => {
 
     // Mock onAuthStateChanged to call callback with user
     mockOnAuthStateChanged.mockImplementation((auth, callback) => {
-      callback(mockUser as any)
+      callback(mockUser as unknown)
       return jest.fn() // unsubscribe function
     })
 
@@ -80,7 +79,7 @@ describe('useAuth Hook', () => {
   })
 
   it('should handle auth state changes', async () => {
-    let authStateCallback: ((user: any) => void) | null = null
+    let authStateCallback: ((user: unknown) => void) | null = null
 
     // Capture the callback function
     mockOnAuthStateChanged.mockImplementation((auth, callback) => {

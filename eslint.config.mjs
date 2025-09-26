@@ -18,6 +18,12 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "android/**",
+      "coverage/**",
+      "electron/**",
+      "*.config.js",
+      "*.config.mjs",
+      "jest.setup.js",
     ],
   },
 ];
