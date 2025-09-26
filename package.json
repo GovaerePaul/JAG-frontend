@@ -15,7 +15,7 @@
     "cap:ios": "npx cap add ios && npx cap open ios",
     "cap:sync": "npx cap sync",
     "electron": "electron electron/main.js",
-    "electron:dev": "NODE_ENV=development electron electron/main.js",
+    "electron:dev": "cross-env NODE_ENV=development electron electron/main.js",
     "electron:build": "npm run build:desktop && electron-builder",
     "electron:dist": "npm run build:desktop && electron-builder --publish=never"
   },

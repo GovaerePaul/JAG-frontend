@@ -14,6 +14,7 @@ function createWindow() {
       contextIsolation: true,
       enableRemoteModule: false,
       webSecurity: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
     icon: path.join(__dirname, '../public/favicon.ico'),
     titleBarStyle: 'default',
@@ -29,6 +30,16 @@ function createWindow() {
     // Mode production : fichiers exportés
     mainWindow.loadFile(path.join(__dirname, '../out/index.html'));
   }
+
+  // Ajouter CSP headers pour la sécurité
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': ['default-src \'self\' \'unsafe-inline\' \'unsafe-eval\' data: https:; img-src \'self\' data: https:; connect-src \'self\' https: wss: ws:;']
+      }
+    });
+  });
 
   // Événements de la fenêtre
   mainWindow.on('closed', () => {
