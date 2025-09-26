@@ -1,22 +1,8 @@
 {
-  "extends": [
-    "next/core-web-vitals",
-    "next/typescript"
-  ],
-  "ignorePatterns": [
-    "node_modules/**",
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-    "android/**",
-    "coverage/**",
-    "electron/**",
-    "*.config.js",
-    "*.config.mjs",
-    "jest.setup.js",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/__tests__/**/*"
-  ]
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "rules": {
+    "@next/next/no-html-link-for-pages": "error",
+    "@next/next/no-img-element": "warn",
+    "@next/next/no-page-custom-font": "warn"
+  }
 }
