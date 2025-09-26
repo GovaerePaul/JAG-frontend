@@ -1,4 +1,4 @@
-import { signUp, signIn, logout, translateFirebaseError } from '../auth'
+import { signUp, signIn, logout, translateFirebaseError, getUserProfileFromBackend, updateUserProfileOnBackend, deleteUserAccountOnBackend } from '../auth'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -23,11 +23,17 @@ jest.mock('@/lib/firebase', () => ({
   },
 }))
 
-// Mock API client
+// Mock authApiClient
 jest.mock('../api-client', () => ({
+  getUserProfile: jest.fn(),
+  updateUserProfile: jest.fn(),
+  deleteUserAccount: jest.fn(),
   setAuthToken: jest.fn(),
   clearAuthToken: jest.fn(),
 }))
+
+const mockAuthApiClient = authApiClient as jest.Mocked<typeof authApiClient>
+
 
 const mockCreateUser = createUserWithEmailAndPassword as jest.MockedFunction<typeof createUserWithEmailAndPassword>
 const mockSignInUser = signInWithEmailAndPassword as jest.MockedFunction<typeof signInWithEmailAndPassword>
@@ -187,6 +193,95 @@ describe('Auth Utilities', () => {
     it('should handle empty or undefined error codes', () => {
       expect(translateFirebaseError('')).toBe('Une erreur est survenue. Veuillez réessayer.')
       expect(translateFirebaseError(undefined as any)).toBe('Une erreur est survenue. Veuillez réessayer.')
+    })
+  })
+
+  describe('getUserProfileFromBackend', () => {
+    it('should return profile data on success', async () => {
+      const mockProfile = { displayName: 'Test User', email: 'test@example.com' }
+      mockAuthApiClient.getUserProfile.mockResolvedValue({
+        success: true,
+        data: mockProfile,
+        error: null
+      })
+
+      const result = await getUserProfileFromBackend()
+
+      expect(result.profile).toEqual(mockProfile)
+      expect(result.error).toBeNull()
+      expect(mockAuthApiClient.getUserProfile).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return error on failure', async () => {
+      const mockError = 'Failed to fetch profile'
+      mockAuthApiClient.getUserProfile.mockResolvedValue({
+        success: false,
+        data: null,
+        error: mockError
+      })
+
+      const result = await getUserProfileFromBackend()
+
+      expect(result.profile).toBeNull()
+      expect(result.error).toBe(mockError)
+    })
+  })
+
+  describe('updateUserProfileOnBackend', () => {
+    it('should return success when update succeeds', async () => {
+      mockAuthApiClient.updateUserProfile.mockResolvedValue({
+        success: true,
+        error: null
+      })
+
+      const updateData = { displayName: 'New Name', photoURL: 'https://example.com/photo.jpg' }
+      const result = await updateUserProfileOnBackend(updateData)
+
+      expect(result.success).toBe(true)
+      expect(result.error).toBeNull()
+      expect(mockAuthApiClient.updateUserProfile).toHaveBeenCalledWith(updateData)
+    })
+
+    it('should return error when update fails', async () => {
+      const mockError = 'Update failed'
+      mockAuthApiClient.updateUserProfile.mockResolvedValue({
+        success: false,
+        error: mockError
+      })
+
+      const updateData = { displayName: 'New Name' }
+      const result = await updateUserProfileOnBackend(updateData)
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe(mockError)
+    })
+  })
+
+  describe('deleteUserAccountOnBackend', () => {
+    it('should return success when deletion succeeds', async () => {
+      mockAuthApiClient.deleteUserAccount.mockResolvedValue({
+        success: true,
+        error: null
+      })
+
+      const result = await deleteUserAccountOnBackend()
+
+      expect(result.success).toBe(true)
+      expect(result.error).toBeNull()
+      expect(mockAuthApiClient.deleteUserAccount).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return error when deletion fails', async () => {
+      const mockError = 'Deletion failed'
+      mockAuthApiClient.deleteUserAccount.mockResolvedValue({
+        success: false,
+        error: mockError
+      })
+
+      const result = await deleteUserAccountOnBackend()
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe(mockError)
     })
   })
 })
