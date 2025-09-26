@@ -10,6 +10,7 @@
     "build:desktop": "next build && next export",
     "start": "next start",
     "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "cap:build": "npm run build:mobile",
     "cap:android": "npx cap add android && npx cap open android",
     "cap:ios": "npx cap add ios && npx cap open ios",
