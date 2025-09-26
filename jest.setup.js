@@ -1,5 +1,38 @@
 import '@testing-library/jest-dom'
 
+// Mock global de next-intl
+jest.mock('next-intl', () => ({
+  useTranslations: (namespace) => (key) => {
+    // Mock simple qui retourne la clé pour éviter les erreurs
+    return key
+  },
+  useLocale: () => 'fr',
+  useMessages: () => ({}),
+}))
+
+// Mock global de next-intl/navigation
+jest.mock('next-intl/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    back: jest.fn(),
+  }),
+  usePathname: () => '/fr',
+  useSearchParams: () => new URLSearchParams(),
+  redirect: jest.fn(),
+  notFound: jest.fn(),
+}))
+
+// Mock global de next-intl/server
+jest.mock('next-intl/server', () => ({
+  getMessages: jest.fn(() => Promise.resolve({})),
+  getTranslations: jest.fn(() => Promise.resolve(() => '')),
+  getLocale: jest.fn(() => 'fr'),
+  getTimeZone: jest.fn(() => 'Europe/Paris'),
+  getRequestConfig: jest.fn(() => Promise.resolve({})),
+}))
+
 // Polyfill fetch and Response for Firebase tests
 global.fetch = jest.fn()
 global.Response = class Response {
