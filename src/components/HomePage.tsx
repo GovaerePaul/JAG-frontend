@@ -13,11 +13,13 @@ import { Redeem, Favorite, Groups } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations } from 'next-intl';
+import { useEventTypes } from '@/hooks/useEventTypes';
 
 export default function HomePage() {
   const { user } = useAuth();
   const router = useRouter();
   const t = useTranslations('home');
+  const { eventTypes, loading: eventsLoading, error: eventsError } = useEventTypes();
 
   return (
     <Box sx={{ py: 4 }}>
@@ -169,6 +171,37 @@ export default function HomePage() {
             </Box>
           </Paper>
         )}
+
+        {/* TEMP: Event Types Test */}
+        <Paper sx={{ p: 4, mt: 4, backgroundColor: '#f5f5f5' }}>
+          <Typography variant="h6" gutterBottom>
+            🧪 TEST: Event Types from API
+          </Typography>
+          {eventsLoading && <Typography>Loading events...</Typography>}
+          {eventsError && <Typography color="error">Error: {eventsError}</Typography>}
+          {!eventsLoading && !eventsError && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+              {eventTypes.map((event) => (
+                <Box
+                  key={event.id}
+                  sx={{
+                    p: 1,
+                    border: '1px solid #ddd',
+                    borderRadius: 2,
+                    backgroundColor: 'white',
+                  }}
+                >
+                  <Typography variant="body2">
+                    {event.icon} {event.name}
+                  </Typography>
+                </Box>
+              ))}
+              {eventTypes.length === 0 && (
+                <Typography color="text.secondary">No events found</Typography>
+              )}
+            </Box>
+          )}
+        </Paper>
       </Container>
     </Box>
   );
