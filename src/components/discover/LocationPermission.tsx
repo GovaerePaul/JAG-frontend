@@ -35,7 +35,7 @@ export default function LocationPermission({
   const [manualMode, setManualMode] = useState(false);
   const [city, setCity] = useState('');
 
-  const handleEnableLocation = () => {
+  const handleEnableLocation = (retry = false) => {
     setLoading(true);
     setError(null);
 
@@ -45,9 +45,27 @@ export default function LocationPermission({
       return;
     }
 
+    const options: PositionOptions = retry
+      ? {
+          enableHighAccuracy: false,
+          timeout: 30000,
+          maximumAge: 600000, // Accept cached position up to 10 minutes old
+        }
+      : {
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 300000, // Accept cached position up to 5 minutes old
+        };
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
+          console.log('Geolocation success:', {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          });
+
           const coordinates: Coordinates = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
@@ -59,29 +77,41 @@ export default function LocationPermission({
             onLocationEnabled();
             onClose();
           } else {
+            console.error('Failed to update location:', response.error);
             setError(response.error || t('error'));
           }
         } catch (err) {
+          console.error('Error updating location:', err);
           setError(err instanceof Error ? err.message : t('error'));
         } finally {
           setLoading(false);
         }
       },
       (err) => {
-        if (err.code === err.PERMISSION_DENIED) {
+        console.error('Geolocation error:', {
+          code: err.code,
+          message: err.message,
+          PERMISSION_DENIED: err.PERMISSION_DENIED,
+          POSITION_UNAVAILABLE: err.POSITION_UNAVAILABLE,
+          TIMEOUT: err.TIMEOUT,
+        });
+
+        // err.code: 1 = PERMISSION_DENIED, 2 = POSITION_UNAVAILABLE, 3 = TIMEOUT
+        if (err.code === 1) {
           setError(t('denied'));
           setManualMode(true);
+        } else if (err.code === 3 && !retry) {
+          // Timeout - try again with less strict options
+          console.log('Retrying with less strict options...');
+          handleEnableLocation(true);
+          return;
         } else {
           setError(t('unavailable'));
           setManualMode(true);
         }
         setLoading(false);
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
+      options
     );
   };
 
