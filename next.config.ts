@@ -1,43 +1,20 @@
 import type { NextConfig } from "next";
-import createNextIntlPlugin from 'next-intl/plugin';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import createNextIntlPlugin from "next-intl/plugin";
 
-const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
-  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
+  output: process.env.NODE_ENV === "production" ? "export" : undefined,
   trailingSlash: true,
-  basePath: process.env.NODE_ENV === 'production' ? '/JAG-frontend' : '',
+  basePath: process.env.NODE_ENV === "production" ? "/JAG-frontend" : "",
   images: {
     unoptimized: true,
   },
-  distDir: 'out',
-  // Improve CSS optimization for emotion/MUI
+  distDir: "out",
   compiler: {
     emotion: true,
   },
-  // Optimize for static export with SSG
   reactStrictMode: true,
-  // Disable ESLint during builds
-  // eslint: {
-  //   ignoreDuringBuilds: true,
-  // },
-  // // Disable TypeScript checks during builds
-  // typescript: {
-  //   ignoreBuildErrors: true,
-  // },
-  // Turbopack configuration (replaces webpack config)
-  turbopack: {
-    root: __dirname, // Use current directory dynamically
-    // Turbopack-specific configuration if needed
-    resolveAlias: {
-      // Add any alias configurations here if needed
-    }
-  }
 };
 
 export default withNextIntl(nextConfig);
