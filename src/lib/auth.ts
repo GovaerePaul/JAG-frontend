@@ -31,14 +31,17 @@ export const signUp = async ({ email, password, displayName, role }: SignUpData)
       displayName: displayName
     });
 
-    // Update the user role in Firestore (the trigger creates with 'both' by default)
-    // We update it to the user's choice
-    if (role !== 'both') {
-      // Small delay to ensure the trigger has created the document
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, { role });
-    }
+    // Wait for the trigger to create the Firestore document
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Update Firestore with displayName and role
+    // The trigger creates the document with 'both' by default, we update it with the actual values
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, {
+      displayName: displayName,
+      role: role,
+      updatedAt: new Date()
+    });
 
     return { user, error: null };
   } catch (error: unknown) {

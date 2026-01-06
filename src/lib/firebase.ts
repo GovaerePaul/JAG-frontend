@@ -16,12 +16,14 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Connect to emulators in development (only once)
-let emulatorsConnected = false;
-if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && !emulatorsConnected) {
-  emulatorsConnected = true;
-  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
-  connectFirestoreEmulator(db, '127.0.0.1', 8080);
+// Connect to emulators in development
+if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+  try {
+    connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+    connectFirestoreEmulator(db, '127.0.0.1', 8080);
+  } catch {
+    // Already connected
+  }
 }
 
 export default app;

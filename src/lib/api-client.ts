@@ -1,6 +1,6 @@
 'use client';
 
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import { initializeApp, getApps } from 'firebase/app';
 import { AxiosError } from 'axios';
 
@@ -14,7 +14,14 @@ const firebaseConfig = {
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const functions = getFunctions(app, 'europe-west1');
+// Don't specify region for emulator compatibility
+// In production, Firebase will use the default region or the one specified in the function
+const functions = getFunctions(app);
+
+// Connect to emulator in development
+if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+  connectFunctionsEmulator(functions, '127.0.0.1', 5001);
+}
 
 export interface ApiResponse<T = unknown> {
   success: boolean;

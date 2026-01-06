@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -19,10 +19,14 @@ import {
   Alert,
   CircularProgress,
   Chip,
+  Avatar,
+  ListItemAvatar,
+  ListItemText,
 } from '@mui/material';
-import { Send, Close } from '@mui/icons-material';
+import { Send, Close, Person } from '@mui/icons-material';
 import { useEventTypes } from '@/hooks/useEventTypes';
 import { sendMessage, SendMessageData } from '@/lib/messages-api';
+import { getReceivableUsers, ReceivableUser } from '@/lib/users-api';
 
 interface SendMessageFormProps {
   open: boolean;
@@ -40,6 +44,8 @@ export default function SendMessageForm({
   onSuccess,
 }: SendMessageFormProps) {
   const { eventTypes, loading: eventsLoading } = useEventTypes();
+  const [receivableUsers, setReceivableUsers] = useState<ReceivableUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
   const [formData, setFormData] = useState<SendMessageData>({
     receiverId: receiverId,
     eventTypeId: '',
@@ -49,6 +55,20 @@ export default function SendMessageForm({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Load receivable users when dialog opens
+  useEffect(() => {
+    if (open && !receiverId) {
+      setUsersLoading(true);
+      getReceivableUsers()
+        .then((response) => {
+          if (response.success && response.data) {
+            setReceivableUsers(response.data);
+          }
+        })
+        .finally(() => setUsersLoading(false));
+    }
+  }, [open, receiverId]);
 
   const selectedEvent = eventTypes.find((e) => e.id === formData.eventTypeId);
 
@@ -131,15 +151,53 @@ export default function SendMessageForm({
             )}
 
             {/* Receiver */}
-            <TextField
-              label="Receiver ID"
-              value={formData.receiverId}
-              onChange={(e) => setFormData({ ...formData, receiverId: e.target.value })}
-              placeholder="Enter the receiver's user ID"
-              disabled={!!receiverId || sending}
-              helperText={receiverName ? `Sending to: ${receiverName}` : 'Enter the ID of the person you want to send a message to'}
-              fullWidth
-            />
+            {receiverId ? (
+              <TextField
+                label="Receiver"
+                value={receiverName || receiverId}
+                disabled
+                fullWidth
+                helperText={`Sending to: ${receiverName || receiverId}`}
+              />
+            ) : (
+              <FormControl fullWidth disabled={usersLoading || sending}>
+                <InputLabel>Choose a recipient</InputLabel>
+                <Select
+                  value={formData.receiverId}
+                  onChange={(e) => setFormData({ ...formData, receiverId: e.target.value })}
+                  label="Choose a recipient"
+                  renderValue={(selected) => {
+                    const user = receivableUsers.find((u) => u.uid === selected);
+                    return user ? user.displayName || 'Anonymous User' : '';
+                  }}
+                >
+                  {usersLoading ? (
+                    <MenuItem disabled>
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      Loading users...
+                    </MenuItem>
+                  ) : receivableUsers.length === 0 ? (
+                    <MenuItem disabled>
+                      No users available to receive messages
+                    </MenuItem>
+                  ) : (
+                    receivableUsers.map((user) => (
+                      <MenuItem key={user.uid} value={user.uid}>
+                        <ListItemAvatar>
+                          <Avatar src={user.photoURL} sx={{ width: 32, height: 32 }}>
+                            <Person />
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={user.displayName || 'Anonymous User'}
+                          secondary={user.role === 'receiver' ? 'Receiver only' : 'Sender & Receiver'}
+                        />
+                      </MenuItem>
+                    ))
+                  )}
+                </Select>
+              </FormControl>
+            )}
 
             {/* Event Type */}
             <FormControl fullWidth disabled={eventsLoading || sending}>
