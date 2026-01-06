@@ -44,40 +44,16 @@ import { UserStats } from '@/lib/types';
 export default function ProfilePage() {
   const t = useTranslations('profile');
   const tGamification = useTranslations('gamification');
-  const { user } = useAuth();
+  const { user, userProfile, loading } = useAuth();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
-  const [gamification, setGamification] = useState({
-    points: 0,
-    level: 1,
-    totalPointsEarned: 0,
-  });
-  const [loadingGamification, setLoadingGamification] = useState(false);
 
-  const fetchGamificationStats = useCallback(async () => {
-    if (!user) return;
-
-    setLoadingGamification(true);
-    try {
-      const response = await authApiClient.getUserStats();
-      if (response.success && response.data) {
-        const stats = response.data as UserStats;
-        setGamification({
-          points: stats.points ?? 0,
-          level: stats.level ?? 1,
-          totalPointsEarned: stats.totalPointsEarned ?? 0,
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching gamification stats:', error);
-    } finally {
-      setLoadingGamification(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchGamificationStats();
-  }, [fetchGamificationStats]);
+  // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
+  const gamification = {
+    points: userProfile?.points ?? 0,
+    level: userProfile?.level ?? 1,
+    totalPointsEarned: userProfile?.totalPointsEarned ?? 0,
+  };
 
   if (!user) {
     return null;
@@ -201,7 +177,7 @@ export default function ProfilePage() {
                   {tGamification('nextLevel')}: {pointsNeededForNextLevel} {tGamification('points')}
                 </Typography>
               </Box>
-              {loadingGamification ? (
+              {loading ? (
                 <CircularProgress size={24} />
               ) : (
                 <LinearProgress 

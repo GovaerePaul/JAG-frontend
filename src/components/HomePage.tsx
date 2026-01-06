@@ -30,7 +30,7 @@ interface GamificationData {
 }
 
 export default function HomePage() {
-  const { user, canSend, canReceive } = useAuth();
+  const { user, userProfile, canSend, canReceive } = useAuth();
   const router = useRouter();
   const t = useTranslations('home');
   const tGamification = useTranslations('gamification');
@@ -39,12 +39,14 @@ export default function HomePage() {
     messagesSentCount: 0,
     messagesReceivedCount: 0,
   });
-  const [gamification, setGamification] = useState<GamificationData>({
-    points: 0,
-    level: 1,
-    totalPointsEarned: 0,
-  });
   const [loadingCounts, setLoadingCounts] = useState(false);
+
+  // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
+  const gamification: GamificationData = {
+    points: userProfile?.points ?? 0,
+    level: userProfile?.level ?? 1,
+    totalPointsEarned: userProfile?.totalPointsEarned ?? 0,
+  };
 
   const fetchCounts = useCallback(async () => {
     if (!user) {
@@ -60,11 +62,6 @@ export default function HomePage() {
         setMessageCounts({
           messagesSentCount: stats.messagesSentCount ?? 0,
           messagesReceivedCount: stats.messagesReceivedCount ?? 0,
-        });
-        setGamification({
-          points: stats.points ?? 0,
-          level: stats.level ?? 1,
-          totalPointsEarned: stats.totalPointsEarned ?? 0,
         });
       } else {
         console.error('Failed to fetch stats:', response.error);
