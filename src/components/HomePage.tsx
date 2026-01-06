@@ -8,8 +8,7 @@ import {
   Button,
   Paper,
   CircularProgress,
-  LinearProgress,
-  Chip
+  LinearProgress
 } from '@mui/material';
 import { Send, Inbox, Outbox, EmojiEvents } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
