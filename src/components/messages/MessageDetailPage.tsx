@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { ArrowBack, Flag } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
-import { useParams, usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { getMessage, markMessageAsRead, reportMessage, Message } from '@/lib/messages-api';
 import { formatDate } from '@/utils/date';
@@ -29,15 +29,15 @@ import { db } from '@/lib/firebase';
 
 export default function MessageDetailPage() {
   const router = useRouter();
-  const params = useParams();
   const pathname = usePathname();
-  const messageId = params?.id as string;
+  const searchParams = useSearchParams();
+  const messageId = searchParams?.get('id') || '';
   const t = useTranslations('messages');
   const tCommon = useTranslations('common');
   
   // Detect if we're viewing a sent or received message
-  const isSentMessage = pathname?.includes('/messages/sent/');
-  const isReceivedMessage = pathname?.includes('/messages/received/');
+  const isSentMessage = pathname?.includes('/messages/sent');
+  const isReceivedMessage = pathname?.includes('/messages/received');
   
   const [message, setMessage] = useState<Message | null>(null);
   const [loading, setLoading] = useState(true);

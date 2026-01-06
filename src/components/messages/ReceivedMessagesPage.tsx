@@ -112,7 +112,7 @@ export default function ReceivedMessagesPage() {
                       transform: 'translateY(-2px)',
                     }
                   }}
-                  onClick={() => router.push(`/messages/received/${message.id}`)}
+                  onClick={() => router.push(`/messages/received?id=${message.id}`)}
                 >
                   <CardContent>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
@@ -166,7 +166,7 @@ export default function ReceivedMessagesPage() {
                           backgroundColor: 'action.hover',
                         }
                       }}
-                      onClick={() => router.push(`/messages/received/${message.id}`)}
+                      onClick={() => router.push(`/messages/received?id=${message.id}`)}
                     >
                       <TableCell>
                         <Box>

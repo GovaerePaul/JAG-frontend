@@ -110,7 +110,7 @@ export default function SentMessagesPage() {
                       transform: 'translateY(-2px)',
                     }
                   }}
-                  onClick={() => router.push(`/messages/sent/${message.id}`)}
+                  onClick={() => router.push(`/messages/sent?id=${message.id}`)}
                 >
                   <CardContent>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
@@ -170,7 +170,7 @@ export default function SentMessagesPage() {
                           backgroundColor: 'action.hover',
                         }
                       }}
-                      onClick={() => router.push(`/messages/sent/${message.id}`)}
+                      onClick={() => router.push(`/messages/sent?id=${message.id}`)}
                     >
                       <TableCell>
                         <Box>
