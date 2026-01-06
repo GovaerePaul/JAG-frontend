@@ -142,7 +142,10 @@
     "back": "Retour",
     "error": {
       "loading": "Erreur lors du chargement des messages",
-      "messageNotFound": "Message introuvable"
+      "messageNotFound": "Message introuvable",
+      "messageIdRequired": "L'ID du message est requis",
+      "failedToLoad": "Échec du chargement du message",
+      "failedToReport": "Échec du signalement du message"
     },
     "detail": {
       "title": "Détail du message",
@@ -157,6 +160,34 @@
         "description": "Veuillez indiquer la raison pour laquelle vous signalez ce message. Cette action aidera à maintenir une communauté respectueuse.",
         "reasonLabel": "Raison du signalement",
         "submit": "Signaler"
+      }
+    },
+    "send": {
+      "title": "Envoyer un message",
+      "success": "Message envoyé avec succès ! 🎉",
+      "receiver": "Destinataire",
+      "sendingTo": "Envoi à : {name}",
+      "chooseRecipient": "Choisir un destinataire",
+      "loadingUsers": "Chargement des utilisateurs...",
+      "noUsersAvailable": "Aucun utilisateur disponible pour recevoir des messages",
+      "anonymousUser": "Utilisateur anonyme",
+      "receiverOnly": "Destinataire uniquement",
+      "senderAndReceiver": "Expéditeur et destinataire",
+      "occasion": "Occasion",
+      "joyfulEvents": "— Événements joyeux —",
+      "supportComfort": "— Soutien et réconfort —",
+      "encouragement": "— Encouragement —",
+      "yourMessage": "Votre message",
+      "messagePlaceholder": "Écrivez votre message sincère ici...",
+      "charactersCount": "{count}/2000 caractères",
+      "sendAnonymously": "Envoyer anonymement (le destinataire ne verra pas votre identité)",
+      "sending": "Envoi...",
+      "sendButton": "Envoyer le message",
+      "errors": {
+        "receiverIdRequired": "Veuillez entrer un ID de destinataire",
+        "eventTypeRequired": "Veuillez sélectionner un type d'événement",
+        "messageRequired": "Veuillez écrire un message",
+        "failedToSend": "Échec de l'envoi du message"
       }
     }
   },

@@ -142,7 +142,10 @@
     "back": "Back",
     "error": {
       "loading": "Error loading messages",
-      "messageNotFound": "Message not found"
+      "messageNotFound": "Message not found",
+      "messageIdRequired": "Message ID is required",
+      "failedToLoad": "Failed to load message",
+      "failedToReport": "Failed to report message"
     },
     "detail": {
       "title": "Message Details",
@@ -157,6 +160,34 @@
         "description": "Please provide a reason for reporting this message. This action helps maintain a respectful community.",
         "reasonLabel": "Report Reason",
         "submit": "Report"
+      }
+    },
+    "send": {
+      "title": "Send a Message",
+      "success": "Message sent successfully! 🎉",
+      "receiver": "Receiver",
+      "sendingTo": "Sending to: {name}",
+      "chooseRecipient": "Choose a recipient",
+      "loadingUsers": "Loading users...",
+      "noUsersAvailable": "No users available to receive messages",
+      "anonymousUser": "Anonymous User",
+      "receiverOnly": "Receiver only",
+      "senderAndReceiver": "Sender & Receiver",
+      "occasion": "Occasion",
+      "joyfulEvents": "— Joyful Events —",
+      "supportComfort": "— Support & Comfort —",
+      "encouragement": "— Encouragement —",
+      "yourMessage": "Your Message",
+      "messagePlaceholder": "Write your heartfelt message here...",
+      "charactersCount": "{count}/2000 characters",
+      "sendAnonymously": "Send anonymously (the receiver won't see your identity)",
+      "sending": "Sending...",
+      "sendButton": "Send Message",
+      "errors": {
+        "receiverIdRequired": "Please enter a receiver ID",
+        "eventTypeRequired": "Please select an event type",
+        "messageRequired": "Please write a message",
+        "failedToSend": "Failed to send message"
       }
     }
   },

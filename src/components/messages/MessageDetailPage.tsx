@@ -63,7 +63,7 @@ export default function MessageDetailPage() {
 
   const loadMessage = useCallback(async () => {
     if (!messageId) {
-      setError('Message ID is required');
+      setError(t('error.messageIdRequired'));
       setLoading(false);
       return;
     }
@@ -128,7 +128,7 @@ export default function MessageDetailPage() {
         setError(response.error || t('error.loading'));
       }
     } catch (err) {
-      setError('Failed to load message');
+      setError(t('error.failedToLoad'));
       console.error('Error fetching message:', err);
     } finally {
       setLoading(false);
@@ -157,10 +157,10 @@ export default function MessageDetailPage() {
         // Reload message to get updated status
         await loadMessage();
       } else {
-        setError(response.error || 'Failed to report message');
+        setError(response.error || t('error.failedToReport'));
       }
     } catch (err) {
-      setError('Failed to report message');
+      setError(t('error.failedToReport'));
       console.error('Error reporting message:', err);
     } finally {
       setReporting(false);

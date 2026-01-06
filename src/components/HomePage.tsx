@@ -33,6 +33,7 @@ export default function HomePage() {
   const { user, userProfile, canSend, canReceive } = useAuth();
   const router = useRouter();
   const t = useTranslations('home');
+  const tCommon = useTranslations('common');
   const tGamification = useTranslations('gamification');
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
   const [messageCounts, setMessageCounts] = useState<MessageCounts>({
@@ -110,7 +111,7 @@ export default function HomePage() {
             sx={{ mb: 4, fontSize: { xs: '1.2rem', md: '1.5rem' } }}
           >
             {user
-              ? t('welcomeUser', { name: user.displayName || user.email || 'User' })
+              ? t('welcomeUser', { name: user.displayName || user.email || tCommon('user') })
               : t('subtitle')
             }
           </Typography>

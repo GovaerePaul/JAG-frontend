@@ -24,6 +24,7 @@ import {
   ListItemText,
 } from '@mui/material';
 import { Send, Close, Person } from '@mui/icons-material';
+import { useTranslations } from 'next-intl';
 import { useEventTypes } from '@/hooks/useEventTypes';
 import { sendMessage, SendMessageData } from '@/lib/messages-api';
 import { getReceivableUsers, ReceivableUser } from '@/lib/users-api';
@@ -44,6 +45,8 @@ export default function SendMessageForm({
   onSuccess,
 }: SendMessageFormProps) {
   const { eventTypes, loading: eventsLoading } = useEventTypes();
+  const t = useTranslations('messages.send');
+  const tCommon = useTranslations('common');
   const [receivableUsers, setReceivableUsers] = useState<ReceivableUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [formData, setFormData] = useState<SendMessageData>({
@@ -75,15 +78,15 @@ export default function SendMessageForm({
     setError(null);
 
     if (!formData.receiverId) {
-      setError('Please enter a receiver ID');
+      setError(t('errors.receiverIdRequired'));
       return;
     }
     if (!formData.eventTypeId) {
-      setError('Please select an event type');
+      setError(t('errors.eventTypeRequired'));
       return;
     }
     if (!formData.content.trim()) {
-      setError('Please write a message');
+      setError(t('errors.messageRequired'));
       return;
     }
 
@@ -105,7 +108,7 @@ export default function SendMessageForm({
         onClose();
       }, 1500);
     } else {
-      setError(response.error || 'Failed to send message');
+      setError(response.error || t('errors.failedToSend'));
     }
 
     setSending(false);
@@ -129,7 +132,7 @@ export default function SendMessageForm({
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Send color="primary" />
-          <Typography variant="h6">Send a Message</Typography>
+          <Typography variant="h6">{t('title')}</Typography>
         </Box>
         <Button onClick={handleClose} disabled={sending} sx={{ minWidth: 'auto' }}>
           <Close />
@@ -139,7 +142,7 @@ export default function SendMessageForm({
       <DialogContent>
         {success ? (
           <Alert severity="success" sx={{ my: 2 }}>
-            Message sent successfully! 🎉
+            {t('success')}
           </Alert>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
@@ -152,32 +155,32 @@ export default function SendMessageForm({
             {/* Receiver */}
             {receiverId ? (
               <TextField
-                label="Receiver"
+                label={t('receiver')}
                 value={receiverName || receiverId}
                 disabled
                 fullWidth
-                helperText={`Sending to: ${receiverName || receiverId}`}
+                helperText={t('sendingTo', {name: receiverName || receiverId})}
               />
             ) : (
               <FormControl fullWidth disabled={usersLoading || sending}>
-                <InputLabel>Choose a recipient</InputLabel>
+                <InputLabel>{t('chooseRecipient')}</InputLabel>
                 <Select
                   value={formData.receiverId}
                   onChange={(e) => setFormData({ ...formData, receiverId: e.target.value })}
-                  label="Choose a recipient"
+                  label={t('chooseRecipient')}
                   renderValue={(selected) => {
                     const user = receivableUsers.find((u) => u.uid === selected);
-                    return user ? user.displayName || 'Anonymous User' : '';
+                    return user ? user.displayName || t('anonymousUser') : '';
                   }}
                 >
                   {usersLoading ? (
                     <MenuItem disabled>
                       <CircularProgress size={20} sx={{ mr: 1 }} />
-                      Loading users...
+                      {t('loadingUsers')}
                     </MenuItem>
                   ) : receivableUsers.length === 0 ? (
                     <MenuItem disabled>
-                      No users available to receive messages
+                      {t('noUsersAvailable')}
                     </MenuItem>
                   ) : (
                     receivableUsers.map((user) => (
@@ -188,8 +191,7 @@ export default function SendMessageForm({
                           </Avatar>
                         </ListItemAvatar>
                         <ListItemText
-                          primary={user.displayName || 'Anonymous User'}
-                          secondary={user.role === 'receiver' ? 'Receiver only' : 'Sender & Receiver'}
+                          primary={user.displayName || t('anonymousUser')}
                         />
                       </MenuItem>
                     ))
@@ -200,16 +202,16 @@ export default function SendMessageForm({
 
             {/* Event Type */}
             <FormControl fullWidth disabled={eventsLoading || sending}>
-              <InputLabel>Occasion</InputLabel>
+              <InputLabel>{t('occasion')}</InputLabel>
               <Select
                 value={formData.eventTypeId}
                 onChange={(e) => setFormData({ ...formData, eventTypeId: e.target.value })}
-                label="Occasion"
+                label={t('occasion')}
               >
                 {joyfulEvents.length > 0 && (
                   <MenuItem disabled>
                     <Typography variant="caption" color="text.secondary">
-                      — Joyful Events —
+                      {t('joyfulEvents')}
                     </Typography>
                   </MenuItem>
                 )}
@@ -222,7 +224,7 @@ export default function SendMessageForm({
                 {sadEvents.length > 0 && (
                   <MenuItem disabled>
                     <Typography variant="caption" color="text.secondary">
-                      — Support & Comfort —
+                      {t('supportComfort')}
                     </Typography>
                   </MenuItem>
                 )}
@@ -235,7 +237,7 @@ export default function SendMessageForm({
                 {neutralEvents.length > 0 && (
                   <MenuItem disabled>
                     <Typography variant="caption" color="text.secondary">
-                      — Encouragement —
+                      {t('encouragement')}
                     </Typography>
                   </MenuItem>
                 )}
@@ -258,15 +260,15 @@ export default function SendMessageForm({
 
             {/* Message Content */}
             <TextField
-              label="Your Message"
+              label={t('yourMessage')}
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              placeholder="Write your heartfelt message here..."
+              placeholder={t('messagePlaceholder')}
               multiline
               rows={4}
               disabled={sending}
               inputProps={{ maxLength: 2000 }}
-              helperText={`${formData.content.length}/2000 characters`}
+              helperText={t('charactersCount', {count: formData.content.length})}
               fullWidth
             />
 
@@ -279,7 +281,7 @@ export default function SendMessageForm({
                   disabled={sending}
                 />
               }
-              label="Send anonymously (the receiver won't see your identity)"
+              label={t('sendAnonymously')}
             />
           </Box>
         )}
@@ -288,7 +290,7 @@ export default function SendMessageForm({
       {!success && (
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={handleClose} disabled={sending}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             variant="contained"
@@ -296,7 +298,7 @@ export default function SendMessageForm({
             disabled={sending || !formData.receiverId || !formData.eventTypeId || !formData.content.trim()}
             startIcon={sending ? <CircularProgress size={20} /> : <Send />}
           >
-            {sending ? 'Sending...' : 'Send Message'}
+            {sending ? t('sending') : t('sendButton')}
           </Button>
         </DialogActions>
       )}
