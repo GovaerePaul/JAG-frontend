@@ -87,7 +87,9 @@
       "title": "Your Dashboard",
       "description": "Manage your gifts and view your activity",
       "messagesReceived": "Messages Received",
-      "messagesSent": "Messages Sent"
+      "messagesSent": "Messages Sent",
+      "newMessage": "new",
+      "newMessages": "new"
     },
     "sendMessage": "Send a Message"
   },

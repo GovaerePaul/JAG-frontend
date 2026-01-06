@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -29,6 +29,7 @@ import { useMessages } from '@/hooks/useMessages';
 import { useEventTypes } from '@/hooks/useEventTypes';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 export default function ReceivedMessagesPage() {
   const router = useRouter();
@@ -57,6 +58,14 @@ export default function ReceivedMessagesPage() {
   });
 
   const { eventTypes } = useEventTypes();
+  const { refetch: refetchUnread } = useUnreadMessages();
+
+  // Refresh unread count when messages are loaded
+  useEffect(() => {
+    if (!loading) {
+      refetchUnread();
+    }
+  }, [loading, refetchUnread]);
 
   const getEventType = (eventTypeId: string) => {
     return eventTypes.find((et) => et.id === eventTypeId);

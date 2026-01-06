@@ -27,6 +27,7 @@ import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 export default function MessageDetailPage() {
   const router = useRouter();
@@ -51,6 +52,7 @@ export default function MessageDetailPage() {
   const [markingAsRead, setMarkingAsRead] = useState(false);
 
   const { eventTypes } = useEventTypes();
+  const { refetch: refetchUnread } = useUnreadMessages();
 
   const getEventType = (eventTypeId: string) => {
     return eventTypes.find((et) => et.id === eventTypeId);
@@ -111,19 +113,21 @@ export default function MessageDetailPage() {
           }
         }
 
-        // Mark as read if not already read (only for received messages)
-        if (isReceivedMessage && msg.status !== 'read' && msg.receiverId) {
-          setMarkingAsRead(true);
-          try {
-            await markMessageAsRead(messageId);
-            // Update local state
-            setMessage({ ...msg, status: 'read' as const });
-          } catch (err) {
-            console.error('Error marking message as read:', err);
-          } finally {
-            setMarkingAsRead(false);
-          }
-        }
+               // Mark as read if not already read (only for received messages)
+               if (isReceivedMessage && msg.status !== 'read' && msg.receiverId) {
+                 setMarkingAsRead(true);
+                 try {
+                   await markMessageAsRead(messageId);
+                   // Update local state
+                   setMessage({ ...msg, status: 'read' as const });
+                   // Refresh unread count
+                   refetchUnread();
+                 } catch (err) {
+                   console.error('Error marking message as read:', err);
+                 } finally {
+                   setMarkingAsRead(false);
+                 }
+               }
       } else {
         setError(response.error || t('error.loading'));
       }

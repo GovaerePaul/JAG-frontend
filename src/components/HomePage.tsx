@@ -17,6 +17,8 @@ import { useTranslations } from 'next-intl';
 import SendMessageForm from '@/components/messages/SendMessageForm';
 import authApiClient from '@/lib/api-client';
 import { UserStats } from '@/lib/types';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import NotificationBadge from '@/components/NotificationBadge';
 
 interface MessageCounts {
   messagesSentCount: number;
@@ -35,6 +37,7 @@ export default function HomePage() {
   const t = useTranslations('home');
   const tCommon = useTranslations('common');
   const tGamification = useTranslations('gamification');
+  const { unreadCount, refetch: refetchUnread } = useUnreadMessages();
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
   const [messageCounts, setMessageCounts] = useState<MessageCounts>({
     messagesSentCount: 0,
@@ -197,7 +200,9 @@ export default function HomePage() {
                   }}
                   onClick={() => router.push('/messages/received')}
                 >
-                  <Inbox sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
+                  <NotificationBadge count={unreadCount} pulse={unreadCount > 0}>
+                    <Inbox sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
+                  </NotificationBadge>
                   {loadingCounts ? (
                     <CircularProgress size={24} sx={{ my: 1 }} />
                   ) : (
@@ -208,6 +213,19 @@ export default function HomePage() {
                   <Typography variant="body2" color="text.secondary">
                     {t('userDashboard.messagesReceived')}
                   </Typography>
+                  {unreadCount > 0 && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        mt: 0.5,
+                        color: 'error.main',
+                        fontWeight: 'bold',
+                        fontSize: '0.75rem',
+                      }}
+                    >
+                      {unreadCount} {unreadCount === 1 ? t('userDashboard.newMessage') : t('userDashboard.newMessages')}
+                    </Typography>
+                  )}
                 </Box>
               )}
               {canSend && (
@@ -251,6 +269,7 @@ export default function HomePage() {
           onSuccess={() => {
             // Refresh counts after sending a message
             fetchCounts();
+            refetchUnread();
           }}
         />
       </Container>

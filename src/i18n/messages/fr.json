@@ -87,7 +87,9 @@
       "title": "Votre tableau de bord",
       "description": "Gérez vos cadeaux et consultez votre activité",
       "messagesReceived": "Messages reçus",
-      "messagesSent": "Messages envoyés"
+      "messagesSent": "Messages envoyés",
+      "newMessage": "nouveau",
+      "newMessages": "nouveaux"
     },
     "sendMessage": "Envoyer un message"
   },
