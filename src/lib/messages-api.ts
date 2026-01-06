@@ -67,7 +67,7 @@ export async function getSentMessages(): Promise<ApiResponse<Message[]>> {
   return callMessageFunction<void, Message[]>('getSentMessagesFunction', undefined, 'Failed to get sent messages');
 }
 
-export async function markMessageAsRead(messageId: string): Promise<ApiResponse<void>> {
+export async function markMessageAsRead(messageId: string): Promise<ApiResponse<{ success: boolean }>> {
   return callMessageFunction<{ messageId: string }, { success: boolean }>(
     'markMessageAsReadFunction',
     { messageId },
@@ -75,7 +75,7 @@ export async function markMessageAsRead(messageId: string): Promise<ApiResponse<
   );
 }
 
-export async function reportMessage(messageId: string, reason: string): Promise<ApiResponse<void>> {
+export async function reportMessage(messageId: string, reason: string): Promise<ApiResponse<{ success: boolean }>> {
   return callMessageFunction<{ messageId: string; reason: string }, { success: boolean }>(
     'reportMessageFunction',
     { messageId, reason },
@@ -83,7 +83,7 @@ export async function reportMessage(messageId: string, reason: string): Promise<
   );
 }
 
-export async function deleteMessage(messageId: string): Promise<ApiResponse<void>> {
+export async function deleteMessage(messageId: string): Promise<ApiResponse<{ success: boolean }>> {
   return callMessageFunction<{ messageId: string }, { success: boolean }>(
     'deleteMessageFunction',
     { messageId },
