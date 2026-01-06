@@ -121,6 +121,10 @@ export default function LocationPermission({
     );
   };
 
+  const handleEnableLocationClick = () => {
+    handleEnableLocation(false);
+  };
+
   const handleManualSave = async () => {
     if (!selectedCity || !selectedCity.city.trim()) {
       setError(t('cityRequired') || 'Please select a city');
@@ -190,7 +194,11 @@ export default function LocationPermission({
                 onChange={(value) => setCity(value || '')}
                 onSelect={(cityData) => {
                   setSelectedCity(cityData);
-                  setCity(cityData.displayName || cityData.city);
+                  // Build display name from city data
+                  const parts = [cityData.city];
+                  if (cityData.region) parts.push(cityData.region);
+                  if (cityData.country) parts.push(cityData.country);
+                  setCity(parts.join(', '));
                 }}
                 disabled={loading}
                 error={!!error && !city.trim()}
@@ -208,7 +216,7 @@ export default function LocationPermission({
         {!manualMode ? (
           <Button
             variant="contained"
-            onClick={handleEnableLocation}
+            onClick={handleEnableLocationClick}
             disabled={loading}
             startIcon={loading ? <CircularProgress size={20} /> : <LocationOn />}
           >
