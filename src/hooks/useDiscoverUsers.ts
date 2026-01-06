@@ -123,19 +123,20 @@ export function useDiscoverUsers(
         const response = await discoverUsers(params);
 
         if (response.success && response.data) {
+          const data = response.data;
           if (searchParams.reset) {
-            setUsers(response.data.users);
-            setOffset(response.data.users.length);
+            setUsers(data.users);
+            setOffset(data.users.length);
           } else {
-            setUsers((prev) => [...prev, ...response.data.users]);
-            setOffset((prev) => prev + response.data.users.length);
+            setUsers((prev) => [...prev, ...data.users]);
+            setOffset((prev) => prev + data.users.length);
           }
-          setHasMore(response.data.hasMore);
+          setHasMore(data.hasMore);
 
           // Auto-expand if no results and autoExpand is enabled
           if (
             autoExpand &&
-            response.data.users.length === 0 &&
+            data.users.length === 0 &&
             searchDistance < maxDistance
           ) {
             const nextDistance = DISTANCE_STEPS.find((d) => d > searchDistance);
