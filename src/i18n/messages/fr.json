@@ -57,7 +57,8 @@
     "profile": "Profil",
     "settings": "Paramètres",
     "logout": "Se déconnecter",
-    "login": "Se connecter"
+    "login": "Se connecter",
+    "unknown": "Inconnu"
   },
   "metadata": {
     "title": "JustGift - Organisez vos cadeaux",
@@ -114,5 +115,36 @@
     "notVerified": "Non vérifié",
     "cancel": "Annuler",
     "save": "Enregistrer"
+  },
+  "messages": {
+    "received": {
+      "title": "Messages reçus",
+      "empty": "Vous n'avez pas encore reçu de messages"
+    },
+    "sent": {
+      "title": "Messages envoyés",
+      "empty": "Vous n'avez pas encore envoyé de messages"
+    },
+    "status": {
+      "pending": "En attente",
+      "delivered": "Livré",
+      "read": "Lu"
+    },
+    "table": {
+      "from": "De",
+      "to": "À",
+      "content": "Contenu",
+      "status": "Statut",
+      "date": "Date"
+    },
+    "anonymous": "Anonyme",
+    "anonymousSender": "Expéditeur anonyme",
+    "from": "De",
+    "to": "À",
+    "reported": "Signalé",
+    "back": "Retour",
+    "error": {
+      "loading": "Erreur lors du chargement des messages"
+    }
   }
 }

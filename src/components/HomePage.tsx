@@ -129,7 +129,21 @@ export default function HomePage() {
               justifyContent: 'center'
             }}>
               {canReceive && (
-                <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Box
+                  sx={{
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, opacity 0.2s',
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                      opacity: 0.8,
+                    },
+                  }}
+                  onClick={() => router.push('/messages/received')}
+                >
                   <Inbox sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
                   {loadingCounts ? (
                     <CircularProgress size={24} sx={{ my: 1 }} />
@@ -144,7 +158,21 @@ export default function HomePage() {
                 </Box>
               )}
               {canSend && (
-                <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Box
+                  sx={{
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, opacity 0.2s',
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                      opacity: 0.8,
+                    },
+                  }}
+                  onClick={() => router.push('/messages/sent')}
+                >
                   <Outbox sx={{ fontSize: 32, color: 'secondary.main', mb: 1 }} />
                   {loadingCounts ? (
                     <CircularProgress size={24} sx={{ my: 1 }} />

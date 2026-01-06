@@ -57,7 +57,8 @@
     "profile": "Profile",
     "settings": "Settings",
     "logout": "Logout",
-    "login": "Login"
+    "login": "Login",
+    "unknown": "Unknown"
   },
   "metadata": {
     "title": "JustGift - Organize Your Gifts",
@@ -114,5 +115,36 @@
     "notVerified": "Not verified",
     "cancel": "Cancel",
     "save": "Save"
+  },
+  "messages": {
+    "received": {
+      "title": "Received Messages",
+      "empty": "You haven't received any messages yet"
+    },
+    "sent": {
+      "title": "Sent Messages",
+      "empty": "You haven't sent any messages yet"
+    },
+    "status": {
+      "pending": "Pending",
+      "delivered": "Delivered",
+      "read": "Read"
+    },
+    "table": {
+      "from": "From",
+      "to": "To",
+      "content": "Content",
+      "status": "Status",
+      "date": "Date"
+    },
+    "anonymous": "Anonymous",
+    "anonymousSender": "Anonymous sender",
+    "from": "From",
+    "to": "To",
+    "reported": "Reported",
+    "back": "Back",
+    "error": {
+      "loading": "Error loading messages"
+    }
   }
 }
