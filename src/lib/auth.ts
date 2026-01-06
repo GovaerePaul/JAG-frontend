@@ -5,7 +5,7 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import authApiClient from './api-client';
 
 export type UserRole = 'sender' | 'receiver' | 'both';
@@ -29,14 +29,50 @@ export const signUp = async ({ email, password, displayName, role }: SignUpData)
 
     await updateProfile(user, { displayName });
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
     const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, {
-      displayName,
-      role,
-      updatedAt: new Date(),
-    });
+    
+    // Wait for the trigger to create the user profile in Firestore
+    // Poll until the document exists (max 10 attempts, 500ms between each)
+    let attempts = 0;
+    let docExists = false;
+    
+    while (!docExists && attempts < 10) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const docSnapshot = await getDoc(userRef);
+      if (docSnapshot.exists()) {
+        docExists = true;
+        // Update only the role and displayName (trigger already set points, level, etc.)
+        await updateDoc(userRef, {
+          displayName,
+          role,
+          updatedAt: new Date(),
+        });
+        break;
+      }
+      attempts++;
+    }
+
+    // If document still doesn't exist after waiting (e.g., in emulator or trigger failed),
+    // create it manually with all required fields including points and level
+    if (!docExists) {
+      const now = new Date();
+      const initialPoints = 50; // Same as POINTS.REGISTRATION in backend
+      const initialLevel = 1; // Level 1 for 50 points
+      
+      await setDoc(userRef, {
+        uid: user.uid,
+        email: user.email || '',
+        displayName,
+        photoURL: user.photoURL || '',
+        createdAt: now,
+        updatedAt: now,
+        isActive: true,
+        role,
+        points: initialPoints,
+        level: initialLevel,
+        totalPointsEarned: initialPoints,
+      }, { merge: true }); // merge: true ensures we don't overwrite if trigger created it meanwhile
+    }
 
     return { user, error: null };
   } catch (error: unknown) {
