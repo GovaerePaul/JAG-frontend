@@ -272,41 +272,6 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           </Grid>
-
-          <Grid size={{ xs: 12 }}>
-            <Card elevation={2}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom color="primary">
-                  {t('providerInformation')}
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                  {user.providerData.map((provider, index) => (
-                    <Card key={index} variant="outlined" sx={{ p: 2, minWidth: 200 }}>
-                      <Typography variant="subtitle2" gutterBottom>
-                        {t('provider')} {index + 1}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>{t('providerId')}:</strong> {provider.providerId}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>{t('uid')}:</strong> {provider.uid}
-                      </Typography>
-                      {provider.displayName && (
-                        <Typography variant="body2" color="text.secondary">
-                          <strong>{t('displayName')}:</strong> {provider.displayName}
-                        </Typography>
-                      )}
-                      {provider.email && (
-                        <Typography variant="body2" color="text.secondary">
-                          <strong>{t('email')}:</strong> {provider.email}
-                        </Typography>
-                      )}
-                    </Card>
-                  ))}
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
         </Grid>
       </Paper>
 

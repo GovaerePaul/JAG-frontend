@@ -16,10 +16,10 @@ export interface EventType {
   createdAt: string;
 }
 
-export async function getEventTypes(): Promise<ApiResponse<EventType[]>> {
+export async function getEventTypes(locale: string = 'en'): Promise<ApiResponse<EventType[]>> {
   try {
-    const fn = httpsCallable<void, EventType[]>(functions, 'getEventTypesFunction');
-    const result = await fn();
+    const fn = httpsCallable<{locale: string}, EventType[]>(functions, 'getEventTypesFunction');
+    const result = await fn({locale});
     return { success: true, data: result.data };
   } catch (error: unknown) {
     return {

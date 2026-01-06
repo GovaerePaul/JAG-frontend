@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useLocale } from 'next-intl';
 import { getEventTypes, EventType } from '@/lib/events-api';
 
 interface UseEventTypesReturn {
@@ -11,6 +12,7 @@ interface UseEventTypesReturn {
 }
 
 export function useEventTypes(): UseEventTypesReturn {
+  const locale = useLocale();
   const [eventTypes, setEventTypes] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +21,7 @@ export function useEventTypes(): UseEventTypesReturn {
     setLoading(true);
     setError(null);
 
-    const response = await getEventTypes();
+    const response = await getEventTypes(locale);
 
     if (response.success && response.data) {
       setEventTypes(response.data);
@@ -28,7 +30,7 @@ export function useEventTypes(): UseEventTypesReturn {
     }
 
     setLoading(false);
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     fetchEventTypes();
