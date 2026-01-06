@@ -144,7 +144,23 @@
     "reported": "Signalé",
     "back": "Retour",
     "error": {
-      "loading": "Erreur lors du chargement des messages"
+      "loading": "Erreur lors du chargement des messages",
+      "messageNotFound": "Message introuvable"
+    },
+    "detail": {
+      "title": "Détail du message",
+      "date": "Date",
+      "readAt": "Lu le",
+      "content": "Contenu",
+      "report": "Signaler le message",
+      "markingAsRead": "Marquage du message comme lu...",
+      "reportedReason": "Raison du signalement",
+      "reportDialog": {
+        "title": "Signaler le message",
+        "description": "Veuillez indiquer la raison pour laquelle vous signalez ce message. Cette action aidera à maintenir une communauté respectueuse.",
+        "reasonLabel": "Raison du signalement",
+        "submit": "Signaler"
+      }
     }
   },
   "gamification": {

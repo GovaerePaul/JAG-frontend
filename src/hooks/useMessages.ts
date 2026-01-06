@@ -2,21 +2,29 @@ import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
-import { Message } from '@/lib/messages-api';
+import { Message, MessageSummary } from '@/lib/messages-api';
 
-interface UseMessagesOptions {
-  fetchMessages: () => Promise<{ success: boolean; data?: Message[]; error?: string }>;
-  getUserIds: (messages: Message[]) => string[];
+// Base type that both Message and MessageSummary share for user ID extraction
+type MessageLike = {
+  id: string;
+  senderId: string | null;
+  receiverId: string;
+  isAnonymous: boolean;
+};
+
+interface UseMessagesOptions<T extends MessageLike> {
+  fetchMessages: () => Promise<{ success: boolean; data?: T[]; error?: string }>;
+  getUserIds: (messages: T[]) => string[];
 }
 
-export function useMessages({ fetchMessages, getUserIds }: UseMessagesOptions) {
+export function useMessages<T extends MessageLike>({ fetchMessages, getUserIds }: UseMessagesOptions<T>) {
   const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
 
-  const loadUserNames = useCallback(async (msgs: Message[]) => {
+  const loadUserNames = useCallback(async (msgs: T[]) => {
     const uniqueUserIds = [...new Set(getUserIds(msgs))];
     const namesMap: Record<string, string> = {};
 
