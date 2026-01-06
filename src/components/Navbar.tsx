@@ -8,18 +8,20 @@ import {
   Container,
   IconButton
 } from '@mui/material';
-import { Inbox } from '@mui/icons-material';
+import { Inbox, Explore } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import UserDropdown from './UserDropdown';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import NotificationBadge from '@/components/NotificationBadge';
+import { useTranslations } from 'next-intl';
 
 export default function Navbar() {
   const router = useRouter();
   const { user, canReceive } = useAuth();
   const { unreadCount } = useUnreadMessages();
+  const t = useTranslations('discover');
 
   const handleLogoClick = () => {
     router.push('/');
@@ -27,6 +29,10 @@ export default function Navbar() {
 
   const handleMessagesClick = () => {
     router.push('/messages/received');
+  };
+
+  const handleDiscoverClick = () => {
+    router.push('/discover');
   };
 
   return (
@@ -59,10 +65,25 @@ export default function Navbar() {
           <Box sx={{ flexGrow: 1 }} />
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {user && (
+              <IconButton
+                color="inherit"
+                onClick={handleDiscoverClick}
+                aria-label={t('title')}
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                <Explore />
+              </IconButton>
+            )}
             {user && canReceive && (
               <IconButton
                 color="inherit"
                 onClick={handleMessagesClick}
+                aria-label="Messages"
                 sx={{
                   position: 'relative',
                   '&:hover': {

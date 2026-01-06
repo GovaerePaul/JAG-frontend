@@ -2,23 +2,38 @@
 
 import { useState, useEffect } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 export type UserRole = 'sender' | 'receiver' | 'both';
+
+export interface UserLocation {
+  city?: string;
+  region?: string;
+  country?: string;
+  lastUpdated?: Timestamp;
+}
+
+export interface UserPreferences {
+  shareLocation?: boolean;
+  shareAge?: boolean;
+}
 
 export interface UserProfile {
   uid: string;
   email: string;
   displayName?: string;
   photoURL?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
   isActive: boolean;
   role: UserRole;
   points?: number;
   level?: number;
   totalPointsEarned?: number;
+  location?: UserLocation;
+  birthDate?: Timestamp;
+  preferences?: UserPreferences;
 }
 
 export const useAuth = () => {
