@@ -91,7 +91,12 @@
       "newMessage": "nouveau",
       "newMessages": "nouveaux"
     },
-    "sendMessage": "Envoyer un message"
+    "sendMessage": "Envoyer un message",
+    "discoverUsers": {
+      "title": "Découvrir des utilisateurs",
+      "description": "Trouvez des utilisateurs près de chez vous pour envoyer des messages",
+      "button": "Découvrir des utilisateurs"
+    }
   },
   "profile": {
     "noDisplayName": "Utilisateur",
@@ -185,6 +190,7 @@
       "sendAnonymously": "Envoyer anonymement (le destinataire ne verra pas votre identité)",
       "sending": "Envoi...",
       "sendButton": "Envoyer le message",
+      "discoverUsers": "Découvrir des utilisateurs",
       "errors": {
         "receiverIdRequired": "Veuillez entrer un ID de destinataire",
         "eventTypeRequired": "Veuillez sélectionner un type d'événement",
@@ -203,6 +209,45 @@
       "registration": "Inscription",
       "messageSent": "Message envoyé",
       "messageReceived": "Message reçu"
+    }
+  },
+  "discover": {
+    "title": "Découvrir des utilisateurs",
+    "subtitle": "Trouvez des utilisateurs près de chez vous pour envoyer des messages",
+    "searchPlaceholder": "Rechercher par nom ou ville...",
+    "filters": "Filtres",
+    "noResults": "Aucun utilisateur trouvé",
+    "loading": "Chargement des utilisateurs...",
+    "searching": "Recherche dans un rayon de {distance}km...",
+    "expanding": "Aucun utilisateur trouvé à {current}km, extension à {next}km...",
+    "nearYou": "Utilisateurs près de chez vous",
+    "distance": "À {distance}km",
+    "newUser": "Nouveau",
+    "sendMessage": "Envoyer un message",
+    "locationPermission": {
+      "title": "Partager votre localisation",
+      "description": "Partagez votre localisation pour découvrir des utilisateurs près de chez vous et créer des liens significatifs",
+      "enable": "Activer la localisation",
+      "later": "Plus tard",
+      "manual": "Entrer la ville manuellement",
+      "cityLabel": "Ville",
+      "cityPlaceholder": "Entrez votre ville",
+      "save": "Enregistrer",
+      "error": "Échec de la récupération de la localisation",
+      "denied": "Permission de localisation refusée. Vous pouvez toujours rechercher manuellement.",
+      "unavailable": "Localisation indisponible. Veuillez entrer votre ville manuellement."
+    },
+    "filterOptions": {
+      "title": "Filtres",
+      "distance": "Distance",
+      "maxDistance": "Distance maximale : {distance}km",
+      "age": "Âge",
+      "minAge": "Âge minimum",
+      "maxAge": "Âge maximum",
+      "eventType": "Type d'événement",
+      "newUsersOnly": "Nouveaux utilisateurs uniquement",
+      "apply": "Appliquer",
+      "reset": "Réinitialiser"
     }
   }
 }

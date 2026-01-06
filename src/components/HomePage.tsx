@@ -10,7 +10,7 @@ import {
   CircularProgress,
   LinearProgress
 } from '@mui/material';
-import { Send, Inbox, Outbox, EmojiEvents } from '@mui/icons-material';
+import { Send, Inbox, Outbox, EmojiEvents, Explore } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations } from 'next-intl';
@@ -128,17 +128,6 @@ export default function HomePage() {
               {t('getStarted')}
             </Button>
           )}
-          {user && (
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<Send />}
-              sx={{ borderRadius: 3, px: 4, py: 1.5 }}
-              onClick={() => setSendMessageOpen(true)}
-            >
-              {t('sendMessage')}
-            </Button>
-          )}
         </Box>
 
         {user && (
@@ -173,7 +162,7 @@ export default function HomePage() {
               </Box>
             </Paper>
 
-            <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'background.default' }}>
+            <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'background.default', mb: 3 }}>
               <Typography variant="h6" gutterBottom>
                 {t('userDashboard.title')}
               </Typography>
@@ -184,81 +173,100 @@ export default function HomePage() {
                 mt: 2,
                 justifyContent: 'center'
               }}>
-              {canReceive && (
-                <Box
-                  sx={{
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, opacity 0.2s',
-                    '&:hover': {
-                      transform: 'scale(1.05)',
-                      opacity: 0.8,
-                    },
-                  }}
-                  onClick={() => router.push('/messages/received')}
-                >
-                  <NotificationBadge count={unreadCount} pulse={unreadCount > 0}>
-                    <Inbox sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
-                  </NotificationBadge>
-                  {loadingCounts ? (
-                    <CircularProgress size={24} sx={{ my: 1 }} />
-                  ) : (
-                    <Typography variant="h4" color="primary">
-                      {receivedCount}
+                {canReceive && (
+                  <Box
+                    sx={{
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, opacity 0.2s',
+                      '&:hover': {
+                        transform: 'scale(1.05)',
+                        opacity: 0.8,
+                      },
+                    }}
+                    onClick={() => router.push('/messages/received')}
+                  >
+                    <NotificationBadge count={unreadCount} pulse={unreadCount > 0}>
+                      <Inbox sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
+                    </NotificationBadge>
+                    {loadingCounts ? (
+                      <CircularProgress size={24} sx={{ my: 1 }} />
+                    ) : (
+                      <Typography variant="h4" color="primary">
+                        {receivedCount}
+                      </Typography>
+                    )}
+                    <Typography variant="body2" color="text.secondary">
+                      {t('userDashboard.messagesReceived')}
                     </Typography>
-                  )}
-                  <Typography variant="body2" color="text.secondary">
-                    {t('userDashboard.messagesReceived')}
-                  </Typography>
-                  {unreadCount > 0 && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        mt: 0.5,
-                        color: 'error.main',
-                        fontWeight: 'bold',
-                        fontSize: '0.75rem',
-                      }}
-                    >
-                      {unreadCount} {unreadCount === 1 ? t('userDashboard.newMessage') : t('userDashboard.newMessages')}
+                    {unreadCount > 0 && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          mt: 0.5,
+                          color: 'error.main',
+                          fontWeight: 'bold',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {unreadCount} {unreadCount === 1 ? t('userDashboard.newMessage') : t('userDashboard.newMessages')}
+                      </Typography>
+                    )}
+                  </Box>
+                )}
+                {canSend && (
+                  <Box
+                    sx={{
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, opacity 0.2s',
+                      '&:hover': {
+                        transform: 'scale(1.05)',
+                        opacity: 0.8,
+                      },
+                    }}
+                    onClick={() => router.push('/messages/sent')}
+                  >
+                    <Outbox sx={{ fontSize: 32, color: 'secondary.main', mb: 1 }} />
+                    {loadingCounts ? (
+                      <CircularProgress size={24} sx={{ my: 1 }} />
+                    ) : (
+                      <Typography variant="h4" color="secondary">
+                        {sentCount}
+                      </Typography>
+                    )}
+                    <Typography variant="body2" color="text.secondary">
+                      {t('userDashboard.messagesSent')}
                     </Typography>
-                  )}
-                </Box>
-              )}
-              {canSend && (
-                <Box
-                  sx={{
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, opacity 0.2s',
-                    '&:hover': {
-                      transform: 'scale(1.05)',
-                      opacity: 0.8,
-                    },
-                  }}
-                  onClick={() => router.push('/messages/sent')}
-                >
-                  <Outbox sx={{ fontSize: 32, color: 'secondary.main', mb: 1 }} />
-                  {loadingCounts ? (
-                    <CircularProgress size={24} sx={{ my: 1 }} />
-                  ) : (
-                    <Typography variant="h4" color="secondary">
-                      {sentCount}
-                    </Typography>
-                  )}
-                  <Typography variant="body2" color="text.secondary">
-                    {t('userDashboard.messagesSent')}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          </Paper>
+                  </Box>
+                )}
+              </Box>
+            </Paper>
+
+            {/* Discover Users Button */}
+            <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'background.default' }}>
+              <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+                {t('discoverUsers.title')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                {t('discoverUsers.description')}
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<Explore />}
+                sx={{ borderRadius: 3, px: 4, py: 1.5 }}
+                onClick={() => router.push('/discover')}
+              >
+                {t('discoverUsers.button')}
+              </Button>
+            </Paper>
           </>
         )}
 

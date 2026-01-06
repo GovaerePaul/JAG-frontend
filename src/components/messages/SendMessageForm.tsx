@@ -23,7 +23,7 @@ import {
   ListItemAvatar,
   ListItemText,
 } from '@mui/material';
-import { Send, Close, Person } from '@mui/icons-material';
+import { Send, Close, Person, Explore } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
 import { useEventTypes } from '@/hooks/useEventTypes';
 import { sendMessage, SendMessageData } from '@/lib/messages-api';
@@ -162,42 +162,58 @@ export default function SendMessageForm({
                 helperText={t('sendingTo', {name: receiverName || receiverId})}
               />
             ) : (
-              <FormControl fullWidth disabled={usersLoading || sending}>
-                <InputLabel>{t('chooseRecipient')}</InputLabel>
-                <Select
-                  value={formData.receiverId}
-                  onChange={(e) => setFormData({ ...formData, receiverId: e.target.value })}
-                  label={t('chooseRecipient')}
-                  renderValue={(selected) => {
-                    const user = receivableUsers.find((u) => u.uid === selected);
-                    return user ? user.displayName || t('anonymousUser') : '';
-                  }}
-                >
-                  {usersLoading ? (
-                    <MenuItem disabled>
-                      <CircularProgress size={20} sx={{ mr: 1 }} />
-                      {t('loadingUsers')}
-                    </MenuItem>
-                  ) : receivableUsers.length === 0 ? (
-                    <MenuItem disabled>
-                      {t('noUsersAvailable')}
-                    </MenuItem>
-                  ) : (
-                    receivableUsers.map((user) => (
-                      <MenuItem key={user.uid} value={user.uid}>
-                        <ListItemAvatar>
-                          <Avatar src={user.photoURL} sx={{ width: 32, height: 32 }}>
-                            <Person />
-                          </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={user.displayName || t('anonymousUser')}
-                        />
+              <Box>
+                <FormControl fullWidth disabled={usersLoading || sending} sx={{ mb: 2 }}>
+                  <InputLabel>{t('chooseRecipient')}</InputLabel>
+                  <Select
+                    value={formData.receiverId}
+                    onChange={(e) => setFormData({ ...formData, receiverId: e.target.value })}
+                    label={t('chooseRecipient')}
+                    renderValue={(selected) => {
+                      const user = receivableUsers.find((u) => u.uid === selected);
+                      return user ? user.displayName || t('anonymousUser') : '';
+                    }}
+                  >
+                    {usersLoading ? (
+                      <MenuItem disabled>
+                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                        {t('loadingUsers')}
                       </MenuItem>
-                    ))
-                  )}
-                </Select>
-              </FormControl>
+                    ) : receivableUsers.length === 0 ? (
+                      <MenuItem disabled>
+                        {t('noUsersAvailable')}
+                      </MenuItem>
+                    ) : (
+                      receivableUsers.map((user) => (
+                        <MenuItem key={user.uid} value={user.uid}>
+                          <ListItemAvatar>
+                            <Avatar src={user.photoURL} sx={{ width: 32, height: 32 }}>
+                              <Person />
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={user.displayName || t('anonymousUser')}
+                          />
+                        </MenuItem>
+                      ))
+                    )}
+                  </Select>
+                </FormControl>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => {
+                    onClose();
+                    // Navigate to discover page
+                    if (typeof window !== 'undefined') {
+                      window.location.href = '/discover';
+                    }
+                  }}
+                  startIcon={<Explore />}
+                >
+                  {t('discoverUsers')}
+                </Button>
+              </Box>
             )}
 
             {/* Event Type */}

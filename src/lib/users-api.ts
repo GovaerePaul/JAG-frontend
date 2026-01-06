@@ -13,6 +13,51 @@ export interface ReceivableUser {
   role: UserRole;
 }
 
+export interface Coordinates {
+  lat: number;
+  lng: number;
+}
+
+export interface UserLocation {
+  city?: string;
+  region?: string;
+  country?: string;
+}
+
+export interface DiscoverUsersFilters {
+  minAge?: number;
+  maxAge?: number;
+  eventTypeId?: string;
+  maxDistance?: number;
+}
+
+export interface DiscoverUsersParams {
+  userLocation?: {
+    city: string;
+    coordinates: Coordinates;
+  };
+  filters?: DiscoverUsersFilters;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface DiscoveredUser {
+  user: {
+    uid: string;
+    displayName?: string;
+    photoURL?: string;
+    role: string;
+  };
+  distance?: number;
+}
+
+export interface DiscoverUsersResponse {
+  users: DiscoveredUser[];
+  total: number;
+  hasMore: boolean;
+}
+
 export async function getReceivableUsers(): Promise<ApiResponse<ReceivableUser[]>> {
   try {
     const fn = httpsCallable<void, ReceivableUser[]>(functions, 'getReceivableUsersFunction');
@@ -22,6 +67,48 @@ export async function getReceivableUsers(): Promise<ApiResponse<ReceivableUser[]
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to get receivable users'
+    };
+  }
+}
+
+export async function updateUserLocation(
+  coordinates: Coordinates
+): Promise<ApiResponse<UserLocation>> {
+  try {
+    const fn = httpsCallable<{ coordinates: Coordinates }, { success: boolean; location: UserLocation }>(
+      functions,
+      'updateUserLocationFunction'
+    );
+    const result = await fn({ coordinates });
+    if (result.data.success) {
+      return { success: true, data: result.data.location };
+    }
+    return {
+      success: false,
+      error: 'Failed to update location'
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update location'
+    };
+  }
+}
+
+export async function discoverUsers(
+  params: DiscoverUsersParams
+): Promise<ApiResponse<DiscoverUsersResponse>> {
+  try {
+    const fn = httpsCallable<DiscoverUsersParams, DiscoverUsersResponse>(
+      functions,
+      'discoverUsersFunction'
+    );
+    const result = await fn(params);
+    return { success: true, data: result.data };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to discover users'
     };
   }
 }

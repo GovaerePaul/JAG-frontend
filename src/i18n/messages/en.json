@@ -91,7 +91,12 @@
       "newMessage": "new",
       "newMessages": "new"
     },
-    "sendMessage": "Send a Message"
+    "sendMessage": "Send a Message",
+    "discoverUsers": {
+      "title": "Discover Users",
+      "description": "Find users near you to send messages",
+      "button": "Discover Users"
+    }
   },
   "profile": {
     "noDisplayName": "User",
@@ -185,6 +190,7 @@
       "sendAnonymously": "Send anonymously (the receiver won't see your identity)",
       "sending": "Sending...",
       "sendButton": "Send Message",
+      "discoverUsers": "Discover Users",
       "errors": {
         "receiverIdRequired": "Please enter a receiver ID",
         "eventTypeRequired": "Please select an event type",
@@ -203,6 +209,45 @@
       "registration": "Registration",
       "messageSent": "Message sent",
       "messageReceived": "Message received"
+    }
+  },
+  "discover": {
+    "title": "Discover Users",
+    "subtitle": "Find users near you to send messages",
+    "searchPlaceholder": "Search by name or city...",
+    "filters": "Filters",
+    "noResults": "No users found",
+    "loading": "Loading users...",
+    "searching": "Searching within {distance}km...",
+    "expanding": "No users found at {current}km, expanding to {next}km...",
+    "nearYou": "Users near you",
+    "distance": "At {distance}km",
+    "newUser": "New",
+    "sendMessage": "Send Message",
+    "locationPermission": {
+      "title": "Share Your Location",
+      "description": "Share your location to discover users near you and make meaningful connections",
+      "enable": "Enable Location",
+      "later": "Maybe Later",
+      "manual": "Enter City Manually",
+      "cityLabel": "City",
+      "cityPlaceholder": "Enter your city",
+      "save": "Save",
+      "error": "Failed to get location",
+      "denied": "Location permission denied. You can still search manually.",
+      "unavailable": "Location unavailable. Please enter your city manually."
+    },
+    "filterOptions": {
+      "title": "Filters",
+      "distance": "Distance",
+      "maxDistance": "Maximum distance: {distance}km",
+      "age": "Age",
+      "minAge": "Minimum age",
+      "maxAge": "Maximum age",
+      "eventType": "Event Type",
+      "newUsersOnly": "New users only",
+      "apply": "Apply",
+      "reset": "Reset"
     }
   }
 }

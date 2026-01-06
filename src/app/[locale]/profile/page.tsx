@@ -36,17 +36,30 @@ import {
   Edit,
   Save,
   Cancel,
-  EmojiEvents
+  EmojiEvents,
+  Inbox,
+  Outbox,
 } from '@mui/icons-material';
+import { useRouter } from '@/i18n/navigation';
 import authApiClient from '@/lib/api-client';
 import { UserStats } from '@/lib/types';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import NotificationBadge from '@/components/NotificationBadge';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
   const tGamification = useTranslations('gamification');
-  const { user, userProfile, loading } = useAuth();
+  const tHome = useTranslations('home');
+  const { user, userProfile, loading, canSend, canReceive } = useAuth();
+  const router = useRouter();
+  const { unreadCount } = useUnreadMessages();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
+  const [messageCounts, setMessageCounts] = useState({
+    messagesSentCount: 0,
+    messagesReceivedCount: 0,
+  });
+  const [loadingCounts, setLoadingCounts] = useState(false);
 
   // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
   const gamification = {
@@ -96,6 +109,33 @@ export default function ProfilePage() {
     if (!user.metadata?.lastSignInTime) return t('never');
     return new Date(user.metadata.lastSignInTime).toLocaleDateString();
   };
+
+  const fetchCounts = useCallback(async () => {
+    if (!user) {
+      setMessageCounts({ messagesSentCount: 0, messagesReceivedCount: 0 });
+      return;
+    }
+
+    setLoadingCounts(true);
+    try {
+      const response = await authApiClient.getUserStats();
+      if (response.success && response.data) {
+        const stats = response.data as UserStats;
+        setMessageCounts({
+          messagesSentCount: stats.messagesSentCount ?? 0,
+          messagesReceivedCount: stats.messagesReceivedCount ?? 0,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching message counts:', error);
+    } finally {
+      setLoadingCounts(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchCounts();
+  }, [fetchCounts]);
 
   const currentLevelPoints = (gamification.level - 1) * 100;
   const nextLevelPoints = gamification.level * 100;
@@ -192,7 +232,7 @@ export default function ProfilePage() {
         </Card>
 
         <Grid container spacing={4}>
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid item xs={12} md={6}>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h6" gutterBottom color="primary">
@@ -234,7 +274,7 @@ export default function ProfilePage() {
             </Card>
           </Grid>
 
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid item xs={12} md={6}>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h6" gutterBottom color="primary">
@@ -269,6 +309,98 @@ export default function ProfilePage() {
                     />
                   </ListItem>
                 </List>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Message Statistics */}
+          <Grid item xs={12}>
+            <Card elevation={2}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom color="primary">
+                  {tHome('userDashboard.title')}
+                </Typography>
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: 4,
+                  mt: 2,
+                  justifyContent: 'center'
+                }}>
+                  {canReceive && (
+                    <Box
+                      sx={{
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s, opacity 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.05)',
+                          opacity: 0.8,
+                        },
+                      }}
+                      onClick={() => router.push('/messages/received')}
+                    >
+                      <NotificationBadge count={unreadCount} pulse={unreadCount > 0}>
+                        <Inbox sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
+                      </NotificationBadge>
+                      {loadingCounts ? (
+                        <CircularProgress size={24} sx={{ my: 1 }} />
+                      ) : (
+                        <Typography variant="h4" color="primary">
+                          {messageCounts.messagesReceivedCount}
+                        </Typography>
+                      )}
+                      <Typography variant="body2" color="text.secondary">
+                        {tHome('userDashboard.messagesReceived')}
+                      </Typography>
+                      {unreadCount > 0 && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            mt: 0.5,
+                            color: 'error.main',
+                            fontWeight: 'bold',
+                            fontSize: '0.75rem',
+                          }}
+                        >
+                          {unreadCount} {unreadCount === 1 ? tHome('userDashboard.newMessage') : tHome('userDashboard.newMessages')}
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
+                  {canSend && (
+                    <Box
+                      sx={{
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s, opacity 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.05)',
+                          opacity: 0.8,
+                        },
+                      }}
+                      onClick={() => router.push('/messages/sent')}
+                    >
+                      <Outbox sx={{ fontSize: 32, color: 'secondary.main', mb: 1 }} />
+                      {loadingCounts ? (
+                        <CircularProgress size={24} sx={{ my: 1 }} />
+                      ) : (
+                        <Typography variant="h4" color="secondary">
+                          {messageCounts.messagesSentCount}
+                        </Typography>
+                      )}
+                      <Typography variant="body2" color="text.secondary">
+                        {tHome('userDashboard.messagesSent')}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
               </CardContent>
             </Card>
           </Grid>
