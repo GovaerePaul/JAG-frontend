@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -41,9 +41,8 @@ import {
   Outbox,
 } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
-import authApiClient from '@/lib/api-client';
-import { UserStats } from '@/lib/types';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { useUserStats } from '@/hooks/useUserStats';
 import NotificationBadge from '@/components/NotificationBadge';
 
 export default function ProfilePage() {
@@ -53,13 +52,9 @@ export default function ProfilePage() {
   const { user, userProfile, loading, canSend, canReceive } = useAuth();
   const router = useRouter();
   const { unreadCount } = useUnreadMessages();
+  const { messageCounts, loading: loadingCounts } = useUserStats();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
-  const [messageCounts, setMessageCounts] = useState({
-    messagesSentCount: 0,
-    messagesReceivedCount: 0,
-  });
-  const [loadingCounts, setLoadingCounts] = useState(false);
 
   // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
   const gamification = {
@@ -109,33 +104,6 @@ export default function ProfilePage() {
     if (!user.metadata?.lastSignInTime) return t('never');
     return new Date(user.metadata.lastSignInTime).toLocaleDateString();
   };
-
-  const fetchCounts = useCallback(async () => {
-    if (!user) {
-      setMessageCounts({ messagesSentCount: 0, messagesReceivedCount: 0 });
-      return;
-    }
-
-    setLoadingCounts(true);
-    try {
-      const response = await authApiClient.getUserStats();
-      if (response.success && response.data) {
-        const stats = response.data as UserStats;
-        setMessageCounts({
-          messagesSentCount: stats.messagesSentCount ?? 0,
-          messagesReceivedCount: stats.messagesReceivedCount ?? 0,
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching message counts:', error);
-    } finally {
-      setLoadingCounts(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchCounts();
-  }, [fetchCounts]);
 
   const currentLevelPoints = (gamification.level - 1) * 100;
   const nextLevelPoints = gamification.level * 100;

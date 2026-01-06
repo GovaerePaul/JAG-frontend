@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import {
   Container,
   Typography,
@@ -15,15 +15,9 @@ import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations } from 'next-intl';
 import SendMessageForm from '@/components/messages/SendMessageForm';
-import authApiClient from '@/lib/api-client';
-import { UserStats } from '@/lib/types';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { useUserStats } from '@/hooks/useUserStats';
 import NotificationBadge from '@/components/NotificationBadge';
-
-interface MessageCounts {
-  messagesSentCount: number;
-  messagesReceivedCount: number;
-}
 
 interface GamificationData {
   points: number;
@@ -37,13 +31,9 @@ export default function HomePage() {
   const t = useTranslations('home');
   const tCommon = useTranslations('common');
   const tGamification = useTranslations('gamification');
-  const { unreadCount, refetch: refetchUnread } = useUnreadMessages();
+  const { unreadCount } = useUnreadMessages();
+  const { messageCounts, loading: loadingCounts, refetch: refetchStats } = useUserStats();
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
-  const [messageCounts, setMessageCounts] = useState<MessageCounts>({
-    messagesSentCount: 0,
-    messagesReceivedCount: 0,
-  });
-  const [loadingCounts, setLoadingCounts] = useState(false);
 
   // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
   const gamification: GamificationData = {
@@ -51,35 +41,6 @@ export default function HomePage() {
     level: userProfile?.level ?? 1,
     totalPointsEarned: userProfile?.totalPointsEarned ?? 0,
   };
-
-  const fetchCounts = useCallback(async () => {
-    if (!user) {
-      setMessageCounts({ messagesSentCount: 0, messagesReceivedCount: 0 });
-      return;
-    }
-
-    setLoadingCounts(true);
-    try {
-      const response = await authApiClient.getUserStats();
-      if (response.success && response.data) {
-        const stats = response.data as UserStats;
-        setMessageCounts({
-          messagesSentCount: stats.messagesSentCount ?? 0,
-          messagesReceivedCount: stats.messagesReceivedCount ?? 0,
-        });
-      } else {
-        console.error('Failed to fetch stats:', response.error);
-      }
-    } catch (error) {
-      console.error('Error fetching message counts:', error);
-    } finally {
-      setLoadingCounts(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchCounts();
-  }, [fetchCounts]);
 
   const receivedCount = messageCounts.messagesReceivedCount;
   const sentCount = messageCounts.messagesSentCount;
@@ -276,8 +237,7 @@ export default function HomePage() {
           onClose={() => setSendMessageOpen(false)}
           onSuccess={() => {
             // Refresh counts after sending a message
-            fetchCounts();
-            refetchUnread();
+            refetchStats();
           }}
         />
       </Container>

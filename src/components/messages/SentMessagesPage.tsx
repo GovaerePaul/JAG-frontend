@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Container,
   Typography,
@@ -24,8 +24,10 @@ import {
 import { Outbox, ArrowBack } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { getSentMessages, MessageSummary } from '@/lib/messages-api';
-import { useMessages } from '@/hooks/useMessages';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { MessageSummary } from '@/lib/messages-api';
+import { useSentMessages } from '@/hooks/useSentMessages';
 import { useEventTypes } from '@/hooks/useEventTypes';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
@@ -37,22 +39,46 @@ export default function SentMessagesPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const fetchSentMessages = useCallback(async () => {
-    const response = await getSentMessages();
-    if (!response.success) {
-      return { success: false, error: response.error || t('error.loading') };
-    }
-    return response;
-  }, [t]);
+  const { messages: sentMessages, loading, error } = useSentMessages();
 
   const getReceiverIds = useCallback((msgs: MessageSummary[]) =>
     msgs.map((msg) => msg.receiverId).filter((id) => id),
   []);
 
-  const { messages, loading, error, userNames } = useMessages({
-    fetchMessages: fetchSentMessages,
-    getUserIds: getReceiverIds,
-  });
+  // Load user names for messages
+  const [userNames, setUserNames] = useState<Record<string, string>>({});
+  
+  useEffect(() => {
+    const loadUserNames = async () => {
+      const uniqueUserIds = [...new Set(getReceiverIds(sentMessages))];
+      const namesMap: Record<string, string> = {};
+
+      await Promise.all(
+        uniqueUserIds.map(async (userId) => {
+          try {
+            const userDoc = await getDoc(doc(db, 'users', userId));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              namesMap[userId] = userData.displayName || userData.email || userId;
+            } else {
+              namesMap[userId] = userId;
+            }
+          } catch (err) {
+            console.error(`Error fetching user ${userId}:`, err);
+            namesMap[userId] = userId;
+          }
+        })
+      );
+
+      setUserNames(namesMap);
+    };
+
+    if (sentMessages.length > 0) {
+      loadUserNames();
+    }
+  }, [sentMessages, getReceiverIds]);
+
+  const messages = sentMessages;
 
   const { eventTypes } = useEventTypes();
 

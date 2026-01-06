@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { getReceivedMessages, MessageSummary } from '@/lib/messages-api';
+import { useState, useEffect, useMemo } from 'react';
+import { useReceivedMessages } from './useReceivedMessages';
 
 interface UseUnreadMessagesReturn {
   unreadCount: number;
@@ -11,52 +11,32 @@ interface UseUnreadMessagesReturn {
 }
 
 /**
- * Hook to fetch and count unread messages
+ * Hook to count unread messages
+ * Uses shared cache from useReceivedMessages to avoid duplicate API calls
  * Unread messages are those with status !== 'read'
  */
 export function useUnreadMessages(): UseUnreadMessagesReturn {
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { messages, loading, error, refetch } = useReceivedMessages();
 
-  const fetchUnreadCount = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  // Calculate unread count from cached messages
+  const unreadCount = useMemo(() => {
+    return messages.filter((msg) => msg.status !== 'read').length;
+  }, [messages]);
 
-    try {
-      const response = await getReceivedMessages();
-      if (response.success && response.data) {
-        const unread = response.data.filter(
-          (msg: MessageSummary) => msg.status !== 'read'
-        ).length;
-        setUnreadCount(unread);
-      } else {
-        setError(response.error || 'Failed to fetch messages');
-      }
-    } catch (err) {
-      setError('Failed to fetch messages');
-      console.error('Error fetching unread messages:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+  // Poll for new messages every 30 seconds
   useEffect(() => {
-    fetchUnreadCount();
-
-    // Poll for new messages every 30 seconds
     const interval = setInterval(() => {
-      fetchUnreadCount();
+      refetch();
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [fetchUnreadCount]);
+  }, [refetch]);
 
   return {
     unreadCount,
     loading,
     error,
-    refetch: fetchUnreadCount,
+    refetch,
   };
 }
 

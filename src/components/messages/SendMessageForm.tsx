@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -27,7 +27,10 @@ import { Send, Close, Person, Explore } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
 import { useEventTypes } from '@/hooks/useEventTypes';
 import { sendMessage, SendMessageData } from '@/lib/messages-api';
-import { getReceivableUsers, ReceivableUser } from '@/lib/users-api';
+import { useReceivableUsers } from '@/hooks/useReceivableUsers';
+import { invalidateReceivedMessagesCache } from '@/hooks/useReceivedMessages';
+import { invalidateSentMessagesCache } from '@/hooks/useSentMessages';
+import { invalidateUserStatsCache } from '@/hooks/useUserStats';
 
 interface SendMessageFormProps {
   open: boolean;
@@ -45,10 +48,9 @@ export default function SendMessageForm({
   onSuccess,
 }: SendMessageFormProps) {
   const { eventTypes, loading: eventsLoading } = useEventTypes();
+  const { users: receivableUsers, loading: usersLoading } = useReceivableUsers();
   const t = useTranslations('messages.send');
   const tCommon = useTranslations('common');
-  const [receivableUsers, setReceivableUsers] = useState<ReceivableUser[]>([]);
-  const [usersLoading, setUsersLoading] = useState(false);
   const [formData, setFormData] = useState<SendMessageData>({
     receiverId: receiverId,
     eventTypeId: '',
@@ -58,19 +60,6 @@ export default function SendMessageForm({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
-  useEffect(() => {
-    if (open && !receiverId) {
-      setUsersLoading(true);
-      getReceivableUsers()
-        .then((response) => {
-          if (response.success && response.data) {
-            setReceivableUsers(response.data);
-          }
-        })
-        .finally(() => setUsersLoading(false));
-    }
-  }, [open, receiverId]);
 
   const selectedEvent = eventTypes.find((e) => e.id === formData.eventTypeId);
 
@@ -95,6 +84,11 @@ export default function SendMessageForm({
     const response = await sendMessage(formData);
 
     if (response.success) {
+      // Invalidate caches to refresh data
+      invalidateReceivedMessagesCache();
+      invalidateSentMessagesCache();
+      invalidateUserStatsCache();
+      
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);

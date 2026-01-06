@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Container,
   Typography,
@@ -24,12 +24,13 @@ import {
 import { Inbox, ArrowBack } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { getReceivedMessages, MessageSummary } from '@/lib/messages-api';
-import { useMessages } from '@/hooks/useMessages';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { MessageSummary } from '@/lib/messages-api';
+import { useReceivedMessages } from '@/hooks/useReceivedMessages';
 import { useEventTypes } from '@/hooks/useEventTypes';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
-import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 export default function ReceivedMessagesPage() {
   const router = useRouter();
@@ -38,13 +39,7 @@ export default function ReceivedMessagesPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const fetchReceivedMessages = useCallback(async () => {
-    const response = await getReceivedMessages();
-    if (!response.success) {
-      return { success: false, error: response.error || t('error.loading') };
-    }
-    return response;
-  }, [t]);
+  const { messages: receivedMessages, loading, error, refetch } = useReceivedMessages();
 
   const getSenderIds = useCallback((msgs: MessageSummary[]) =>
     msgs
@@ -52,20 +47,41 @@ export default function ReceivedMessagesPage() {
       .map((msg) => msg.senderId!),
   []);
 
-  const { messages, loading, error, userNames } = useMessages({
-    fetchMessages: fetchReceivedMessages,
-    getUserIds: getSenderIds,
-  });
-
-  const { eventTypes } = useEventTypes();
-  const { refetch: refetchUnread } = useUnreadMessages();
-
-  // Refresh unread count when messages are loaded
+  // Load user names for messages
+  const [userNames, setUserNames] = useState<Record<string, string>>({});
+  
   useEffect(() => {
-    if (!loading) {
-      refetchUnread();
+    const loadUserNames = async () => {
+      const uniqueUserIds = [...new Set(getSenderIds(receivedMessages))];
+      const namesMap: Record<string, string> = {};
+
+      await Promise.all(
+        uniqueUserIds.map(async (userId) => {
+          try {
+            const userDoc = await getDoc(doc(db, 'users', userId));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              namesMap[userId] = userData.displayName || userData.email || userId;
+            } else {
+              namesMap[userId] = userId;
+            }
+          } catch (err) {
+            console.error(`Error fetching user ${userId}:`, err);
+            namesMap[userId] = userId;
+          }
+        })
+      );
+
+      setUserNames(namesMap);
+    };
+
+    if (receivedMessages.length > 0) {
+      loadUserNames();
     }
-  }, [loading, refetchUnread]);
+  }, [receivedMessages, getSenderIds]);
+
+  const messages = receivedMessages;
+  const { eventTypes } = useEventTypes();
 
   const getEventType = (eventTypeId: string) => {
     return eventTypes.find((et) => et.id === eventTypeId);
