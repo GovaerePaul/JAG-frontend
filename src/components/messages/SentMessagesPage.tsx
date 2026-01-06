@@ -26,6 +26,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { getSentMessages, MessageSummary } from '@/lib/messages-api';
 import { useMessages } from '@/hooks/useMessages';
+import { useEventTypes } from '@/hooks/useEventTypes';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
 
@@ -52,6 +53,17 @@ export default function SentMessagesPage() {
     fetchMessages: fetchSentMessages,
     getUserIds: getReceiverIds,
   });
+
+  const { eventTypes } = useEventTypes();
+
+  const getEventType = (eventTypeId: string) => {
+    return eventTypes.find((et) => et.id === eventTypeId);
+  };
+
+  const getEventTypeName = (eventTypeId: string) => {
+    const eventType = getEventType(eventTypeId);
+    return eventType?.name || eventTypeId;
+  };
 
   if (loading) {
     return (
@@ -129,6 +141,22 @@ export default function SentMessagesPage() {
                       />
                     </Box>
                     
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        {t('table.eventType')}
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {getEventType(message.eventTypeId)?.icon && (
+                          <Typography variant="body2" component="span" sx={{ fontSize: '1.2rem' }}>
+                            {getEventType(message.eventTypeId)?.icon}
+                          </Typography>
+                        )}
+                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                          {getEventTypeName(message.eventTypeId)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    
                     {message.isAnonymous && (
                       <Chip
                         label={t('anonymous')}
@@ -155,6 +183,7 @@ export default function SentMessagesPage() {
                 <TableHead>
                   <TableRow>
                     <TableCell>{t('table.to')}</TableCell>
+                    <TableCell>{t('table.eventType')}</TableCell>
                     <TableCell>{t('table.status')}</TableCell>
                     <TableCell>{t('table.date')}</TableCell>
                   </TableRow>
@@ -180,6 +209,18 @@ export default function SentMessagesPage() {
                           {message.isAnonymous && (
                             <Chip label={t('anonymous')} size="small" sx={{ mt: 0.5 }} />
                           )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {getEventType(message.eventTypeId)?.icon && (
+                            <Typography variant="body2" component="span" sx={{ fontSize: '1.2rem' }}>
+                              {getEventType(message.eventTypeId)?.icon}
+                            </Typography>
+                          )}
+                          <Typography variant="body2">
+                            {getEventTypeName(message.eventTypeId)}
+                          </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>

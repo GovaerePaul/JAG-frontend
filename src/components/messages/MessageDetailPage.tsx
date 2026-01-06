@@ -22,6 +22,7 @@ import { useRouter } from '@/i18n/navigation';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { getMessage, markMessageAsRead, reportMessage, Message } from '@/lib/messages-api';
+import { useEventTypes } from '@/hooks/useEventTypes';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
 import { doc, getDoc } from 'firebase/firestore';
@@ -48,6 +49,17 @@ export default function MessageDetailPage() {
   const [reportReason, setReportReason] = useState('');
   const [reporting, setReporting] = useState(false);
   const [markingAsRead, setMarkingAsRead] = useState(false);
+
+  const { eventTypes } = useEventTypes();
+
+  const getEventType = (eventTypeId: string) => {
+    return eventTypes.find((et) => et.id === eventTypeId);
+  };
+
+  const getEventTypeName = (eventTypeId: string) => {
+    const eventType = getEventType(eventTypeId);
+    return eventType?.name || eventTypeId;
+  };
 
   const loadMessage = useCallback(async () => {
     if (!messageId) {
@@ -260,6 +272,22 @@ export default function MessageDetailPage() {
           </Box>
 
           <Divider sx={{ my: 2 }} />
+
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              {t('table.eventType')}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {getEventType(message.eventTypeId)?.icon && (
+                <Typography variant="body1" component="span" sx={{ fontSize: '1.5rem' }}>
+                  {getEventType(message.eventTypeId)?.icon}
+                </Typography>
+              )}
+              <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                {getEventTypeName(message.eventTypeId)}
+              </Typography>
+            </Box>
+          </Box>
 
           <Box sx={{ mb: 2 }}>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>

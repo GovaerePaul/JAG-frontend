@@ -28,6 +28,7 @@ export interface MessageSummary {
   id: string;
   senderId: string | null;
   receiverId: string;
+  eventTypeId: string;
   isAnonymous: boolean;
   status: MessageStatus;
   isReported: boolean;

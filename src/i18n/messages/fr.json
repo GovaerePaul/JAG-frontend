@@ -135,7 +135,8 @@
       "to": "À",
       "content": "Contenu",
       "status": "Statut",
-      "date": "Date"
+      "date": "Date",
+      "eventType": "Type d'événement"
     },
     "anonymous": "Anonyme",
     "anonymousSender": "Expéditeur anonyme",
