@@ -85,8 +85,15 @@ export default function CityAutocomplete({
     debouncedSearch(newInputValue);
   };
 
-  const handleChange = (event: any, newValue: CitySuggestion | null) => {
-    if (newValue) {
+  const handleChange = (
+    event: any,
+    newValue: string | CitySuggestion | null
+  ) => {
+    if (typeof newValue === 'string') {
+      // User typed a string manually
+      onChange(newValue);
+    } else if (newValue) {
+      // User selected a CitySuggestion
       onChange(newValue.displayName);
       onSelect({
         city: newValue.city,
@@ -94,6 +101,7 @@ export default function CityAutocomplete({
         country: newValue.country,
       });
     } else {
+      // Value cleared
       onChange(null);
     }
   };
