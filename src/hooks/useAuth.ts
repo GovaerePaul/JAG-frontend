@@ -16,6 +16,9 @@ export interface UserProfile {
   updatedAt: string;
   isActive: boolean;
   role: UserRole;
+  points?: number;
+  level?: number;
+  totalPointsEarned?: number;
 }
 
 export const useAuth = () => {

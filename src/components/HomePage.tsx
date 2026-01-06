@@ -7,28 +7,43 @@ import {
   Box,
   Button,
   Paper,
-  CircularProgress
+  CircularProgress,
+  LinearProgress,
+  Chip
 } from '@mui/material';
-import { Send, Inbox, Outbox } from '@mui/icons-material';
+import { Send, Inbox, Outbox, EmojiEvents } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations } from 'next-intl';
 import SendMessageForm from '@/components/messages/SendMessageForm';
 import authApiClient from '@/lib/api-client';
+import { UserStats } from '@/lib/types';
 
 interface MessageCounts {
   messagesSentCount: number;
   messagesReceivedCount: number;
 }
 
+interface GamificationData {
+  points: number;
+  level: number;
+  totalPointsEarned: number;
+}
+
 export default function HomePage() {
   const { user, canSend, canReceive } = useAuth();
   const router = useRouter();
   const t = useTranslations('home');
+  const tGamification = useTranslations('gamification');
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
   const [messageCounts, setMessageCounts] = useState<MessageCounts>({
     messagesSentCount: 0,
     messagesReceivedCount: 0,
+  });
+  const [gamification, setGamification] = useState<GamificationData>({
+    points: 0,
+    level: 1,
+    totalPointsEarned: 0,
   });
   const [loadingCounts, setLoadingCounts] = useState(false);
 
@@ -42,9 +57,15 @@ export default function HomePage() {
     try {
       const response = await authApiClient.getUserStats();
       if (response.success && response.data) {
+        const stats = response.data as UserStats;
         setMessageCounts({
-          messagesSentCount: (response.data as MessageCounts).messagesSentCount ?? 0,
-          messagesReceivedCount: (response.data as MessageCounts).messagesReceivedCount ?? 0,
+          messagesSentCount: stats.messagesSentCount ?? 0,
+          messagesReceivedCount: stats.messagesReceivedCount ?? 0,
+        });
+        setGamification({
+          points: stats.points ?? 0,
+          level: stats.level ?? 1,
+          totalPointsEarned: stats.totalPointsEarned ?? 0,
         });
       } else {
         console.error('Failed to fetch stats:', response.error);
@@ -62,6 +83,12 @@ export default function HomePage() {
 
   const receivedCount = messageCounts.messagesReceivedCount;
   const sentCount = messageCounts.messagesSentCount;
+  
+  const currentLevelPoints = (gamification.level - 1) * 100;
+  const nextLevelPoints = gamification.level * 100;
+  const pointsInCurrentLevel = gamification.points - currentLevelPoints;
+  const pointsNeededForNextLevel = nextLevelPoints - gamification.points;
+  const progressPercentage = (pointsInCurrentLevel / 100) * 100;
 
   return (
     <Box sx={{ py: 4 }}>
@@ -115,17 +142,48 @@ export default function HomePage() {
         </Box>
 
         {user && (
-          <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'background.default' }}>
-            <Typography variant="h6" gutterBottom>
-              {t('userDashboard.title')}
-            </Typography>
-            <Box sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              gap: 4,
-              mt: 2,
-              justifyContent: 'center'
-            }}>
+          <>
+            <Paper sx={{ p: 4, mb: 3, backgroundColor: 'background.default' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 2 }}>
+                <EmojiEvents sx={{ fontSize: 40, color: 'warning.main' }} />
+                <Box>
+                  <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
+                    {tGamification('level')} {gamification.level}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {gamification.points} {tGamification('points')}
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ mt: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    {tGamification('progress')}: {pointsInCurrentLevel}/100
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {tGamification('nextLevel')}: {pointsNeededForNextLevel} {tGamification('points')}
+                  </Typography>
+                </Box>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={progressPercentage} 
+                  sx={{ height: 8, borderRadius: 4 }}
+                  color="warning"
+                />
+              </Box>
+            </Paper>
+
+            <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'background.default' }}>
+              <Typography variant="h6" gutterBottom>
+                {t('userDashboard.title')}
+              </Typography>
+              <Box sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 4,
+                mt: 2,
+                justifyContent: 'center'
+              }}>
               {canReceive && (
                 <Box
                   sx={{
@@ -186,6 +244,7 @@ export default function HomePage() {
               )}
             </Box>
           </Paper>
+          </>
         )}
 
         {/* Send Message Dialog */}

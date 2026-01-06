@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -23,7 +23,9 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  LinearProgress,
+  CircularProgress
 } from '@mui/material';
 import {
   Person,
@@ -33,14 +35,49 @@ import {
   Verified,
   Edit,
   Save,
-  Cancel
+  Cancel,
+  EmojiEvents
 } from '@mui/icons-material';
+import authApiClient from '@/lib/api-client';
+import { UserStats } from '@/lib/types';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
+  const tGamification = useTranslations('gamification');
   const { user } = useAuth();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
+  const [gamification, setGamification] = useState({
+    points: 0,
+    level: 1,
+    totalPointsEarned: 0,
+  });
+  const [loadingGamification, setLoadingGamification] = useState(false);
+
+  const fetchGamificationStats = useCallback(async () => {
+    if (!user) return;
+
+    setLoadingGamification(true);
+    try {
+      const response = await authApiClient.getUserStats();
+      if (response.success && response.data) {
+        const stats = response.data as UserStats;
+        setGamification({
+          points: stats.points ?? 0,
+          level: stats.level ?? 1,
+          totalPointsEarned: stats.totalPointsEarned ?? 0,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching gamification stats:', error);
+    } finally {
+      setLoadingGamification(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchGamificationStats();
+  }, [fetchGamificationStats]);
 
   if (!user) {
     return null;
@@ -83,6 +120,12 @@ export default function ProfilePage() {
     if (!user.metadata?.lastSignInTime) return t('never');
     return new Date(user.metadata.lastSignInTime).toLocaleDateString();
   };
+
+  const currentLevelPoints = (gamification.level - 1) * 100;
+  const nextLevelPoints = gamification.level * 100;
+  const pointsInCurrentLevel = gamification.points - currentLevelPoints;
+  const pointsNeededForNextLevel = nextLevelPoints - gamification.points;
+  const progressPercentage = (pointsInCurrentLevel / 100) * 100;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -132,6 +175,45 @@ export default function ProfilePage() {
         </Box>
 
         <Divider sx={{ mb: 4 }} />
+
+        <Card elevation={2} sx={{ mb: 4 }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+              <EmojiEvents sx={{ fontSize: 48, color: 'warning.main' }} />
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
+                  {tGamification('level')} {gamification.level}
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  {gamification.points} {tGamification('points')}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {tGamification('totalEarned')}: {gamification.totalPointsEarned} {tGamification('points')}
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ mt: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  {tGamification('progress')}: {pointsInCurrentLevel}/100
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {tGamification('nextLevel')}: {pointsNeededForNextLevel} {tGamification('points')}
+                </Typography>
+              </Box>
+              {loadingGamification ? (
+                <CircularProgress size={24} />
+              ) : (
+                <LinearProgress 
+                  variant="determinate" 
+                  value={progressPercentage} 
+                  sx={{ height: 10, borderRadius: 5 }}
+                  color="warning"
+                />
+              )}
+            </Box>
+          </CardContent>
+        </Card>
 
         <Grid container spacing={4}>
           <Grid size={{ xs: 12, md: 6 }}>

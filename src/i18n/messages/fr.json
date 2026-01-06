@@ -146,5 +146,17 @@
     "error": {
       "loading": "Erreur lors du chargement des messages"
     }
+  },
+  "gamification": {
+    "level": "Niveau",
+    "points": "points",
+    "nextLevel": "Prochain niveau",
+    "progress": "Progression",
+    "totalEarned": "Total gagné",
+    "actions": {
+      "registration": "Inscription",
+      "messageSent": "Message envoyé",
+      "messageReceived": "Message reçu"
+    }
   }
 }
