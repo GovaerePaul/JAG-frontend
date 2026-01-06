@@ -20,6 +20,7 @@ import {
   useTheme,
   useMediaQuery,
   Button,
+  Divider,
 } from '@mui/material';
 import { Outbox, ArrowBack } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';

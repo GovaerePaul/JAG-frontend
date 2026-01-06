@@ -22,7 +22,7 @@ interface MessageCounts {
 }
 
 export default function HomePage() {
-  const { user, userProfile, canSend, canReceive } = useAuth();
+  const { user, canSend, canReceive } = useAuth();
   const router = useRouter();
   const t = useTranslations('home');
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
