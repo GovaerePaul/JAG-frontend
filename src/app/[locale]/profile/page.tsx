@@ -9,7 +9,6 @@ import {
   Box,
   Typography,
   Avatar,
-  Grid,
   Card,
   CardContent,
   Button,
@@ -199,8 +198,17 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              md: 'repeat(2, 1fr)',
+            },
+            gap: 4,
+          }}
+        >
+          <Box>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h6" gutterBottom color="primary">
@@ -240,9 +248,9 @@ export default function ProfilePage() {
                 </List>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} md={6}>
+          <Box>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h6" gutterBottom color="primary">
@@ -279,10 +287,10 @@ export default function ProfilePage() {
                 </List>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
 
           {/* Message Statistics */}
-          <Grid item xs={12}>
+          <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h6" gutterBottom color="primary">
@@ -371,8 +379,8 @@ export default function ProfilePage() {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Paper>
 
       <Dialog open={editDialogOpen} onClose={handleCancelEdit} maxWidth="sm" fullWidth>
