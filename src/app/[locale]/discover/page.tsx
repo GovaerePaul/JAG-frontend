@@ -6,7 +6,6 @@ import {
   Box,
   Typography,
   TextField,
-  Grid,
   Button,
   CircularProgress,
   Alert,
@@ -185,18 +184,29 @@ export default function DiscoverPage() {
             )}
           </Box>
 
-          <Grid container spacing={3}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+                lg: 'repeat(4, 1fr)',
+              },
+              gap: 3,
+            }}
+          >
             {users.map((discoveredUser) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={discoveredUser.user.uid}>
+              <Box key={discoveredUser.user.uid}>
                 <UserCard
                   user={discoveredUser}
                   onSendMessage={(userId) =>
                     handleSendMessage(userId, discoveredUser.user.displayName)
                   }
                 />
-              </Grid>
+              </Box>
             ))}
-          </Grid>
+          </Box>
 
           {/* Load More */}
           {users.length > 0 && (
