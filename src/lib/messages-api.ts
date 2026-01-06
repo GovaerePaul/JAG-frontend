@@ -6,6 +6,7 @@ import { ApiResponse } from './types';
 
 export type MessageStatus = 'pending' | 'delivered' | 'read';
 
+// Full message with all fields (used for message detail page)
 export interface Message {
   id: string;
   senderId: string | null;
@@ -20,6 +21,17 @@ export interface Message {
   createdAt: string;
   deliveredAt?: string;
   readAt?: string;
+}
+
+// Summary for message lists (optimized, without content and heavy fields)
+export interface MessageSummary {
+  id: string;
+  senderId: string | null;
+  receiverId: string;
+  isAnonymous: boolean;
+  status: MessageStatus;
+  isReported: boolean;
+  createdAt: string;
 }
 
 export interface SendMessageData {
@@ -59,12 +71,20 @@ export async function sendMessage(data: SendMessageData): Promise<ApiResponse<{ 
   return result;
 }
 
-export async function getReceivedMessages(): Promise<ApiResponse<Message[]>> {
-  return callMessageFunction<void, Message[]>('getReceivedMessagesFunction', undefined, 'Failed to get received messages');
+export async function getReceivedMessages(): Promise<ApiResponse<MessageSummary[]>> {
+  return callMessageFunction<void, MessageSummary[]>('getReceivedMessagesFunction', undefined, 'Failed to get received messages');
 }
 
-export async function getSentMessages(): Promise<ApiResponse<Message[]>> {
-  return callMessageFunction<void, Message[]>('getSentMessagesFunction', undefined, 'Failed to get sent messages');
+export async function getSentMessages(): Promise<ApiResponse<MessageSummary[]>> {
+  return callMessageFunction<void, MessageSummary[]>('getSentMessagesFunction', undefined, 'Failed to get sent messages');
+}
+
+export async function getMessage(messageId: string): Promise<ApiResponse<Message>> {
+  return callMessageFunction<{ messageId: string }, Message>(
+    'getMessageFunction',
+    { messageId },
+    'Failed to get message'
+  );
 }
 
 export async function markMessageAsRead(messageId: string): Promise<ApiResponse<{ success: boolean }>> {

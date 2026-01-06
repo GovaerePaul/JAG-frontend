@@ -20,12 +20,11 @@ import {
   useTheme,
   useMediaQuery,
   Button,
-  Divider,
 } from '@mui/material';
 import { Outbox, ArrowBack } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { getSentMessages, Message } from '@/lib/messages-api';
+import { getSentMessages, MessageSummary } from '@/lib/messages-api';
 import { useMessages } from '@/hooks/useMessages';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
@@ -45,7 +44,7 @@ export default function SentMessagesPage() {
     return response;
   }, [t]);
 
-  const getReceiverIds = useCallback((msgs: Message[]) =>
+  const getReceiverIds = useCallback((msgs: MessageSummary[]) =>
     msgs.map((msg) => msg.receiverId).filter((id) => id),
   []);
 
@@ -100,7 +99,19 @@ export default function SentMessagesPage() {
           {isMobile ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {messages.map((message) => (
-                <Card key={message.id} elevation={2}>
+                <Card 
+                  key={message.id} 
+                  elevation={2}
+                  sx={{ 
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      elevation: 4,
+                      transform: 'translateY(-2px)',
+                    }
+                  }}
+                  onClick={() => router.push(`/messages/sent/${message.id}`)}
+                >
                   <CardContent>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
                       <Box>
@@ -126,12 +137,6 @@ export default function SentMessagesPage() {
                       />
                     )}
                     
-                    <Divider sx={{ my: 2 }} />
-                    
-                    <Typography variant="body1" sx={{ mb: 2, whiteSpace: 'pre-wrap' }}>
-                      {message.content}
-                    </Typography>
-                    
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
                       <Typography variant="caption" color="text.secondary">
                         {formatDate(message.createdAt) || tCommon('unknown')}
@@ -150,14 +155,23 @@ export default function SentMessagesPage() {
                 <TableHead>
                   <TableRow>
                     <TableCell>{t('table.to')}</TableCell>
-                    <TableCell>{t('table.content')}</TableCell>
                     <TableCell>{t('table.status')}</TableCell>
                     <TableCell>{t('table.date')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {messages.map((message) => (
-                    <TableRow key={message.id} hover>
+                    <TableRow 
+                      key={message.id} 
+                      hover
+                      sx={{ 
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        }
+                      }}
+                      onClick={() => router.push(`/messages/sent/${message.id}`)}
+                    >
                       <TableCell>
                         <Box>
                           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
@@ -167,20 +181,6 @@ export default function SentMessagesPage() {
                             <Chip label={t('anonymous')} size="small" sx={{ mt: 0.5 }} />
                           )}
                         </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            maxWidth: 400,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                          title={message.content}
-                        >
-                          {message.content}
-                        </Typography>
                       </TableCell>
                       <TableCell>
                       <Chip

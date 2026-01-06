@@ -24,7 +24,7 @@ import {
 import { Inbox, ArrowBack } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { getReceivedMessages, Message } from '@/lib/messages-api';
+import { getReceivedMessages, MessageSummary } from '@/lib/messages-api';
 import { useMessages } from '@/hooks/useMessages';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
@@ -44,7 +44,7 @@ export default function ReceivedMessagesPage() {
     return response;
   }, [t]);
 
-  const getSenderIds = useCallback((msgs: Message[]) =>
+  const getSenderIds = useCallback((msgs: MessageSummary[]) =>
     msgs
       .filter((msg) => msg.senderId && !msg.isAnonymous)
       .map((msg) => msg.senderId!),
@@ -101,7 +101,19 @@ export default function ReceivedMessagesPage() {
           {isMobile ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {messages.map((message) => (
-                <Card key={message.id} elevation={2}>
+                <Card 
+                  key={message.id} 
+                  elevation={2}
+                  sx={{ 
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      elevation: 4,
+                      transform: 'translateY(-2px)',
+                    }
+                  }}
+                  onClick={() => router.push(`/messages/received/${message.id}`)}
+                >
                   <CardContent>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
                       <Box>
@@ -145,7 +157,17 @@ export default function ReceivedMessagesPage() {
                 </TableHead>
                 <TableBody>
                   {messages.map((message) => (
-                    <TableRow key={message.id} hover>
+                    <TableRow 
+                      key={message.id} 
+                      hover
+                      sx={{ 
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        }
+                      }}
+                      onClick={() => router.push(`/messages/received/${message.id}`)}
+                    >
                       <TableCell>
                         <Box>
                           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>

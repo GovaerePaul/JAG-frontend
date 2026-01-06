@@ -144,7 +144,23 @@
     "reported": "Reported",
     "back": "Back",
     "error": {
-      "loading": "Error loading messages"
+      "loading": "Error loading messages",
+      "messageNotFound": "Message not found"
+    },
+    "detail": {
+      "title": "Message Details",
+      "date": "Date",
+      "readAt": "Read at",
+      "content": "Content",
+      "report": "Report Message",
+      "markingAsRead": "Marking message as read...",
+      "reportedReason": "Report Reason",
+      "reportDialog": {
+        "title": "Report Message",
+        "description": "Please provide a reason for reporting this message. This action helps maintain a respectful community.",
+        "reasonLabel": "Report Reason",
+        "submit": "Report"
+      }
     }
   },
   "gamification": {
