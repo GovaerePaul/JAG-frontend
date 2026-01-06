@@ -231,11 +231,14 @@
       "later": "Maybe Later",
       "manual": "Enter City Manually",
       "cityLabel": "City",
-      "cityPlaceholder": "Enter your city",
+      "cityPlaceholder": "Search for your city...",
       "save": "Save",
       "error": "Failed to get location",
       "denied": "Location permission denied. You can still search manually.",
-      "unavailable": "Location unavailable. Please enter your city manually."
+      "unavailable": "Location unavailable. Please enter your city manually.",
+      "cityRequired": "Please select a city",
+      "searching": "Searching cities...",
+      "noCitiesFound": "No cities found"
     },
     "filterOptions": {
       "title": "Filters",

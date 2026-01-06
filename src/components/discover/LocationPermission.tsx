@@ -15,7 +15,8 @@ import {
 } from '@mui/material';
 import { LocationOn, Close } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
-import { updateUserLocation, Coordinates } from '@/lib/users-api';
+import { updateUserLocation, updateUserLocationByCity, Coordinates } from '@/lib/users-api';
+import CityAutocomplete from './CityAutocomplete';
 
 interface LocationPermissionProps {
   open: boolean;
@@ -34,6 +35,11 @@ export default function LocationPermission({
   const [error, setError] = useState<string | null>(null);
   const [manualMode, setManualMode] = useState(false);
   const [city, setCity] = useState('');
+  const [selectedCity, setSelectedCity] = useState<{
+    city: string;
+    region?: string;
+    country?: string;
+  } | null>(null);
 
   const handleEnableLocation = (retry = false) => {
     setLoading(true);
@@ -116,19 +122,29 @@ export default function LocationPermission({
   };
 
   const handleManualSave = async () => {
-    if (!city.trim()) {
-      setError('Please enter a city');
+    if (!selectedCity || !selectedCity.city.trim()) {
+      setError(t('cityRequired') || 'Please select a city');
       return;
     }
 
     setLoading(true);
     setError(null);
 
-    // For manual entry, we'll need to geocode the city first
-    // For now, we'll just close and let the user search manually
-    // In a full implementation, you'd call an API to get coordinates from city name
-    onClose();
-    setLoading(false);
+    try {
+      const response = await updateUserLocationByCity(selectedCity.city);
+
+      if (response.success) {
+        onLocationEnabled();
+        onClose();
+      } else {
+        setError(response.error || t('error'));
+      }
+    } catch (err) {
+      console.error('Error updating location by city:', err);
+      setError(err instanceof Error ? err.message : t('error'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -169,13 +185,16 @@ export default function LocationPermission({
               <Typography variant="body1">
                 {t('denied')}
               </Typography>
-              <TextField
-                label={t('cityLabel')}
-                placeholder={t('cityPlaceholder')}
+              <CityAutocomplete
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
-                fullWidth
+                onChange={(value) => setCity(value || '')}
+                onSelect={(cityData) => {
+                  setSelectedCity(cityData);
+                  setCity(cityData.displayName || cityData.city);
+                }}
                 disabled={loading}
+                error={!!error && !city.trim()}
+                helperText={error && !city.trim() ? error : undefined}
               />
             </>
           )}
@@ -199,7 +218,7 @@ export default function LocationPermission({
           <Button
             variant="contained"
             onClick={handleManualSave}
-            disabled={loading || !city.trim()}
+            disabled={loading || !selectedCity || !selectedCity.city.trim()}
             startIcon={loading ? <CircularProgress size={20} /> : null}
           >
             {loading ? tCommon('loading') : t('save')}

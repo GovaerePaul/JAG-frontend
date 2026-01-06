@@ -231,11 +231,14 @@
       "later": "Plus tard",
       "manual": "Entrer la ville manuellement",
       "cityLabel": "Ville",
-      "cityPlaceholder": "Entrez votre ville",
+      "cityPlaceholder": "Recherchez votre ville...",
       "save": "Enregistrer",
       "error": "Échec de la récupération de la localisation",
       "denied": "Permission de localisation refusée. Vous pouvez toujours rechercher manuellement.",
-      "unavailable": "Localisation indisponible. Veuillez entrer votre ville manuellement."
+      "unavailable": "Localisation indisponible. Veuillez entrer votre ville manuellement.",
+      "cityRequired": "Veuillez sélectionner une ville",
+      "searching": "Recherche de villes...",
+      "noCitiesFound": "Aucune ville trouvée"
     },
     "filterOptions": {
       "title": "Filtres",

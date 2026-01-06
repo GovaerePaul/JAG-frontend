@@ -24,6 +24,17 @@ export interface UserLocation {
   country?: string;
 }
 
+export interface CitySuggestion {
+  city: string;
+  region?: string;
+  country?: string;
+  displayName: string;
+}
+
+export interface SearchCitiesResponse {
+  cities: CitySuggestion[];
+}
+
 export interface DiscoverUsersFilters {
   minAge?: number;
   maxAge?: number;
@@ -109,6 +120,49 @@ export async function discoverUsers(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to discover users'
+    };
+  }
+}
+
+export async function searchCities(
+  query: string,
+  limit?: number
+): Promise<ApiResponse<SearchCitiesResponse>> {
+  try {
+    const fn = httpsCallable<{ query: string; limit?: number }, SearchCitiesResponse>(
+      functions,
+      'searchCitiesFunction'
+    );
+    const result = await fn({ query, limit });
+    return { success: true, data: result.data };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to search cities'
+    };
+  }
+}
+
+export async function updateUserLocationByCity(
+  city: string
+): Promise<ApiResponse<UserLocation>> {
+  try {
+    const fn = httpsCallable<{ city: string }, { success: boolean; location: UserLocation }>(
+      functions,
+      'updateUserLocationByCityFunction'
+    );
+    const result = await fn({ city });
+    if (result.data.success) {
+      return { success: true, data: result.data.location };
+    }
+    return {
+      success: false,
+      error: 'Failed to update location'
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update location'
     };
   }
 }
