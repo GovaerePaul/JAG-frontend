@@ -1,7 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
-// ApiResponse interface moved to api-client.ts
-
 const createAxiosInstance = (): AxiosInstance => {
   const baseURL = process.env.NODE_ENV === 'development'
     ? 'http://localhost:3000/api'

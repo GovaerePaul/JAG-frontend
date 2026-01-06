@@ -30,7 +30,6 @@ export default function ClientAppWrapper({ children }: ClientAppWrapperProps) {
     setIsMounted(true);
   }, []);
 
-  // Prevent hydration mismatch by showing loading during mount
   if (!isMounted) {
     return (
       <div className="loading-container">

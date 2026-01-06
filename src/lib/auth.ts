@@ -27,20 +27,15 @@ export const signUp = async ({ email, password, displayName, role }: SignUpData)
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    await updateProfile(user, {
-      displayName: displayName
-    });
+    await updateProfile(user, { displayName });
 
-    // Wait for the trigger to create the Firestore document
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Update Firestore with displayName and role
-    // The trigger creates the document with 'both' by default, we update it with the actual values
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, {
-      displayName: displayName,
-      role: role,
-      updatedAt: new Date()
+      displayName,
+      role,
+      updatedAt: new Date(),
     });
 
     return { user, error: null };

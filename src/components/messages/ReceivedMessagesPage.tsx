@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -17,7 +17,6 @@ import {
   Chip,
   Card,
   CardContent,
-  Divider,
   useTheme,
   useMediaQuery,
   Button,
@@ -26,121 +25,35 @@ import { Inbox, ArrowBack } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { getReceivedMessages, Message } from '@/lib/messages-api';
-import { useAuth } from '@/hooks/useAuth';
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { useMessages } from '@/hooks/useMessages';
+import { formatDate } from '@/utils/date';
+import { getStatusColor, getStatusLabel } from '@/utils/messages';
 
 export default function ReceivedMessagesPage() {
-  const { user } = useAuth();
   const router = useRouter();
   const t = useTranslations('messages');
   const tCommon = useTranslations('common');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [userNames, setUserNames] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (!user) return;
-      
-      setLoading(true);
-      setError(null);
-      
-      try {
-        const response = await getReceivedMessages();
-        if (response.success && response.data) {
-          setMessages(response.data);
-          
-          // Fetch displayNames for all unique sender IDs
-          const uniqueSenderIds = [...new Set(
-            response.data
-              .filter(msg => msg.senderId && !msg.isAnonymous)
-              .map(msg => msg.senderId!)
-          )];
-          
-          const namesMap: Record<string, string> = {};
-          await Promise.all(
-            uniqueSenderIds.map(async (senderId) => {
-              try {
-                const userDoc = await getDoc(doc(db, 'users', senderId));
-                if (userDoc.exists()) {
-                  const userData = userDoc.data();
-                  namesMap[senderId] = userData.displayName || userData.email || senderId;
-                } else {
-                  namesMap[senderId] = senderId;
-                }
-              } catch (err) {
-                console.error(`Error fetching user ${senderId}:`, err);
-                namesMap[senderId] = senderId;
-              }
-            })
-          );
-          
-          setUserNames(namesMap);
-        } else {
-          setError(response.error || t('error.loading'));
-        }
-      } catch (err) {
-        setError(t('error.loading'));
-        console.error('Error fetching messages:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMessages();
-  }, [user, t]);
-
-  const formatDate = (dateString: string | undefined | null) => {
-    if (!dateString) {
-      return tCommon('unknown');
+  const fetchReceivedMessages = useCallback(async () => {
+    const response = await getReceivedMessages();
+    if (!response.success) {
+      return { success: false, error: response.error || t('error.loading') };
     }
-    
-    const date = new Date(dateString);
-    
-    // Check if date is valid
-    if (isNaN(date.getTime())) {
-      return tCommon('unknown');
-    }
-    
-    return new Intl.DateTimeFormat('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
-  };
+    return response;
+  }, [t]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'read':
-        return 'success';
-      case 'delivered':
-        return 'info';
-      case 'pending':
-        return 'warning';
-      default:
-        return 'default';
-    }
-  };
+  const getSenderIds = useCallback((msgs: Message[]) =>
+    msgs
+      .filter((msg) => msg.senderId && !msg.isAnonymous)
+      .map((msg) => msg.senderId!),
+  []);
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'read':
-        return t('status.read');
-      case 'delivered':
-        return t('status.delivered');
-      case 'pending':
-        return t('status.pending');
-      default:
-        return status;
-    }
-  };
+  const { messages, loading, error, userNames } = useMessages({
+    fetchMessages: fetchReceivedMessages,
+    getUserIds: getSenderIds,
+  });
 
   if (loading) {
     return (
@@ -186,7 +99,6 @@ export default function ReceivedMessagesPage() {
       {messages.length > 0 && (
         <>
           {isMobile ? (
-            // Mobile view: Card list
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {messages.map((message) => (
                 <Card key={message.id} elevation={2}>
@@ -203,15 +115,15 @@ export default function ReceivedMessagesPage() {
                         </Typography>
                       </Box>
                       <Chip
-                        label={getStatusLabel(message.status)}
-                        color={getStatusColor(message.status) as any}
+                        label={getStatusLabel(message.status, t)}
+                        color={getStatusColor(message.status)}
                         size="small"
                       />
                     </Box>
                     
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
                       <Typography variant="caption" color="text.secondary">
-                        {formatDate(message.createdAt)}
+                        {formatDate(message.createdAt) || tCommon('unknown')}
                       </Typography>
                       {message.isReported && (
                         <Chip label={t('reported')} color="error" size="small" />
@@ -222,7 +134,6 @@ export default function ReceivedMessagesPage() {
               ))}
             </Box>
           ) : (
-            // Desktop view: Table
             <TableContainer component={Paper} elevation={2}>
               <Table>
                 <TableHead>
@@ -248,23 +159,23 @@ export default function ReceivedMessagesPage() {
                         </Box>
                       </TableCell>
                       <TableCell>
+                      <Chip
+                        label={getStatusLabel(message.status, t)}
+                        color={getStatusColor(message.status)}
+                        size="small"
+                      />
+                      {message.isReported && (
                         <Chip
-                          label={getStatusLabel(message.status)}
-                          color={getStatusColor(message.status) as any}
+                          label={t('reported')}
+                          color="error"
                           size="small"
+                          sx={{ ml: 1 }}
                         />
-                        {message.isReported && (
-                          <Chip
-                            label={t('reported')}
-                            color="error"
-                            size="small"
-                            sx={{ ml: 1 }}
-                          />
-                        )}
+                      )}
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {formatDate(message.createdAt)}
+                          {formatDate(message.createdAt) || tCommon('unknown')}
                         </Typography>
                       </TableCell>
                     </TableRow>

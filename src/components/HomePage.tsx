@@ -32,7 +32,6 @@ export default function HomePage() {
   });
   const [loadingCounts, setLoadingCounts] = useState(false);
 
-  // Function to fetch message counts
   const fetchCounts = useCallback(async () => {
     if (!user) {
       setMessageCounts({ messagesSentCount: 0, messagesReceivedCount: 0 });
@@ -57,7 +56,6 @@ export default function HomePage() {
     }
   }, [user]);
 
-  // Fetch message counts when user is available
   useEffect(() => {
     fetchCounts();
   }, [fetchCounts]);

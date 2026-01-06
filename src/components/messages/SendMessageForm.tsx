@@ -56,7 +56,6 @@ export default function SendMessageForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Load receivable users when dialog opens
   useEffect(() => {
     if (open && !receiverId) {
       setUsersLoading(true);
