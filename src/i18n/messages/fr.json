@@ -24,7 +24,14 @@
       "hasAccount": "Déjà un compte ?",
       "signIn": "Se connecter",
       "showPassword": "Afficher le mot de passe",
-      "hidePassword": "Masquer le mot de passe"
+      "hidePassword": "Masquer le mot de passe",
+      "roleLabel": "Je souhaite",
+      "roleSender": "Envoyer des messages",
+      "roleReceiver": "Recevoir des messages",
+      "roleBoth": "Envoyer et recevoir",
+      "roleSenderDescription": "Envoyez des messages de soutien à d'autres personnes",
+      "roleReceiverDescription": "Recevez des messages de soutien d'autres personnes",
+      "roleBothDescription": "Participez des deux côtés de la communauté"
     },
     "common": {
       "errors": {
@@ -77,8 +84,11 @@
     },
     "userDashboard": {
       "title": "Votre tableau de bord",
-      "description": "Gérez vos cadeaux et consultez votre activité"
-    }
+      "description": "Gérez vos cadeaux et consultez votre activité",
+      "messagesReceived": "Messages reçus",
+      "messagesSent": "Messages envoyés"
+    },
+    "sendMessage": "Envoyer un message"
   },
   "profile": {
     "noDisplayName": "Utilisateur",

@@ -24,7 +24,14 @@
       "hasAccount": "Already have an account?",
       "signIn": "Sign In",
       "showPassword": "Show password",
-      "hidePassword": "Hide password"
+      "hidePassword": "Hide password",
+      "roleLabel": "I want to",
+      "roleSender": "Send messages",
+      "roleReceiver": "Receive messages",
+      "roleBoth": "Send and receive",
+      "roleSenderDescription": "Send supportive messages to others",
+      "roleReceiverDescription": "Receive supportive messages from others",
+      "roleBothDescription": "Participate on both sides of the community"
     },
     "common": {
       "errors": {
@@ -77,8 +84,11 @@
     },
     "userDashboard": {
       "title": "Your Dashboard",
-      "description": "Manage your gifts and view your activity"
-    }
+      "description": "Manage your gifts and view your activity",
+      "messagesReceived": "Messages Received",
+      "messagesSent": "Messages Sent"
+    },
+    "sendMessage": "Send a Message"
   },
   "profile": {
     "noDisplayName": "User",

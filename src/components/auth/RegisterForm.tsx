@@ -9,10 +9,12 @@ import {
   Typography,
   Alert,
   IconButton,
-  InputAdornment
+  InputAdornment,
+  ToggleButtonGroup,
+  ToggleButton
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { signUp, translateFirebaseError } from '@/lib/auth';
+import { Visibility, VisibilityOff, Send, Inbox, SwapHoriz } from '@mui/icons-material';
+import { signUp, translateFirebaseError, UserRole } from '@/lib/auth';
 
 interface RegisterFormProps {
   onSuccess: () => void;
@@ -27,6 +29,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
     password: '',
     confirmPassword: ''
   });
+  const [role, setRole] = useState<UserRole>('both');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -68,7 +71,8 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
     const { user, error: authError } = await signUp({
       email: formData.email,
       password: formData.password,
-      displayName: formData.displayName.trim()
+      displayName: formData.displayName.trim(),
+      role
     });
 
     if (authError) {
@@ -188,6 +192,39 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
           ),
         }}
       />
+
+      <Box sx={{ mt: 3, mb: 1 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          {t('register.roleLabel')}
+        </Typography>
+        <ToggleButtonGroup
+          value={role}
+          exclusive
+          onChange={(_, newRole) => newRole && setRole(newRole)}
+          fullWidth
+          disabled={loading}
+          sx={{ 
+            '& .MuiToggleButton-root': {
+              py: 1.5,
+              flexDirection: 'column',
+              gap: 0.5
+            }
+          }}
+        >
+          <ToggleButton value="sender">
+            <Send fontSize="small" />
+            <Typography variant="caption">{t('register.roleSender')}</Typography>
+          </ToggleButton>
+          <ToggleButton value="receiver">
+            <Inbox fontSize="small" />
+            <Typography variant="caption">{t('register.roleReceiver')}</Typography>
+          </ToggleButton>
+          <ToggleButton value="both">
+            <SwapHoriz fontSize="small" />
+            <Typography variant="caption">{t('register.roleBoth')}</Typography>
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
 
       <Button
         type="submit"

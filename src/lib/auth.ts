@@ -4,13 +4,17 @@ import {
   signOut,
   updateProfile
 } from 'firebase/auth';
-import { auth } from './firebase';
+import { auth, db } from './firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 import authApiClient from './api-client';
+
+export type UserRole = 'sender' | 'receiver' | 'both';
 
 export interface SignUpData {
   email: string;
   password: string;
   displayName: string;
+  role: UserRole;
 }
 
 export interface SignInData {
@@ -18,7 +22,7 @@ export interface SignInData {
   password: string;
 }
 
-export const signUp = async ({ email, password, displayName }: SignUpData) => {
+export const signUp = async ({ email, password, displayName, role }: SignUpData) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
@@ -26,6 +30,15 @@ export const signUp = async ({ email, password, displayName }: SignUpData) => {
     await updateProfile(user, {
       displayName: displayName
     });
+
+    // Update the user role in Firestore (the trigger creates with 'both' by default)
+    // We update it to the user's choice
+    if (role !== 'both') {
+      // Small delay to ensure the trigger has created the document
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { role });
+    }
 
     return { user, error: null };
   } catch (error: unknown) {
