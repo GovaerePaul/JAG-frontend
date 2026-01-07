@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { CheckCircle, RadioButtonUnchecked, EmojiEvents } from '@mui/icons-material';
 import { useTranslations, useLocale } from 'next-intl';
-import { useQuests, invalidateQuestsCache } from '@/hooks/useQuests';
+import { useQuests } from '@/hooks/useQuests';
 import { UserQuestStatus } from '@/lib/quests-api';
 
 interface QuestListProps {

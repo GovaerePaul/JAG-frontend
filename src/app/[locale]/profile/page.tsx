@@ -47,7 +47,7 @@ import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useUserStats } from '@/hooks/useUserStats';
 import { useEventTypes } from '@/hooks/useEventTypes';
 import { updateUserPreferences } from '@/lib/users-api';
-import { invalidateQuestsCache, useQuests } from '@/hooks/useQuests';
+import { useQuests } from '@/hooks/useQuests';
 import NotificationBadge from '@/components/NotificationBadge';
 
 export default function ProfilePage() {
@@ -89,14 +89,12 @@ export default function ProfilePage() {
     setEditDialogOpen(false);
   };
 
-  const handleUpdatePreferences = async (preferences: Partial<UserPreferences>, shouldCheckQuests = false) => {
+  const handleUpdatePreferences = async (preferences: Partial<UserPreferences>) => {
     setSavingPreferences(true);
     try {
       const response = await updateUserPreferences(preferences);
       if (!response.success) {
         // Silent fail
-      } else if (shouldCheckQuests) {
-        invalidateQuestsCache();
       }
     } catch (error) {
       // Silent fail
@@ -542,7 +540,7 @@ export default function ProfilePage() {
                                       const newFavorites = [...currentFavorites, eventType.id];
                                       handleUpdatePreferences({
                                         favoriteEventTypeIdsForReceiving: newFavorites,
-                                      }, true);
+                                      });
                                     }}
                                     disabled={savingPreferences}
                                     variant="outlined"

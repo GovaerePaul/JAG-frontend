@@ -15,7 +15,6 @@ import {
 import { LocationOn, Close } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
 import { updateUserLocationByCity } from '@/lib/users-api';
-import { invalidateQuestsCache } from '@/hooks/useQuests';
 import CityAutocomplete from './CityAutocomplete';
 
 interface LocationPermissionProps {
@@ -53,7 +52,6 @@ export default function LocationPermission({
       const response = await updateUserLocationByCity(selectedCity.city);
 
       if (response.success) {
-        invalidateQuestsCache();
         onLocationEnabled();
         onClose();
       } else {

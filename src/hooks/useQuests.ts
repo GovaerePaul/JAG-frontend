@@ -20,9 +20,6 @@ export const questsCache = {
 export function invalidateQuestsCache() {
   questsCache.data = null;
   questsCache.timestamp = 0;
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('questCacheInvalidated'));
-  }
 }
 
 const CACHE_DURATION = 60000;
@@ -83,7 +80,7 @@ export function useQuests(): UseQuestsReturn {
   }, [fetchQuests]);
 
   const refetch = useCallback(async () => {
-    invalidateQuestsCache();
+    invalidateQuestsCache(false);
     await fetchQuests();
   }, [fetchQuests]);
 
