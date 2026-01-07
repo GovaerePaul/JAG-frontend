@@ -43,6 +43,7 @@ import {
   Add,
   LocationOn,
 } from '@mui/icons-material';
+import { IconButton } from '@mui/material';
 import { useRouter } from '@/i18n/navigation';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useUserStats } from '@/hooks/useUserStats';
@@ -224,28 +225,57 @@ export default function ProfilePage() {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, position: 'relative', zIndex: 1 }}>
-            <Avatar
-              src={user.photoURL || undefined}
-              sx={{
-                width: 120,
-                height: 120,
-                mr: 3,
-                fontSize: '2.5rem',
-                border: '4px solid',
-                borderColor: 'transparent',
-                background: 'linear-gradient(135deg, #FE6B8B, #FF8E53)',
-                backgroundClip: 'padding-box',
-                boxShadow: '0 4px 20px rgba(254, 107, 139, 0.3)',
-              }}
-            >
-              {user.displayName?.charAt(0) || user.email?.charAt(0)}
-            </Avatar>
+            <Box sx={{ position: 'relative' }}>
+              <Avatar
+                src={user.photoURL || undefined}
+                sx={{
+                  width: { xs: 80, sm: 120 },
+                  height: { xs: 80, sm: 120 },
+                  mr: { xs: 2, sm: 3 },
+                  fontSize: { xs: '2rem', sm: '2.5rem' },
+                  border: '4px solid',
+                  borderColor: 'transparent',
+                  background: 'linear-gradient(135deg, #FE6B8B, #FF8E53)',
+                  backgroundClip: 'padding-box',
+                  boxShadow: '0 4px 20px rgba(254, 107, 139, 0.3)',
+                }}
+              >
+                {user.displayName?.charAt(0) || user.email?.charAt(0)}
+              </Avatar>
+              {/* Icon Edit on mobile only */}
+              <IconButton
+                onClick={handleEditProfile}
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: { xs: 0, sm: -8 },
+                  backgroundColor: '#FE6B8B',
+                  color: 'white',
+                  width: { xs: 32, sm: 36 },
+                  height: { xs: 32, sm: 36 },
+                  border: '3px solid white',
+                  boxShadow: '0 2px 8px rgba(254, 107, 139, 0.3)',
+                  display: { xs: 'flex', sm: 'none' },
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  '&:hover': {
+                    backgroundColor: '#FF8E53',
+                    transform: 'scale(1.1)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+                aria-label={t('editProfile')}
+              >
+                <Edit sx={{ fontSize: { xs: 18, sm: 20 } }} />
+              </IconButton>
+            </Box>
             <Box sx={{ flexGrow: 1 }}>
               <Typography
                 variant="h4"
                 gutterBottom
                 sx={{
                   fontWeight: 600,
+                  fontSize: { xs: '1.5rem', sm: '2rem' },
                   background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
@@ -254,7 +284,7 @@ export default function ProfilePage() {
               >
                 {user.displayName || t('noDisplayName')}
               </Typography>
-              <Typography variant="body1" color="text.secondary" gutterBottom>
+              <Typography variant="body1" color="text.secondary" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                 {user.email}
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
@@ -303,11 +333,13 @@ export default function ProfilePage() {
                 )}
               </Box>
             </Box>
+            {/* Button Edit on desktop only */}
             <Button
               variant="outlined"
               startIcon={<Edit />}
               onClick={handleEditProfile}
               sx={{
+                display: { xs: 'none', sm: 'flex' },
                 borderColor: '#FE6B8B',
                 color: '#FE6B8B',
                 textTransform: 'none',
