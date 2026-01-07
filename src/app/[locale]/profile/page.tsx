@@ -224,14 +224,15 @@ export default function ProfilePage() {
             },
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, position: 'relative', zIndex: 1 }}>
-            <Box sx={{ position: 'relative' }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, mb: 4, position: 'relative', zIndex: 1, gap: { xs: 2, sm: 0 } }}>
+            <Box sx={{ position: 'relative', alignSelf: { xs: 'center', sm: 'flex-start' } }}>
               <Avatar
                 src={user.photoURL || undefined}
                 sx={{
                   width: { xs: 80, sm: 120 },
                   height: { xs: 80, sm: 120 },
-                  mr: { xs: 2, sm: 3 },
+                  mr: { xs: 0, sm: 3 },
+                  mb: { xs: 0, sm: 0 },
                   fontSize: { xs: '2rem', sm: '2.5rem' },
                   border: '4px solid',
                   borderColor: 'transparent',
@@ -269,7 +270,7 @@ export default function ProfilePage() {
                 <Edit sx={{ fontSize: { xs: 18, sm: 20 } }} />
               </IconButton>
             </Box>
-            <Box sx={{ flexGrow: 1 }}>
+            <Box sx={{ flexGrow: 1, width: { xs: '100%', sm: 'auto' }, textAlign: { xs: 'center', sm: 'left' } }}>
               <Typography
                 variant="h4"
                 gutterBottom
@@ -287,7 +288,7 @@ export default function ProfilePage() {
               <Typography variant="body1" color="text.secondary" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                 {user.email}
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
                 {user.emailVerified && (
                   <Chip
                     icon={<Verified />}
