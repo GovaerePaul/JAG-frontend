@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, UserPreferences } from '@/hooks/useAuth';
 import {
   Container,
   Paper,
@@ -88,7 +88,7 @@ export default function ProfilePage() {
     setEditDialogOpen(false);
   };
 
-  const handleUpdatePreferences = async (preferences: { favoriteEventTypeIds?: string[] }) => {
+  const handleUpdatePreferences = async (preferences: Partial<UserPreferences>) => {
     setSavingPreferences(true);
     try {
       const response = await updateUserPreferences(preferences);
