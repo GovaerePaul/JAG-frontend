@@ -8,7 +8,7 @@ import {
   Container,
   IconButton
 } from '@mui/material';
-import { Inbox, Explore } from '@mui/icons-material';
+import { Inbox, Explore, EmojiEvents } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import UserDropdown from './UserDropdown';
@@ -33,6 +33,10 @@ export default function Navbar() {
 
   const handleDiscoverClick = () => {
     router.push('/discover');
+  };
+
+  const handleQuestsClick = () => {
+    router.push('/quests');
   };
 
   return (
@@ -66,18 +70,32 @@ export default function Navbar() {
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {user && (
-              <IconButton
-                color="inherit"
-                onClick={handleDiscoverClick}
-                aria-label={t('title')}
-                sx={{
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
-              >
-                <Explore />
-              </IconButton>
+              <>
+                <IconButton
+                  color="inherit"
+                  onClick={handleQuestsClick}
+                  aria-label="Quests"
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  <EmojiEvents />
+                </IconButton>
+                <IconButton
+                  color="inherit"
+                  onClick={handleDiscoverClick}
+                  aria-label={t('title')}
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  <Explore />
+                </IconButton>
+              </>
             )}
             {user && canReceive && (
               <IconButton

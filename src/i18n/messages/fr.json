@@ -92,6 +92,7 @@
       "newMessages": "nouveaux"
     },
     "sendMessage": "Envoyer un message",
+    "viewQuests": "Voir les quêtes",
     "discoverUsers": {
       "title": "Découvrir des utilisateurs",
       "description": "Trouvez des utilisateurs près de chez vous pour envoyer des messages",
@@ -260,6 +261,18 @@
       "useMyPreferences": "Utiliser mes préférences",
       "apply": "Appliquer",
       "reset": "Réinitialiser"
+    }
+  },
+  "quests": {
+    "title": "Quêtes",
+    "noQuests": "Aucune quête disponible",
+    "points": "points",
+    "progress": "{current}/{target}",
+    "completed": "Terminée !",
+    "categories": {
+      "profile": "Profil",
+      "messages": "Messages",
+      "engagement": "Engagement"
     }
   }
 }

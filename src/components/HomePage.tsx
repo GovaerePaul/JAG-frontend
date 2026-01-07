@@ -121,6 +121,17 @@ export default function HomePage() {
                   color="warning"
                 />
               </Box>
+              <Box sx={{ mt: 3, textAlign: 'center' }}>
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  startIcon={<EmojiEvents />}
+                  sx={{ borderRadius: 2 }}
+                  onClick={() => router.push('/quests')}
+                >
+                  {t('viewQuests')}
+                </Button>
+              </Box>
             </Paper>
 
             <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'background.default', mb: 3 }}>

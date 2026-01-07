@@ -92,6 +92,7 @@
       "newMessages": "new"
     },
     "sendMessage": "Send a Message",
+    "viewQuests": "View Quests",
     "discoverUsers": {
       "title": "Discover Users",
       "description": "Find users near you to send messages",
@@ -260,6 +261,18 @@
       "useMyPreferences": "Use my preferences",
       "apply": "Apply",
       "reset": "Reset"
+    }
+  },
+  "quests": {
+    "title": "Quests",
+    "noQuests": "No quests available",
+    "points": "points",
+    "progress": "{current}/{target}",
+    "completed": "Completed!",
+    "categories": {
+      "profile": "Profile",
+      "messages": "Messages",
+      "engagement": "Engagement"
     }
   }
 }
