@@ -637,7 +637,7 @@ export default function ProfilePage() {
                                       const newFavorites = [...currentFavorites, eventType.id];
                                       handleUpdatePreferences({
                                         favoriteEventTypeIdsForSending: newFavorites,
-                                      }, true);
+                                      });
                                     }}
                                     variant="outlined"
                                     disabled={savingPreferences}
