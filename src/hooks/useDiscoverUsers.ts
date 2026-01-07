@@ -111,7 +111,8 @@ export function useDiscoverUsers(
       }
 
       // Track attempt count for expansion logic
-      if (searchParams.reset) {
+      // Only reset on first search, not on expansion
+      if (searchParams.reset && !expandDistance) {
         attemptCountRef.current = 1; // First attempt
       }
 
@@ -152,6 +153,7 @@ export function useDiscoverUsers(
             if (nextDistance <= maxDistance) {
               console.log(`No users found at ${searchDistance}km (attempt ${attemptCountRef.current}), trying ${nextDistance}km (attempt ${nextAttempt})`);
               attemptCountRef.current = nextAttempt;
+              // Don't set loading to false here - let the next search handle it
               setTimeout(() => {
                 performSearch(
                   {
@@ -162,15 +164,20 @@ export function useDiscoverUsers(
                   true
                 );
               }, 500);
-              return;
+              return; // Exit early, don't set loading to false
             }
           }
+          
+          // Set loading to false when done (found users or max attempts reached)
+          setLoading(false);
+          setIsExpanding(false);
         } else {
           setError(response.error || 'Failed to discover users');
+          setLoading(false);
+          setIsExpanding(false);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to discover users');
-      } finally {
         setLoading(false);
         setIsExpanding(false);
       }
