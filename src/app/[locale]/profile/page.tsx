@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth, UserPreferences } from '@/hooks/useAuth';
 import {
@@ -57,18 +57,12 @@ export default function ProfilePage() {
   const { user, userProfile, loading, canSend, canReceive } = useAuth();
   const router = useRouter();
   const { unreadCount } = useUnreadMessages();
-  const { messageCounts, loading: loadingCounts, refetch: refetchUserStats } = useUserStats();
-  const { eventTypes, loading: loadingEventTypes, refetch: refetchEventTypes } = useEventTypes();
+  const { messageCounts, loading: loadingCounts } = useUserStats();
+  const { eventTypes, loading: loadingEventTypes } = useEventTypes();
   const { refetch: refetchQuests } = useQuests();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
   const [savingPreferences, setSavingPreferences] = useState(false);
-
-  // Fetch data when component mounts
-  useEffect(() => {
-    refetchUserStats();
-    refetchEventTypes();
-  }, [refetchUserStats, refetchEventTypes]);
 
   // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
   const gamification = {

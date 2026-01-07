@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -47,16 +47,10 @@ export default function SendMessageForm({
   receiverName = '',
   onSuccess,
 }: SendMessageFormProps) {
-  const { eventTypes, loading: eventsLoading, refetch: refetchEventTypes } = useEventTypes();
-  const { users: receivableUsers, loading: usersLoading, refetch: refetchReceivableUsers } = useReceivableUsers();
+  const { eventTypes, loading: eventsLoading } = useEventTypes();
+  const { users: receivableUsers, loading: usersLoading } = useReceivableUsers();
   const t = useTranslations('messages.send');
   const tCommon = useTranslations('common');
-
-  // Fetch data when component mounts
-  useEffect(() => {
-    refetchEventTypes();
-    refetchReceivableUsers();
-  }, [refetchEventTypes, refetchReceivableUsers]);
   const [formData, setFormData] = useState<SendMessageData>({
     receiverId: receiverId,
     eventTypeId: '',

@@ -98,8 +98,9 @@ export function useEventTypes(): UseEventTypesReturn {
     await fetchPromise;
   }, [locale, cache]);
 
-  // No automatic fetch - components must call refetch() manually
-  // This avoids unnecessary API calls when components mount
+  useEffect(() => {
+    fetchEventTypes();
+  }, [fetchEventTypes]);
 
   const refetch = useCallback(async () => {
     invalidateEventTypesCache(locale);

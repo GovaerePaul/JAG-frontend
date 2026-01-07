@@ -86,8 +86,9 @@ export function useUserStats(): UseUserStatsReturn {
     await fetchPromise;
   }, [user]);
 
-  // No automatic fetch - components must call refetch() manually
-  // This avoids unnecessary API calls when components mount
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   const refetch = useCallback(async () => {
     invalidateUserStatsCache();

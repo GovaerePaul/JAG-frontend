@@ -78,8 +78,9 @@ export function useReceivableUsers(): UseReceivableUsersReturn {
     await fetchPromise;
   }, [user]);
 
-  // No automatic fetch - components must call refetch() manually
-  // This avoids unnecessary API calls when components mount
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const refetch = useCallback(async () => {
     invalidateReceivableUsersCache();

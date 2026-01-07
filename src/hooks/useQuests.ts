@@ -75,8 +75,9 @@ export function useQuests(): UseQuestsReturn {
     await fetchPromise;
   }, [user]);
 
-  // No automatic fetch - components must call refetch() manually
-  // This avoids unnecessary API calls when components mount
+  useEffect(() => {
+    fetchQuests();
+  }, [fetchQuests]);
 
   const refetch = useCallback(async () => {
     invalidateQuestsCache();

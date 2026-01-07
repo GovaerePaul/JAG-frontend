@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { Card, CardContent, CardActions, Avatar, Typography, Button, Chip, Box } from '@mui/material';
 import { Person, Send } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
@@ -18,13 +17,8 @@ export default function UserCard({ user, onSendMessage }: UserCardProps) {
   const t = useTranslations('discover');
   const router = useRouter();
   const locale = useLocale();
-  const { eventTypes, refetch: refetchEventTypes } = useEventTypes();
+  const { eventTypes } = useEventTypes();
   const isNew = false;
-
-  // Fetch event types when component mounts
-  useEffect(() => {
-    refetchEventTypes();
-  }, [refetchEventTypes]);
 
   // Get favorite event types for this user
   const favoriteEventTypes = user.favoriteEventTypeIds

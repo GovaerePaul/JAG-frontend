@@ -39,12 +39,7 @@ export default function SentMessagesPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const { messages: sentMessages, loading, error, refetch } = useSentMessages();
-
-  // Fetch messages when component mounts
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
+  const { messages: sentMessages, loading, error } = useSentMessages();
 
   const getReceiverIds = useCallback((msgs: MessageSummary[]) =>
     msgs.map((msg) => msg.receiverId).filter((id) => id),
