@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -60,6 +60,26 @@ export default function SendMessageForm({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Update formData.receiverId when receiverId prop changes
+  useEffect(() => {
+    if (receiverId) {
+      setFormData((prev) => ({ ...prev, receiverId }));
+    }
+  }, [receiverId]);
+
+  // Reset form when dialog closes (but not on success, as that's handled separately)
+  useEffect(() => {
+    if (!open && !success) {
+      setFormData({
+        receiverId: receiverId || '',
+        eventTypeId: '',
+        content: '',
+        isAnonymous: false,
+      });
+      setError(null);
+    }
+  }, [open, success, receiverId]);
 
   const selectedEvent = eventTypes.find((e) => e.id === formData.eventTypeId);
 
