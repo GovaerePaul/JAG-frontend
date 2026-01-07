@@ -9,13 +9,12 @@ import {
   Button,
   Typography,
   Box,
-  TextField,
   Alert,
   CircularProgress,
 } from '@mui/material';
 import { LocationOn, Close } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
-import { updateUserLocation, updateUserLocationByCity, Coordinates } from '@/lib/users-api';
+import { updateUserLocationByCity } from '@/lib/users-api';
 import CityAutocomplete from './CityAutocomplete';
 
 interface LocationPermissionProps {
@@ -33,7 +32,6 @@ export default function LocationPermission({
   const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [manualMode, setManualMode] = useState(false);
   const [city, setCity] = useState('');
   const [selectedCity, setSelectedCity] = useState<{
     city: string;
@@ -41,91 +39,7 @@ export default function LocationPermission({
     country?: string;
   } | null>(null);
 
-  const handleEnableLocation = (retry = false) => {
-    setLoading(true);
-    setError(null);
-
-    if (!navigator.geolocation) {
-      setError(t('unavailable'));
-      setLoading(false);
-      return;
-    }
-
-    const options: PositionOptions = retry
-      ? {
-          enableHighAccuracy: false,
-          timeout: 30000,
-          maximumAge: 600000, // Accept cached position up to 10 minutes old
-        }
-      : {
-          enableHighAccuracy: true,
-          timeout: 20000,
-          maximumAge: 300000, // Accept cached position up to 5 minutes old
-        };
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          console.log('Geolocation success:', {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            accuracy: position.coords.accuracy,
-          });
-
-          const coordinates: Coordinates = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-
-          const response = await updateUserLocation(coordinates);
-
-          if (response.success) {
-            onLocationEnabled();
-            onClose();
-          } else {
-            console.error('Failed to update location:', response.error);
-            setError(response.error || t('error'));
-          }
-        } catch (err) {
-          console.error('Error updating location:', err);
-          setError(err instanceof Error ? err.message : t('error'));
-        } finally {
-          setLoading(false);
-        }
-      },
-      (err) => {
-        console.error('Geolocation error:', {
-          code: err.code,
-          message: err.message,
-          PERMISSION_DENIED: err.PERMISSION_DENIED,
-          POSITION_UNAVAILABLE: err.POSITION_UNAVAILABLE,
-          TIMEOUT: err.TIMEOUT,
-        });
-
-        // err.code: 1 = PERMISSION_DENIED, 2 = POSITION_UNAVAILABLE, 3 = TIMEOUT
-        if (err.code === 1) {
-          setError(t('denied'));
-          setManualMode(true);
-        } else if (err.code === 3 && !retry) {
-          // Timeout - try again with less strict options
-          console.log('Retrying with less strict options...');
-          handleEnableLocation(true);
-          return;
-        } else {
-          setError(t('unavailable'));
-          setManualMode(true);
-        }
-        setLoading(false);
-      },
-      options
-    );
-  };
-
-  const handleEnableLocationClick = () => {
-    handleEnableLocation(false);
-  };
-
-  const handleManualSave = async () => {
+  const handleSave = async () => {
     if (!selectedCity || !selectedCity.city.trim()) {
       setError(t('cityRequired') || 'Please select a city');
       return;
@@ -171,41 +85,23 @@ export default function LocationPermission({
             </Alert>
           )}
 
-          {!manualMode ? (
-            <>
-              <Typography variant="body1">{t('description')}</Typography>
-              <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                <Button
-                  variant="outlined"
-                  onClick={() => setManualMode(true)}
-                  disabled={loading}
-                >
-                  {t('manual')}
-                </Button>
-              </Box>
-            </>
-          ) : (
-            <>
-              <Typography variant="body1">
-                {t('denied')}
-              </Typography>
-              <CityAutocomplete
-                value={city}
-                onChange={(value) => setCity(value || '')}
-                onSelect={(cityData) => {
-                  setSelectedCity(cityData);
-                  // Build display name from city data
-                  const parts = [cityData.city];
-                  if (cityData.region) parts.push(cityData.region);
-                  if (cityData.country) parts.push(cityData.country);
-                  setCity(parts.join(', '));
-                }}
-                disabled={loading}
-                error={!!error && !city.trim()}
-                helperText={error && !city.trim() ? error : undefined}
-              />
-            </>
-          )}
+          <Typography variant="body1">{t('description')}</Typography>
+          
+          <CityAutocomplete
+            value={city}
+            onChange={(value) => setCity(value || '')}
+            onSelect={(cityData) => {
+              setSelectedCity(cityData);
+              // Build display name from city data
+              const parts = [cityData.city];
+              if (cityData.region) parts.push(cityData.region);
+              if (cityData.country) parts.push(cityData.country);
+              setCity(parts.join(', '));
+            }}
+            disabled={loading}
+            error={!!error && !city.trim()}
+            helperText={error && !city.trim() ? error : undefined}
+          />
         </Box>
       </DialogContent>
 
@@ -213,25 +109,14 @@ export default function LocationPermission({
         <Button onClick={onClose} disabled={loading}>
           {t('later')}
         </Button>
-        {!manualMode ? (
-          <Button
-            variant="contained"
-            onClick={handleEnableLocationClick}
-            disabled={loading}
-            startIcon={loading ? <CircularProgress size={20} /> : <LocationOn />}
-          >
-            {loading ? tCommon('loading') : t('enable')}
-          </Button>
-        ) : (
-          <Button
-            variant="contained"
-            onClick={handleManualSave}
-            disabled={loading || !selectedCity || !selectedCity.city.trim()}
-            startIcon={loading ? <CircularProgress size={20} /> : null}
-          >
-            {loading ? tCommon('loading') : t('save')}
-          </Button>
-        )}
+        <Button
+          variant="contained"
+          onClick={handleSave}
+          disabled={loading || !selectedCity || !selectedCity.city.trim()}
+          startIcon={loading ? <CircularProgress size={20} /> : null}
+        >
+          {loading ? tCommon('loading') : t('save')}
+        </Button>
       </DialogActions>
     </Dialog>
   );
