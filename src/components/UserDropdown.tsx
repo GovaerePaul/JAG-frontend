@@ -67,21 +67,33 @@ export default function UserDropdown() {
       <IconButton
         onClick={handleClick}
         size="small"
-        sx={{ ml: 2 }}
+        sx={{
+          ml: { xs: 0.5, sm: 1 },
+          padding: { xs: 0.5, sm: 0.75 },
+        }}
         aria-controls={open ? 'account-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
       >
         {user ? (
-          <Avatar 
+          <Avatar
             src={user.photoURL || undefined}
-            sx={{ width: 32, height: 32 }}
+            sx={{
+              width: { xs: 28, sm: 32 },
+              height: { xs: 28, sm: 32 },
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            }}
           >
             {user.displayName ? user.displayName[0].toUpperCase() : user.email?.[0].toUpperCase()}
           </Avatar>
         ) : (
-          <Avatar sx={{ width: 32, height: 32 }}>
-            <AccountCircle />
+          <Avatar
+            sx={{
+              width: { xs: 28, sm: 32 },
+              height: { xs: 28, sm: 32 },
+            }}
+          >
+            <AccountCircle sx={{ fontSize: { xs: 20, sm: 24 } }} />
           </Avatar>
         )}
       </IconButton>

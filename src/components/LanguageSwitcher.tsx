@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Menu, MenuItem } from '@mui/material';
+import { IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { LanguageOutlined } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -51,22 +51,23 @@ export default function LanguageSwitcher() {
 
   return (
     <>
-      <Button
-        onClick={handleClick}
-        startIcon={<LanguageOutlined />}
-        variant="outlined"
-        size="small"
-        sx={{ 
-          color: 'white', 
-          borderColor: 'rgba(255,255,255,0.3)',
-          '&:hover': {
-            borderColor: 'rgba(255,255,255,0.5)',
-            backgroundColor: 'rgba(255,255,255,0.1)'
-          }
-        }}
-      >
-        {localeNames[currentLocale]}
-      </Button>
+      <Tooltip title={localeNames[currentLocale]}>
+        <IconButton
+          onClick={handleClick}
+          aria-label="Change language"
+          sx={{
+            color: 'text.primary',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              backgroundColor: 'rgba(254, 107, 139, 0.1)',
+              color: '#FE6B8B',
+              transform: 'translateY(-2px)',
+            },
+          }}
+        >
+          <LanguageOutlined />
+        </IconButton>
+      </Tooltip>
       <Menu
         anchorEl={anchorEl}
         open={open}

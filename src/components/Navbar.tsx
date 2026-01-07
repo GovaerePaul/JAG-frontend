@@ -50,15 +50,15 @@ export default function Navbar() {
         boxShadow: '0 2px 20px rgba(254, 107, 139, 0.08)',
       }}
     >
-      <Container maxWidth="lg">
-        <Toolbar disableGutters sx={{ py: 1 }}>
+      <Container maxWidth="lg" sx={{ px: { xs: 1, sm: 2 } }}>
+        <Toolbar disableGutters sx={{ py: { xs: 0.5, sm: 1 }, minHeight: { xs: 56, sm: 64 } }}>
           <Box
             onClick={handleLogoClick}
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 1,
-              mr: 3,
+              gap: { xs: 0.5, sm: 1 },
+              mr: { xs: 1, sm: 3 },
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               '&:hover': {
@@ -68,7 +68,7 @@ export default function Navbar() {
           >
             <Favorite
               sx={{
-                fontSize: 28,
+                fontSize: { xs: 22, sm: 28 },
                 color: '#FE6B8B',
                 animation: 'pulse 2s ease-in-out infinite',
                 '@keyframes pulse': {
@@ -89,6 +89,7 @@ export default function Navbar() {
                 fontFamily: 'inherit',
                 fontWeight: 700,
                 letterSpacing: '0.05em',
+                fontSize: { xs: '1rem', sm: '1.25rem' },
                 background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
@@ -102,15 +103,24 @@ export default function Navbar() {
 
           <Box sx={{ flexGrow: 1 }} />
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: { xs: 0, sm: 0.5 },
+              flexShrink: 0,
+            }}
+          >
             {user && (
               <>
                 <IconButton
                   onClick={handleQuestsClick}
                   aria-label="Quests"
+                  size="small"
                   sx={{
                     color: 'text.primary',
                     transition: 'all 0.3s ease',
+                    padding: { xs: 0.75, sm: 1 },
                     '&:hover': {
                       backgroundColor: 'rgba(254, 107, 139, 0.1)',
                       color: '#FE6B8B',
@@ -118,14 +128,16 @@ export default function Navbar() {
                     },
                   }}
                 >
-                  <EmojiEvents />
+                  <EmojiEvents sx={{ fontSize: { xs: 20, sm: 24 } }} />
                 </IconButton>
                 <IconButton
                   onClick={handleDiscoverClick}
                   aria-label={t('title')}
+                  size="small"
                   sx={{
                     color: 'text.primary',
                     transition: 'all 0.3s ease',
+                    padding: { xs: 0.75, sm: 1 },
                     '&:hover': {
                       backgroundColor: 'rgba(254, 107, 139, 0.1)',
                       color: '#FE6B8B',
@@ -133,7 +145,7 @@ export default function Navbar() {
                     },
                   }}
                 >
-                  <Explore />
+                  <Explore sx={{ fontSize: { xs: 20, sm: 24 } }} />
                 </IconButton>
               </>
             )}
@@ -141,10 +153,12 @@ export default function Navbar() {
               <IconButton
                 onClick={handleMessagesClick}
                 aria-label="Messages"
+                size="small"
                 sx={{
                   position: 'relative',
                   color: 'text.primary',
                   transition: 'all 0.3s ease',
+                  padding: { xs: 0.75, sm: 1 },
                   '&:hover': {
                     backgroundColor: 'rgba(254, 107, 139, 0.1)',
                     color: '#FE6B8B',
@@ -153,7 +167,7 @@ export default function Navbar() {
                 }}
               >
                 <NotificationBadge count={unreadCount} pulse={unreadCount > 0}>
-                  <Inbox />
+                  <Inbox sx={{ fontSize: { xs: 20, sm: 24 } }} />
                 </NotificationBadge>
               </IconButton>
             )}
