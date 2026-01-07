@@ -131,7 +131,17 @@
     "maxFavoritesReached": "Maximum de 10 favoris atteint",
     "add": "Ajouter",
     "remove": "Retirer",
-    "noFavoritesForReceiving": "Aucun favori pour recevoir"
+    "noFavoritesForReceiving": "Aucun favori pour recevoir",
+    "location": {
+      "title": "Localisation",
+      "current": "Ville actuelle",
+      "notSet": "Non définie",
+      "edit": "Modifier",
+      "editTitle": "Modifier la localisation",
+      "description": "Sélectionnez votre ville pour permettre aux autres utilisateurs de vous trouver.",
+      "cityRequired": "Veuillez sélectionner une ville",
+      "error": "Erreur lors de la mise à jour de la localisation"
+    }
   },
   "messages": {
     "received": {

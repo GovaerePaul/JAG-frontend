@@ -131,7 +131,17 @@
     "maxFavoritesReached": "Maximum of 10 favorites reached",
     "add": "Add",
     "remove": "Remove",
-    "noFavoritesForReceiving": "No favorites for receiving"
+    "noFavoritesForReceiving": "No favorites for receiving",
+    "location": {
+      "title": "Location",
+      "current": "Current City",
+      "notSet": "Not set",
+      "edit": "Edit",
+      "editTitle": "Edit Location",
+      "description": "Select your city to allow other users to find you.",
+      "cityRequired": "Please select a city",
+      "error": "Error updating location"
+    }
   },
   "messages": {
     "received": {

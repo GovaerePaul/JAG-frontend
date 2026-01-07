@@ -41,14 +41,17 @@ import {
   Favorite,
   FavoriteBorder,
   Add,
+  LocationOn,
 } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useUserStats } from '@/hooks/useUserStats';
 import { useEventTypes } from '@/hooks/useEventTypes';
-import { updateUserPreferences } from '@/lib/users-api';
+import { updateUserPreferences, updateUserLocationByCity } from '@/lib/users-api';
 import { useQuests } from '@/hooks/useQuests';
 import NotificationBadge from '@/components/NotificationBadge';
+import CityAutocomplete from '@/components/discover/CityAutocomplete';
+import { Alert } from '@mui/material';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
@@ -63,6 +66,15 @@ export default function ProfilePage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
   const [savingPreferences, setSavingPreferences] = useState(false);
+  const [locationDialogOpen, setLocationDialogOpen] = useState(false);
+  const [locationCity, setLocationCity] = useState('');
+  const [selectedLocationCity, setSelectedLocationCity] = useState<{
+    city: string;
+    region?: string;
+    country?: string;
+  } | null>(null);
+  const [updatingLocation, setUpdatingLocation] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
   const gamification = {
@@ -101,6 +113,42 @@ export default function ProfilePage() {
     } finally {
       setSavingPreferences(false);
     }
+  };
+
+  const handleUpdateLocation = async () => {
+    if (!selectedLocationCity || !selectedLocationCity.city.trim()) {
+      setLocationError(t('location.cityRequired') || 'Veuillez sélectionner une ville');
+      return;
+    }
+
+    setUpdatingLocation(true);
+    setLocationError(null);
+
+    try {
+      const response = await updateUserLocationByCity(selectedLocationCity.city);
+      if (response.success) {
+        setLocationDialogOpen(false);
+        setLocationCity('');
+        setSelectedLocationCity(null);
+        // The userProfile will update automatically via onSnapshot
+      } else {
+        setLocationError(response.error || t('location.error') || 'Erreur lors de la mise à jour');
+      }
+    } catch (err) {
+      setLocationError(err instanceof Error ? err.message : t('location.error') || 'Erreur lors de la mise à jour');
+    } finally {
+      setUpdatingLocation(false);
+    }
+  };
+
+  const getLocationDisplay = () => {
+    if (!userProfile?.location?.city) {
+      return t('location.notSet') || 'Non définie';
+    }
+    const parts = [userProfile.location.city];
+    if (userProfile.location.region) parts.push(userProfile.location.region);
+    if (userProfile.location.country) parts.push(userProfile.location.country);
+    return parts.join(', ');
   };
 
   const getAccountAge = () => {
@@ -426,34 +474,34 @@ export default function ProfilePage() {
             </Card>
           </Box>
 
-            <Box>
-              <Card
-                elevation={0}
-                sx={{
-                  borderRadius: 3,
-                  background: 'rgba(255, 255, 255, 0.7)',
-                  border: '1px solid rgba(254, 107, 139, 0.1)',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    boxShadow: '0 4px 20px rgba(254, 107, 139, 0.15)',
-                    transform: 'translateY(-2px)',
-                  },
-                }}
-              >
-                <CardContent>
-                  <Typography
-                    variant="h6"
-                    gutterBottom
-                    sx={{
-                      fontWeight: 600,
-                      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}
-                  >
-                    {t('accountSecurity')}
-                  </Typography>
+          <Box>
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 3,
+                background: 'rgba(255, 255, 255, 0.7)',
+                border: '1px solid rgba(254, 107, 139, 0.1)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  boxShadow: '0 4px 20px rgba(254, 107, 139, 0.15)',
+                  transform: 'translateY(-2px)',
+                },
+              }}
+            >
+              <CardContent>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{
+                    fontWeight: 600,
+                    background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  {t('accountSecurity')}
+                </Typography>
                 <List>
                   <ListItem>
                     <ListItemIcon>
@@ -480,6 +528,74 @@ export default function ProfilePage() {
                     <ListItemText 
                       primary={t('lastSignIn')}
                       secondary={getLastSignIn()}
+                    />
+                  </ListItem>
+                </List>
+              </CardContent>
+            </Card>
+          </Box>
+
+          {/* Location Card */}
+          <Box>
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 3,
+                background: 'rgba(255, 255, 255, 0.7)',
+                border: '1px solid rgba(254, 107, 139, 0.1)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  boxShadow: '0 4px 20px rgba(254, 107, 139, 0.15)',
+                  transform: 'translateY(-2px)',
+                },
+              }}
+            >
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    {t('location.title') || 'Localisation'}
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<Edit />}
+                    onClick={() => {
+                      setLocationCity(getLocationDisplay());
+                      setSelectedLocationCity(null);
+                      setLocationError(null);
+                      setLocationDialogOpen(true);
+                    }}
+                    sx={{
+                      borderColor: '#FE6B8B',
+                      color: '#FE6B8B',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      '&:hover': {
+                        borderColor: '#FE6B8B',
+                        background: 'rgba(254, 107, 139, 0.08)',
+                      },
+                    }}
+                  >
+                    {t('location.edit') || 'Modifier'}
+                  </Button>
+                </Box>
+                <List>
+                  <ListItem>
+                    <ListItemIcon>
+                      <LocationOn sx={{ color: '#FE6B8B' }} />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={t('location.current') || 'Ville actuelle'}
+                      secondary={getLocationDisplay()}
                     />
                   </ListItem>
                 </List>
@@ -855,47 +971,141 @@ export default function ProfilePage() {
         </Paper>
 
         <Dialog open={editDialogOpen} onClose={handleCancelEdit} maxWidth="sm" fullWidth>
-        <DialogTitle>{t('editProfile')}</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label={t('displayName')}
-            fullWidth
-            variant="outlined"
-            value={editedName}
-            onChange={(e) => setEditedName(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCancelEdit}
-            startIcon={<Cancel />}
-            sx={{
-              textTransform: 'none',
-              color: 'text.secondary',
-            }}
-          >
-            {t('cancel')}
-          </Button>
-          <Button
-            onClick={handleSaveProfile}
-            variant="contained"
-            startIcon={<Save />}
-            sx={{
-              textTransform: 'none',
-              background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-              boxShadow: '0 4px 15px rgba(254, 107, 139, 0.3)',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #FE6B8B 40%, #FF8E53 100%)',
-                boxShadow: '0 6px 20px rgba(254, 107, 139, 0.4)',
-              },
-            }}
-          >
-            {t('save')}
-          </Button>
-        </DialogActions>
+          <DialogTitle>{t('editProfile')}</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              label={t('displayName')}
+              fullWidth
+              variant="outlined"
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleCancelEdit}
+              startIcon={<Cancel />}
+              sx={{
+                textTransform: 'none',
+                color: 'text.secondary',
+              }}
+            >
+              {t('cancel')}
+            </Button>
+            <Button
+              onClick={handleSaveProfile}
+              variant="contained"
+              startIcon={<Save />}
+              sx={{
+                textTransform: 'none',
+                background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                boxShadow: '0 4px 15px rgba(254, 107, 139, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #FE6B8B 40%, #FF8E53 100%)',
+                  boxShadow: '0 6px 20px rgba(254, 107, 139, 0.4)',
+                },
+              }}
+            >
+              {t('save')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Location Edit Dialog */}
+        <Dialog open={locationDialogOpen} onClose={() => setLocationDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <LocationOn sx={{ color: '#FE6B8B' }} />
+            <Typography
+              sx={{
+                fontWeight: 600,
+                background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              {t('location.editTitle') || 'Modifier la localisation'}
+            </Typography>
+          </DialogTitle>
+          <DialogContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+              {locationError && (
+                <Alert
+                  severity="error"
+                  onClose={() => setLocationError(null)}
+                  sx={{
+                    borderRadius: 2,
+                    '& .MuiAlert-icon': {
+                      color: '#FE6B8B',
+                    },
+                  }}
+                >
+                  {locationError}
+                </Alert>
+              )}
+
+              <Typography variant="body2" color="text.secondary">
+                {t('location.description') || 'Sélectionnez votre ville pour permettre aux autres utilisateurs de vous trouver.'}
+              </Typography>
+              
+              <CityAutocomplete
+                value={locationCity}
+                onChange={(value) => setLocationCity(value || '')}
+                onSelect={(cityData) => {
+                  setSelectedLocationCity(cityData);
+                  const parts = [cityData.city];
+                  if (cityData.region) parts.push(cityData.region);
+                  if (cityData.country) parts.push(cityData.country);
+                  setLocationCity(parts.join(', '));
+                  setLocationError(null);
+                }}
+                disabled={updatingLocation}
+                error={!!locationError && !locationCity.trim()}
+                helperText={locationError && !locationCity.trim() ? locationError : undefined}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={() => {
+                setLocationDialogOpen(false);
+                setLocationCity('');
+                setSelectedLocationCity(null);
+                setLocationError(null);
+              }}
+              disabled={updatingLocation}
+              sx={{
+                textTransform: 'none',
+                color: 'text.secondary',
+              }}
+            >
+              {t('cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleUpdateLocation}
+              disabled={updatingLocation || !selectedLocationCity || !selectedLocationCity.city.trim()}
+              startIcon={updatingLocation ? <CircularProgress size={20} /> : <Save />}
+              sx={{
+                textTransform: 'none',
+                background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                boxShadow: '0 4px 15px rgba(254, 107, 139, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #FE6B8B 40%, #FF8E53 100%)',
+                  boxShadow: '0 6px 20px rgba(254, 107, 139, 0.4)',
+                },
+                '&:disabled': {
+                  background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                  opacity: 0.6,
+                },
+              }}
+            >
+              {updatingLocation ? (t('common.loading') || 'Chargement...') : (t('save') || 'Enregistrer')}
+            </Button>
+          </DialogActions>
         </Dialog>
       </Container>
     </Box>
