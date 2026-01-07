@@ -38,8 +38,13 @@ export default function DiscoverFilters({
 }: DiscoverFiltersProps) {
   const t = useTranslations('discover.filterOptions');
   const tCommon = useTranslations('common');
-  const { eventTypes } = useEventTypes();
+  const { eventTypes, refetch: refetchEventTypes } = useEventTypes();
   const { userProfile } = useAuth();
+
+  // Fetch event types when component mounts
+  useEffect(() => {
+    refetchEventTypes();
+  }, [refetchEventTypes]);
 
   const [maxDistance, setMaxDistance] = useState(initialFilters?.maxDistance || 50);
   const [minAge, setMinAge] = useState(initialFilters?.minAge);

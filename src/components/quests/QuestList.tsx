@@ -20,10 +20,15 @@ interface QuestListProps {
 }
 
 export default function QuestList({ onQuestCompleted }: QuestListProps = {}) {
-  const { quests, loading, error } = useQuests();
+  const { quests, loading, error, refetch } = useQuests();
   const locale = useLocale();
   const t = useTranslations('quests');
   const completedQuestIdsRef = useRef<Set<string>>(new Set());
+
+  // Fetch quests when component mounts
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const getQuestName = (quest: UserQuestStatus['quest']) => {
     return quest.name[locale] || quest.name['en'] || quest.id;

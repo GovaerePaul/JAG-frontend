@@ -81,9 +81,8 @@ export function useReceivedMessages(): UseReceivedMessagesReturn {
     await fetchPromise;
   }, [user]);
 
-  useEffect(() => {
-    fetchMessages();
-  }, [fetchMessages]);
+  // No automatic fetch - components must call refetch() manually
+  // This avoids unnecessary API calls when components mount
 
   const refetch = useCallback(async () => {
     invalidateReceivedMessagesCache();

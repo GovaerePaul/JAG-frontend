@@ -50,8 +50,13 @@ export default function MessageDetailPage() {
   const [reporting, setReporting] = useState(false);
   const [markingAsRead, setMarkingAsRead] = useState(false);
 
-  const { eventTypes } = useEventTypes();
+  const { eventTypes, refetch: refetchEventTypes } = useEventTypes();
   const { refetch: refetchUnread } = useUnreadMessages();
+
+  // Fetch event types when component mounts
+  useEffect(() => {
+    refetchEventTypes();
+  }, [refetchEventTypes]);
 
   const getEventType = (eventTypeId: string) => {
     return eventTypes.find((et) => et.id === eventTypeId);

@@ -41,6 +41,11 @@ export default function ReceivedMessagesPage() {
 
   const { messages: receivedMessages, loading, error, refetch } = useReceivedMessages();
 
+  // Fetch messages when component mounts
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
   const getSenderIds = useCallback((msgs: MessageSummary[]) =>
     msgs
       .filter((msg) => msg.senderId && !msg.isAnonymous)
