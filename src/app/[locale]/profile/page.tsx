@@ -47,6 +47,7 @@ import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useUserStats } from '@/hooks/useUserStats';
 import { useEventTypes } from '@/hooks/useEventTypes';
 import { updateUserPreferences } from '@/lib/users-api';
+import { invalidateQuestsCache, useQuests } from '@/hooks/useQuests';
 import NotificationBadge from '@/components/NotificationBadge';
 
 export default function ProfilePage() {
@@ -58,6 +59,7 @@ export default function ProfilePage() {
   const { unreadCount } = useUnreadMessages();
   const { messageCounts, loading: loadingCounts } = useUserStats();
   const { eventTypes, loading: loadingEventTypes } = useEventTypes();
+  const { refetch: refetchQuests } = useQuests();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
   const [savingPreferences, setSavingPreferences] = useState(false);
@@ -79,7 +81,6 @@ export default function ProfilePage() {
   };
 
   const handleSaveProfile = () => {
-    // TODO: Implement profile update logic
     setEditDialogOpen(false);
   };
 
@@ -88,17 +89,17 @@ export default function ProfilePage() {
     setEditDialogOpen(false);
   };
 
-  const handleUpdatePreferences = async (preferences: Partial<UserPreferences>) => {
+  const handleUpdatePreferences = async (preferences: Partial<UserPreferences>, shouldCheckQuests = false) => {
     setSavingPreferences(true);
     try {
       const response = await updateUserPreferences(preferences);
       if (!response.success) {
-        console.error('Failed to update preferences:', response.error);
-        // TODO: Show error toast/notification
+        // Silent fail
+      } else if (shouldCheckQuests) {
+        invalidateQuestsCache();
       }
     } catch (error) {
-      console.error('Error updating preferences:', error);
-      // TODO: Show error toast/notification
+      // Silent fail
     } finally {
       setSavingPreferences(false);
     }
@@ -541,7 +542,7 @@ export default function ProfilePage() {
                                       const newFavorites = [...currentFavorites, eventType.id];
                                       handleUpdatePreferences({
                                         favoriteEventTypeIdsForReceiving: newFavorites,
-                                      });
+                                      }, true);
                                     }}
                                     disabled={savingPreferences}
                                     variant="outlined"
@@ -638,7 +639,7 @@ export default function ProfilePage() {
                                       const newFavorites = [...currentFavorites, eventType.id];
                                       handleUpdatePreferences({
                                         favoriteEventTypeIdsForSending: newFavorites,
-                                      });
+                                      }, true);
                                     }}
                                     variant="outlined"
                                     disabled={savingPreferences}

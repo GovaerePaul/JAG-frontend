@@ -5,6 +5,7 @@ import { CircularProgress } from '@mui/material';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { useEffect } from 'react';
 import Navbar from '../Navbar';
+import QuestCompletionModal from '../quests/QuestCompletionModal';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -52,6 +53,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       <main style={{ flexGrow: 1 }}>
         {children}
       </main>
+      <QuestCompletionModal />
     </div>
   );
 }

@@ -55,7 +55,6 @@ export default function CityAutocomplete({
           setOptions([]);
         }
       } catch (err) {
-        console.error('Error searching cities:', err);
         setOptions([]);
       } finally {
         setLoading(false);

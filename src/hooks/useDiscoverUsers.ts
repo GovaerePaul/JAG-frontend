@@ -84,7 +84,7 @@ export function useDiscoverUsers(
         };
       }
     } catch (err) {
-      console.error('Failed to get city coordinates:', err);
+      // Silent fail
     }
     return null;
   };
@@ -151,7 +151,6 @@ export function useDiscoverUsers(
             const nextDistance = initialDistance + (nextAttempt - 1) * 100; // +100km per attempt
 
             if (nextDistance <= maxDistance) {
-              console.log(`No users found at ${searchDistance}km (attempt ${attemptCountRef.current}), trying ${nextDistance}km (attempt ${nextAttempt})`);
               attemptCountRef.current = nextAttempt;
               // Don't set loading to false here - let the next search handle it
               setTimeout(() => {
@@ -236,7 +235,6 @@ export function useDiscoverUsers(
     if (userLocation && autoExpand && !hasSearchedRef.current) {
       hasSearchedRef.current = true;
       attemptCountRef.current = 0;
-      // Use setTimeout to avoid calling during render
       setTimeout(() => {
         performSearchRef.current(
           {

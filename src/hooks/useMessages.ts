@@ -39,7 +39,6 @@ export function useMessages<T extends MessageLike>({ fetchMessages, getUserIds }
             namesMap[userId] = userId;
           }
         } catch (err) {
-          console.error(`Error fetching user ${userId}:`, err);
           namesMap[userId] = userId;
         }
       })
@@ -65,7 +64,6 @@ export function useMessages<T extends MessageLike>({ fetchMessages, getUserIds }
         }
       } catch (err) {
         setError('Failed to load messages');
-        console.error('Error fetching messages:', err);
       } finally {
         setLoading(false);
       }

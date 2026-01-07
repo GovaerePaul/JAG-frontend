@@ -66,7 +66,6 @@ export default function ReceivedMessagesPage() {
               namesMap[userId] = userId;
             }
           } catch (err) {
-            console.error(`Error fetching user ${userId}:`, err);
             namesMap[userId] = userId;
           }
         })

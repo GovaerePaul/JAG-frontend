@@ -75,7 +75,7 @@ export function useUserStats(): UseUserStatsReturn {
           setMessageCounts(counts);
         }
       } catch (error) {
-        console.error('Error fetching user stats:', error);
+        // Silent fail
       } finally {
         setLoading(false);
         userStatsCache.promise = null;

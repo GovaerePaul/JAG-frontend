@@ -31,6 +31,7 @@ import { useReceivableUsers } from '@/hooks/useReceivableUsers';
 import { invalidateReceivedMessagesCache } from '@/hooks/useReceivedMessages';
 import { invalidateSentMessagesCache } from '@/hooks/useSentMessages';
 import { invalidateUserStatsCache } from '@/hooks/useUserStats';
+import { invalidateQuestsCache } from '@/hooks/useQuests';
 
 interface SendMessageFormProps {
   open: boolean;
@@ -84,10 +85,10 @@ export default function SendMessageForm({
     const response = await sendMessage(formData);
 
     if (response.success) {
-      // Invalidate caches to refresh data
       invalidateReceivedMessagesCache();
       invalidateSentMessagesCache();
       invalidateUserStatsCache();
+      invalidateQuestsCache();
       
       setSuccess(true);
       setTimeout(() => {

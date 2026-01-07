@@ -44,7 +44,7 @@ export default function UserDropdown() {
       await logout();
       handleClose();
     } catch (error) {
-      console.error('Logout error:', error);
+      // Silent fail
     }
   };
 

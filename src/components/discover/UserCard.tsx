@@ -18,7 +18,7 @@ export default function UserCard({ user, onSendMessage }: UserCardProps) {
   const router = useRouter();
   const locale = useLocale();
   const { eventTypes } = useEventTypes();
-  const isNew = false; // TODO: Check if user is new based on createdAt
+  const isNew = false;
 
   // Get favorite event types for this user
   const favoriteEventTypes = user.favoriteEventTypeIds

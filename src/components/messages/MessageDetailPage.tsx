@@ -90,7 +90,6 @@ export default function MessageDetailPage() {
               setSenderName(msg.senderId);
             }
           } catch (err) {
-            console.error('Error fetching sender name:', err);
             setSenderName(msg.senderId);
           }
         } else {
@@ -108,7 +107,6 @@ export default function MessageDetailPage() {
               setReceiverName(msg.receiverId);
             }
           } catch (err) {
-            console.error('Error fetching receiver name:', err);
             setReceiverName(msg.receiverId);
           }
         }
@@ -123,7 +121,7 @@ export default function MessageDetailPage() {
                    // Refresh unread count
                    refetchUnread();
                  } catch (err) {
-                   console.error('Error marking message as read:', err);
+                   // Silent fail
                  } finally {
                    setMarkingAsRead(false);
                  }
@@ -133,7 +131,6 @@ export default function MessageDetailPage() {
       }
     } catch (err) {
       setError(t('error.failedToLoad'));
-      console.error('Error fetching message:', err);
     } finally {
       setLoading(false);
     }
@@ -165,7 +162,6 @@ export default function MessageDetailPage() {
       }
     } catch (err) {
       setError(t('error.failedToReport'));
-      console.error('Error reporting message:', err);
     } finally {
       setReporting(false);
     }

@@ -11,7 +11,6 @@ interface UseQuestsReturn {
   refetch: () => Promise<void>;
 }
 
-// Global cache to share quests across components
 export const questsCache = {
   data: null as UserQuestStatus[] | null,
   timestamp: 0,
@@ -21,9 +20,12 @@ export const questsCache = {
 export function invalidateQuestsCache() {
   questsCache.data = null;
   questsCache.timestamp = 0;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('questCacheInvalidated'));
+  }
 }
 
-const CACHE_DURATION = 60000; // 60 seconds
+const CACHE_DURATION = 60000;
 
 export function useQuests(): UseQuestsReturn {
   const { user } = useAuth();
@@ -37,14 +39,12 @@ export function useQuests(): UseQuestsReturn {
       return;
     }
 
-    // Check cache first
     const now = Date.now();
     if (questsCache.data && (now - questsCache.timestamp) < CACHE_DURATION) {
       setQuests(questsCache.data);
       return;
     }
 
-    // If already fetching, wait for that promise
     if (questsCache.promise) {
       await questsCache.promise;
       if (questsCache.data) {
@@ -68,7 +68,6 @@ export function useQuests(): UseQuestsReturn {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch quests';
         setError(errorMessage);
-        console.error('Error fetching quests:', err);
       } finally {
         setLoading(false);
         questsCache.promise = null;

@@ -74,7 +74,6 @@ export const useAuth = () => {
         setLoading(false);
       },
       (error) => {
-        console.error('Error fetching user profile:', error);
         setUserProfile(null);
         setLoading(false);
       }
