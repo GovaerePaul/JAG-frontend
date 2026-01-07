@@ -35,13 +35,21 @@ export function useQuestCompletionMonitor(
         if (stored) {
           const shownIds = JSON.parse(stored) as string[];
           shownQuestIdsRef.current = new Set(shownIds);
-          previousCompletedIdsRef.current = new Set(shownIds);
         }
       } catch (error) {
         // Silent fail
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    if (quests.length > 0 && user && previousCompletedIdsRef.current.size === 0) {
+      const currentCompleted = new Set(
+        quests.filter((q) => q.isCompleted).map((q) => q.quest.id)
+      );
+      previousCompletedIdsRef.current = currentCompleted;
+    }
+  }, [quests, user]);
 
   const markQuestAsShown = useCallback(
     (questId: string) => {
