@@ -220,21 +220,29 @@ export function useDiscoverUsers(
     hasSearchedRef.current = false;
   }, [initialDistance]);
 
-  // Trigger initial search when location becomes available
+  // Trigger initial search when location becomes available (only once)
+  const performSearchRef = useRef(performSearch);
+  performSearchRef.current = performSearch;
+
   useEffect(() => {
-    if (userLocation && autoExpand && !hasSearchedRef.current && users.length === 0 && !loading) {
+    // Only trigger search once when userLocation becomes available
+    if (userLocation && autoExpand && !hasSearchedRef.current) {
       hasSearchedRef.current = true;
       attemptCountRef.current = 0;
-      performSearch(
-        {
-          filters: currentFilters,
-          distance: initialDistance,
-          reset: true,
-        },
-        false
-      );
+      // Use setTimeout to avoid calling during render
+      setTimeout(() => {
+        performSearchRef.current(
+          {
+            filters: currentFilters,
+            distance: initialDistance,
+            reset: true,
+          },
+          false
+        );
+      }, 0);
     }
-  }, [userLocation, autoExpand, users.length, loading, currentFilters, initialDistance, performSearch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userLocation]);
 
   return {
     users,
