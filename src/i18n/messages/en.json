@@ -58,7 +58,8 @@
     "settings": "Settings",
     "logout": "Logout",
     "login": "Login",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "ok": "OK"
   },
   "metadata": {
     "title": "JustGift - Organize Your Gifts",
@@ -269,6 +270,8 @@
     "points": "points",
     "progress": "{current}/{target}",
     "completed": "Completed!",
+    "congratulations": "Congratulations!",
+    "questCompletedMessage": "You completed this quest and earned",
     "categories": {
       "profile": "Profile",
       "messages": "Messages",

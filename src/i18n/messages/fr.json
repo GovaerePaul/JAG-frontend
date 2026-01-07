@@ -58,7 +58,8 @@
     "settings": "Paramètres",
     "logout": "Se déconnecter",
     "login": "Se connecter",
-    "unknown": "Inconnu"
+    "unknown": "Inconnu",
+    "ok": "OK"
   },
   "metadata": {
     "title": "JustGift - Organisez vos cadeaux",
@@ -269,6 +270,8 @@
     "points": "points",
     "progress": "{current}/{target}",
     "completed": "Terminée !",
+    "congratulations": "Félicitations !",
+    "questCompletedMessage": "Vous avez terminé cette quête et gagné",
     "categories": {
       "profile": "Profil",
       "messages": "Messages",
