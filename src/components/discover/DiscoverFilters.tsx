@@ -21,6 +21,7 @@ import { FilterList, Close } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
 import { DiscoverUsersFilters } from '@/lib/users-api';
 import { useEventTypes } from '@/hooks/useEventTypes';
+import { useAuth } from '@/hooks/useAuth';
 
 interface DiscoverFiltersProps {
   open: boolean;
@@ -38,12 +39,17 @@ export default function DiscoverFilters({
   const t = useTranslations('discover.filterOptions');
   const tCommon = useTranslations('common');
   const { eventTypes } = useEventTypes();
+  const { userProfile } = useAuth();
 
   const [maxDistance, setMaxDistance] = useState(initialFilters?.maxDistance || 50);
   const [minAge, setMinAge] = useState(initialFilters?.minAge);
   const [maxAge, setMaxAge] = useState(initialFilters?.maxAge);
   const [eventTypeId, setEventTypeId] = useState(initialFilters?.eventTypeId || '');
   const [newUsersOnly, setNewUsersOnly] = useState(false);
+  const [useMyPreferences, setUseMyPreferences] = useState(
+    initialFilters?.preferredEventTypeIds !== undefined &&
+    initialFilters.preferredEventTypeIds.length > 0
+  );
 
   useEffect(() => {
     if (initialFilters) {
@@ -51,6 +57,10 @@ export default function DiscoverFilters({
       setMinAge(initialFilters.minAge);
       setMaxAge(initialFilters.maxAge);
       setEventTypeId(initialFilters.eventTypeId || '');
+      setUseMyPreferences(
+        initialFilters.preferredEventTypeIds !== undefined &&
+        initialFilters.preferredEventTypeIds.length > 0
+      );
     }
   }, [initialFilters]);
 
@@ -60,6 +70,11 @@ export default function DiscoverFilters({
       ...(minAge !== undefined && { minAge }),
       ...(maxAge !== undefined && { maxAge }),
       ...(eventTypeId && { eventTypeId }),
+      ...(useMyPreferences &&
+        userProfile?.preferences?.favoriteEventTypeIdsForReceiving &&
+        userProfile.preferences.favoriteEventTypeIdsForReceiving.length > 0 && {
+          preferredEventTypeIds: userProfile.preferences.favoriteEventTypeIdsForReceiving,
+        }),
     };
     onApply(filters);
     onClose();
@@ -71,6 +86,7 @@ export default function DiscoverFilters({
     setMaxAge(undefined);
     setEventTypeId('');
     setNewUsersOnly(false);
+    setUseMyPreferences(false);
   };
 
   return (
@@ -165,6 +181,26 @@ export default function DiscoverFilters({
               ))}
             </Select>
           </FormControl>
+
+          {/* Use My Preferences */}
+          {userProfile?.preferences?.favoriteEventTypeIdsForReceiving &&
+            userProfile.preferences.favoriteEventTypeIdsForReceiving.length > 0 && (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={useMyPreferences}
+                    onChange={(e) => {
+                      setUseMyPreferences(e.target.checked);
+                      if (e.target.checked) {
+                        // Clear single eventTypeId when using preferences
+                        setEventTypeId('');
+                      }
+                    }}
+                  />
+                }
+                label={t('useMyPreferences')}
+              />
+            )}
 
           {/* New Users Only */}
           <FormControlLabel

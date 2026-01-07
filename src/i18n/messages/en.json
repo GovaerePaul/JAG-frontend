@@ -117,7 +117,19 @@
     "verified": "Verified",
     "notVerified": "Not verified",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "eventPreferences": "Event Preferences",
+    "eventPreferencesDescription": "Configure your preferences for receiving and sending messages",
+    "favoritesForReceiving": "Favorites for Receiving",
+    "favoritesForReceivingDescription": "Event types you want to receive messages for (empty by default)",
+    "favoritesForSending": "Favorites for Sending",
+    "favoritesForSendingDescription": "Event types you want to send messages for (all enabled by default)",
+    "currentFavorites": "Current Favorites",
+    "availableEventTypes": "Available Event Types",
+    "maxFavoritesReached": "Maximum of 10 favorites reached",
+    "add": "Add",
+    "remove": "Remove",
+    "noFavoritesForReceiving": "No favorites for receiving"
   },
   "messages": {
     "received": {
@@ -245,6 +257,7 @@
       "maxAge": "Maximum age",
       "eventType": "Event Type",
       "newUsersOnly": "New users only",
+      "useMyPreferences": "Use my preferences",
       "apply": "Apply",
       "reset": "Reset"
     }

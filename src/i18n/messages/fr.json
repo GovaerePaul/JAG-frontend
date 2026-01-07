@@ -117,7 +117,19 @@
     "verified": "Vérifié",
     "notVerified": "Non vérifié",
     "cancel": "Annuler",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "eventPreferences": "Préférences d'Événements",
+    "eventPreferencesDescription": "Configurez vos préférences pour recevoir et envoyer des messages",
+    "favoritesForReceiving": "Favoris pour Recevoir",
+    "favoritesForReceivingDescription": "Types d'événements pour lesquels vous souhaitez recevoir des messages (vide par défaut)",
+    "favoritesForSending": "Favoris pour Envoyer",
+    "favoritesForSendingDescription": "Types d'événements pour lesquels vous souhaitez envoyer des messages (tous activés par défaut)",
+    "currentFavorites": "Favoris actuels",
+    "availableEventTypes": "Types d'événements disponibles",
+    "maxFavoritesReached": "Maximum de 10 favoris atteint",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "noFavoritesForReceiving": "Aucun favori pour recevoir"
   },
   "messages": {
     "received": {
@@ -245,6 +257,7 @@
       "maxAge": "Âge maximum",
       "eventType": "Type d'événement",
       "newUsersOnly": "Nouveaux utilisateurs uniquement",
+      "useMyPreferences": "Utiliser mes préférences",
       "apply": "Appliquer",
       "reset": "Réinitialiser"
     }

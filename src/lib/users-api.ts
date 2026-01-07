@@ -3,6 +3,7 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase-functions';
 import { ApiResponse } from './types';
+import { UserPreferences } from '@/hooks/useAuth';
 
 export type UserRole = 'sender' | 'receiver' | 'both';
 
@@ -40,6 +41,7 @@ export interface DiscoverUsersFilters {
   maxAge?: number;
   eventTypeId?: string;
   maxDistance?: number;
+  preferredEventTypeIds?: string[];
 }
 
 export interface DiscoverUsersParams {
@@ -60,6 +62,7 @@ export interface DiscoveredUser {
     role: string;
   };
   distance?: number;
+  favoriteEventTypeIds?: string[];
 }
 
 export interface DiscoverUsersResponse {
@@ -162,6 +165,24 @@ export async function updateUserLocationByCity(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update location'
+    };
+  }
+}
+
+export async function updateUserPreferences(
+  preferences: Partial<UserPreferences>
+): Promise<ApiResponse<{ success: boolean; message: string }>> {
+  try {
+    const fn = httpsCallable<{ preferences: Partial<UserPreferences> }, { success: boolean; message: string }>(
+      functions,
+      'updateUserPreferencesFunction'
+    );
+    const result = await fn({ preferences });
+    return { success: true, data: result.data };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update user preferences'
     };
   }
 }

@@ -17,6 +17,8 @@ export interface UserLocation {
 export interface UserPreferences {
   shareLocation?: boolean;
   shareAge?: boolean;
+  favoriteEventTypeIdsForReceiving?: string[]; // Types d'événements qu'il veut recevoir (vide par défaut)
+  favoriteEventTypeIdsForSending?: string[]; // Types d'événements qu'il veut envoyer (tous par défaut)
 }
 
 export interface UserProfile {

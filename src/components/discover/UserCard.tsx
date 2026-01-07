@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { DiscoveredUser } from '@/lib/users-api';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
+import { useEventTypes } from '@/hooks/useEventTypes';
 
 interface UserCardProps {
   user: DiscoveredUser;
@@ -16,7 +17,18 @@ export default function UserCard({ user, onSendMessage }: UserCardProps) {
   const t = useTranslations('discover');
   const router = useRouter();
   const locale = useLocale();
+  const { eventTypes } = useEventTypes();
   const isNew = false; // TODO: Check if user is new based on createdAt
+
+  // Get favorite event types for this user
+  const favoriteEventTypes = user.favoriteEventTypeIds
+    ? eventTypes.filter((et) => user.favoriteEventTypeIds?.includes(et.id))
+    : [];
+
+  // Limit display to 3 chips, show "+X" for remaining
+  const MAX_VISIBLE_CHIPS = 3;
+  const visibleChips = favoriteEventTypes.slice(0, MAX_VISIBLE_CHIPS);
+  const remainingCount = favoriteEventTypes.length - MAX_VISIBLE_CHIPS;
 
   const handleSendMessage = () => {
     if (onSendMessage) {
@@ -70,6 +82,52 @@ export default function UserCard({ user, onSendMessage }: UserCardProps) {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             {t('distance', { distance: Math.round(user.distance) })}
           </Typography>
+        )}
+
+        {/* Favorite Event Types */}
+        {favoriteEventTypes.length > 0 && (
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 0.5,
+              justifyContent: 'center',
+              mb: 1,
+              maxWidth: '100%',
+            }}
+          >
+            {visibleChips.map((eventType) => (
+              <Chip
+                key={eventType.id}
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                    <span style={{ fontSize: '0.9rem' }}>{eventType.icon}</span>
+                    <span style={{ fontSize: '0.7rem' }}>{eventType.name}</span>
+                  </Box>
+                }
+                size="small"
+                variant="outlined"
+                sx={{
+                  fontSize: '0.7rem',
+                  height: '24px',
+                  '& .MuiChip-label': {
+                    px: 0.5,
+                  },
+                }}
+              />
+            ))}
+            {remainingCount > 0 && (
+              <Chip
+                label={`+${remainingCount}`}
+                size="small"
+                variant="outlined"
+                sx={{
+                  fontSize: '0.7rem',
+                  height: '24px',
+                }}
+              />
+            )}
+          </Box>
         )}
       </CardContent>
 

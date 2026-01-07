@@ -38,10 +38,15 @@ import {
   EmojiEvents,
   Inbox,
   Outbox,
+  Favorite,
+  FavoriteBorder,
+  Add,
 } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useUserStats } from '@/hooks/useUserStats';
+import { useEventTypes } from '@/hooks/useEventTypes';
+import { updateUserPreferences } from '@/lib/users-api';
 import NotificationBadge from '@/components/NotificationBadge';
 
 export default function ProfilePage() {
@@ -52,8 +57,10 @@ export default function ProfilePage() {
   const router = useRouter();
   const { unreadCount } = useUnreadMessages();
   const { messageCounts, loading: loadingCounts } = useUserStats();
+  const { eventTypes, loading: loadingEventTypes } = useEventTypes();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
+  const [savingPreferences, setSavingPreferences] = useState(false);
 
   // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
   const gamification = {
@@ -79,6 +86,22 @@ export default function ProfilePage() {
   const handleCancelEdit = () => {
     setEditedName(user.displayName || '');
     setEditDialogOpen(false);
+  };
+
+  const handleUpdatePreferences = async (preferences: { favoriteEventTypeIds?: string[] }) => {
+    setSavingPreferences(true);
+    try {
+      const response = await updateUserPreferences(preferences);
+      if (!response.success) {
+        console.error('Failed to update preferences:', response.error);
+        // TODO: Show error toast/notification
+      }
+    } catch (error) {
+      console.error('Error updating preferences:', error);
+      // TODO: Show error toast/notification
+    } finally {
+      setSavingPreferences(false);
+    }
   };
 
   const getAccountAge = () => {
@@ -132,7 +155,7 @@ export default function ProfilePage() {
             <Typography variant="body1" color="text.secondary" gutterBottom>
               {user.email}
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
               {user.emailVerified && (
                 <Chip 
                   icon={<Verified />} 
@@ -141,11 +164,36 @@ export default function ProfilePage() {
                   size="small" 
                 />
               )}
-              <Chip 
-                label={user.providerData[0]?.providerId || 'email'} 
-                variant="outlined" 
-                size="small" 
-              />
+              {/* Favorite Event Types for Receiving */}
+              {userProfile?.preferences?.favoriteEventTypeIdsForReceiving &&
+                userProfile.preferences.favoriteEventTypeIdsForReceiving.length > 0 &&
+                userProfile.preferences.favoriteEventTypeIdsForReceiving.map((eventTypeId) => {
+                  const eventType = eventTypes.find((et) => et.id === eventTypeId);
+                  if (!eventType) return null;
+                  return (
+                    <Chip
+                      key={eventTypeId}
+                      label={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <span>{eventType.icon}</span>
+                          <span>{eventType.name}</span>
+                        </Box>
+                      }
+                      color="primary"
+                      variant="outlined"
+                      size="small"
+                    />
+                  );
+                })}
+              {(!userProfile?.preferences?.favoriteEventTypeIdsForReceiving ||
+                userProfile.preferences.favoriteEventTypeIdsForReceiving.length === 0) && (
+                <Chip
+                  label={t('noFavoritesForReceiving')}
+                  variant="outlined"
+                  size="small"
+                  color="default"
+                />
+              )}
             </Box>
           </Box>
           <Button
@@ -377,6 +425,235 @@ export default function ProfilePage() {
                     </Box>
                   )}
                 </Box>
+              </CardContent>
+            </Card>
+          </Box>
+
+          {/* Event Preferences */}
+          <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
+            <Card elevation={2}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom color="primary">
+                  {t('eventPreferences')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  {t('eventPreferencesDescription')}
+                </Typography>
+
+                {loadingEventTypes ? (
+                  <CircularProgress />
+                ) : (
+                  <>
+                    {/* Favorites for Receiving */}
+                    {canReceive && (
+                      <Box sx={{ mb: 4 }}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
+                          {t('favoritesForReceiving')}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                          {t('favoritesForReceivingDescription')}
+                        </Typography>
+
+                        {/* Current Favorites for Receiving */}
+                        {userProfile?.preferences?.favoriteEventTypeIdsForReceiving &&
+                          userProfile.preferences.favoriteEventTypeIdsForReceiving.length > 0 && (
+                            <Box sx={{ mb: 2 }}>
+                              <Typography variant="subtitle2" gutterBottom>
+                                {t('currentFavorites')}
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                {userProfile.preferences.favoriteEventTypeIdsForReceiving.map((eventTypeId) => {
+                                  const eventType = eventTypes.find((et) => et.id === eventTypeId);
+                                  if (!eventType) return null;
+                                  return (
+                                    <Chip
+                                      key={eventTypeId}
+                                      label={
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                          <span>{eventType.icon}</span>
+                                          <span>{eventType.name}</span>
+                                        </Box>
+                                      }
+                                      onDelete={() => {
+                                        const newFavorites =
+                                          userProfile?.preferences?.favoriteEventTypeIdsForReceiving?.filter(
+                                            (id) => id !== eventTypeId
+                                          ) || [];
+                                        handleUpdatePreferences({
+                                          favoriteEventTypeIdsForReceiving: newFavorites,
+                                        });
+                                      }}
+                                      color="primary"
+                                      variant="outlined"
+                                    />
+                                  );
+                                })}
+                              </Box>
+                            </Box>
+                          )}
+
+                        {/* Available Event Types to Add */}
+                        <Box
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {
+                              xs: '1fr',
+                              sm: 'repeat(2, 1fr)',
+                              md: 'repeat(3, 1fr)',
+                            },
+                            gap: 2,
+                          }}
+                        >
+                          {eventTypes
+                            .filter(
+                              (et) =>
+                                !userProfile?.preferences?.favoriteEventTypeIdsForReceiving?.includes(et.id)
+                            )
+                            .map((eventType) => {
+                              return (
+                                <Box
+                                  key={eventType.id}
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    p: 2,
+                                    border: 1,
+                                    borderColor: 'divider',
+                                    borderRadius: 2,
+                                    '&:hover': {
+                                      bgcolor: 'action.hover',
+                                    },
+                                  }}
+                                >
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Typography component="span" sx={{ fontSize: '1.5rem' }}>
+                                      {eventType.icon}
+                                    </Typography>
+                                    <Typography variant="body2">{eventType.name}</Typography>
+                                  </Box>
+                                  <Button
+                                    size="small"
+                                    startIcon={<Add />}
+                                    onClick={() => {
+                                      const currentFavorites =
+                                        userProfile?.preferences?.favoriteEventTypeIdsForReceiving || [];
+                                      const newFavorites = [...currentFavorites, eventType.id];
+                                      handleUpdatePreferences({
+                                        favoriteEventTypeIdsForReceiving: newFavorites,
+                                      });
+                                    }}
+                                    disabled={savingPreferences}
+                                    variant="outlined"
+                                  >
+                                    {t('add')}
+                                  </Button>
+                                </Box>
+                              );
+                            })}
+                        </Box>
+                      </Box>
+                    )}
+
+                    {/* Favorites for Sending */}
+                    {canSend && (
+                      <Box>
+                        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
+                          {t('favoritesForSending')}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                          {t('favoritesForSendingDescription')}
+                        </Typography>
+
+                        {/* All Event Types - checked by default, user can uncheck */}
+                        <Box
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {
+                              xs: '1fr',
+                              sm: 'repeat(2, 1fr)',
+                              md: 'repeat(3, 1fr)',
+                            },
+                            gap: 2,
+                          }}
+                        >
+                          {eventTypes.map((eventType) => {
+                            // By default, all are enabled. If favoriteEventTypeIdsForSending exists, use it, otherwise all are enabled
+                            const isEnabled =
+                              userProfile?.preferences?.favoriteEventTypeIdsForSending === undefined
+                                ? true
+                                : userProfile.preferences.favoriteEventTypeIdsForSending.includes(eventType.id);
+
+                            return (
+                              <Box
+                                key={eventType.id}
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  p: 2,
+                                  border: 1,
+                                  borderColor: 'divider',
+                                  borderRadius: 2,
+                                  bgcolor: isEnabled ? 'action.selected' : 'transparent',
+                                  '&:hover': {
+                                    bgcolor: 'action.hover',
+                                  },
+                                }}
+                              >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography component="span" sx={{ fontSize: '1.5rem' }}>
+                                    {eventType.icon}
+                                  </Typography>
+                                  <Typography variant="body2">{eventType.name}</Typography>
+                                </Box>
+                                {isEnabled ? (
+                                  <Button
+                                    size="small"
+                                    startIcon={<Favorite />}
+                                    onClick={() => {
+                                      // Remove from favorites for sending
+                                      const currentFavorites =
+                                        userProfile?.preferences?.favoriteEventTypeIdsForSending ||
+                                        eventTypes.map((et) => et.id);
+                                      const newFavorites = currentFavorites.filter((id) => id !== eventType.id);
+                                      handleUpdatePreferences({
+                                        favoriteEventTypeIdsForSending: newFavorites,
+                                      });
+                                    }}
+                                    color="primary"
+                                    variant="contained"
+                                    disabled={savingPreferences}
+                                  >
+                                    {t('remove')}
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="small"
+                                    startIcon={<FavoriteBorder />}
+                                    onClick={() => {
+                                      // Add back to favorites for sending
+                                      const currentFavorites =
+                                        userProfile?.preferences?.favoriteEventTypeIdsForSending || [];
+                                      const newFavorites = [...currentFavorites, eventType.id];
+                                      handleUpdatePreferences({
+                                        favoriteEventTypeIdsForSending: newFavorites,
+                                      });
+                                    }}
+                                    variant="outlined"
+                                    disabled={savingPreferences}
+                                  >
+                                    {t('add')}
+                                  </Button>
+                                )}
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      </Box>
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
           </Box>
