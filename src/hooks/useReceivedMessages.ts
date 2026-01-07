@@ -23,7 +23,7 @@ export function invalidateReceivedMessagesCache() {
   receivedMessagesCache.timestamp = 0;
 }
 
-const CACHE_DURATION = 10000; // 10 seconds
+const CACHE_DURATION = 30000; // 30 seconds
 
 export function useReceivedMessages(): UseReceivedMessagesReturn {
   const { user } = useAuth();

@@ -25,8 +25,7 @@ import { getMessage, markMessageAsRead, reportMessage, Message } from '@/lib/mes
 import { useEventTypes } from '@/hooks/useEventTypes';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getCachedUserDisplayName } from '@/lib/user-cache';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 export default function MessageDetailPage() {
@@ -81,34 +80,16 @@ export default function MessageDetailPage() {
 
         // Load sender name if not anonymous (for received messages)
         if (msg.senderId && !msg.isAnonymous) {
-          try {
-            const userDoc = await getDoc(doc(db, 'users', msg.senderId));
-            if (userDoc.exists()) {
-              const userData = userDoc.data();
-              setSenderName(userData.displayName || userData.email || msg.senderId);
-            } else {
-              setSenderName(msg.senderId);
-            }
-          } catch (err) {
-            setSenderName(msg.senderId);
-          }
+          const name = await getCachedUserDisplayName(msg.senderId);
+          setSenderName(name);
         } else {
           setSenderName(t('anonymousSender'));
         }
 
         // Load receiver name (for sent messages)
         if (msg.receiverId) {
-          try {
-            const userDoc = await getDoc(doc(db, 'users', msg.receiverId));
-            if (userDoc.exists()) {
-              const userData = userDoc.data();
-              setReceiverName(userData.displayName || userData.email || msg.receiverId);
-            } else {
-              setReceiverName(msg.receiverId);
-            }
-          } catch (err) {
-            setReceiverName(msg.receiverId);
-          }
+          const name = await getCachedUserDisplayName(msg.receiverId);
+          setReceiverName(name);
         }
 
                // Mark as read if not already read (only for received messages)

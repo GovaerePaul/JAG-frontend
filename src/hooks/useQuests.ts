@@ -80,7 +80,7 @@ export function useQuests(): UseQuestsReturn {
   }, [fetchQuests]);
 
   const refetch = useCallback(async () => {
-    invalidateQuestsCache(false);
+    invalidateQuestsCache();
     await fetchQuests();
   }, [fetchQuests]);
 

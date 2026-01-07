@@ -23,6 +23,14 @@ interface UseDiscoverUsersReturn {
 
 // Removed DISTANCE_STEPS - now using simple +100km increments
 
+// Global cache for city coordinates to avoid repeated API calls
+const cityCoordinatesCache: Record<string, {
+  coordinates: Coordinates | null;
+  timestamp: number;
+}> = {};
+
+const COORDINATES_CACHE_DURATION = 86400000; // 24 hours (coordinates don't change)
+
 export function useDiscoverUsers(
   options: UseDiscoverUsersOptions = {}
 ): UseDiscoverUsersReturn {
@@ -65,8 +73,17 @@ export function useDiscoverUsers(
   // Trigger initial search when location becomes available
   const hasSearchedRef = useRef(false);
 
-  // Get coordinates from city name (simplified - in production use a proper service)
+  // Get coordinates from city name with caching
   const getCityCoordinates = async (cityName: string): Promise<Coordinates | null> => {
+    // Check cache first
+    const cached = cityCoordinatesCache[cityName];
+    const now = Date.now();
+    
+    if (cached && (now - cached.timestamp) < COORDINATES_CACHE_DURATION) {
+      return cached.coordinates;
+    }
+
+    // Fetch from API
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`,
@@ -78,14 +95,29 @@ export function useDiscoverUsers(
       );
       const data = await response.json();
       if (data && data.length > 0) {
-        return {
+        const coordinates = {
           lat: parseFloat(data[0].lat),
           lng: parseFloat(data[0].lon),
         };
+        
+        // Cache the result
+        cityCoordinatesCache[cityName] = {
+          coordinates,
+          timestamp: Date.now(),
+        };
+        
+        return coordinates;
       }
     } catch (err) {
       // Silent fail
     }
+    
+    // Cache null result to avoid repeated failed calls
+    cityCoordinatesCache[cityName] = {
+      coordinates: null,
+      timestamp: Date.now(),
+    };
+    
     return null;
   };
 

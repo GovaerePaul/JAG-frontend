@@ -23,7 +23,7 @@ export function invalidateSentMessagesCache() {
   sentMessagesCache.timestamp = 0;
 }
 
-const CACHE_DURATION = 10000; // 10 seconds
+const CACHE_DURATION = 30000; // 30 seconds
 
 export function useSentMessages(): UseSentMessagesReturn {
   const { user } = useAuth();

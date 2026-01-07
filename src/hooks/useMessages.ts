@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useAuth } from './useAuth';
 import { Message, MessageSummary } from '@/lib/messages-api';
+import { getCachedUserDisplayNames } from '@/lib/user-cache';
 
 // Base type that both Message and MessageSummary share for user ID extraction
 type MessageLike = {
@@ -26,24 +25,7 @@ export function useMessages<T extends MessageLike>({ fetchMessages, getUserIds }
 
   const loadUserNames = useCallback(async (msgs: T[]) => {
     const uniqueUserIds = [...new Set(getUserIds(msgs))];
-    const namesMap: Record<string, string> = {};
-
-    await Promise.all(
-      uniqueUserIds.map(async (userId) => {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', userId));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            namesMap[userId] = userData.displayName || userData.email || userId;
-          } else {
-            namesMap[userId] = userId;
-          }
-        } catch (err) {
-          namesMap[userId] = userId;
-        }
-      })
-    );
-
+    const namesMap = await getCachedUserDisplayNames(uniqueUserIds);
     setUserNames(namesMap);
   }, [getUserIds]);
 
