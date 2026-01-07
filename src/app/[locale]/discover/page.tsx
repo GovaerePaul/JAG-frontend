@@ -5,14 +5,12 @@ import {
   Container,
   Box,
   Typography,
-  TextField,
   Button,
   CircularProgress,
   Alert,
-  InputAdornment,
   Chip,
 } from '@mui/material';
-import { Search, FilterList } from '@mui/icons-material';
+import { FilterList } from '@mui/icons-material';
 import { Explore } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,7 +31,6 @@ export default function DiscoverPage() {
       autoExpand: true,
     });
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<DiscoverUsersFilters>();
   const [locationPermissionOpen, setLocationPermissionOpen] = useState(false);
@@ -53,14 +50,10 @@ export default function DiscoverPage() {
     }
   }, [userProfile]);
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    search({ search: query, filters });
-  };
 
   const handleFiltersApply = (newFilters: DiscoverUsersFilters) => {
     setFilters(newFilters);
-    search({ search: searchQuery, filters: newFilters });
+    search({ filters: newFilters });
   };
 
   const handleSendMessage = (userId: string, userName?: string) => {
@@ -71,7 +64,7 @@ export default function DiscoverPage() {
 
   const handleLocationEnabled = () => {
     // Reload search after location is enabled
-    search({ search: searchQuery, filters });
+    search({ filters });
   };
 
   return (
@@ -85,22 +78,8 @@ export default function DiscoverPage() {
         </Typography>
       </Box>
 
-      {/* Search and Filters */}
-      <Box sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        <TextField
-          fullWidth
-          placeholder={t('searchPlaceholder')}
-          value={searchQuery}
-          onChange={(e) => handleSearch(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ flexGrow: 1, minWidth: 200 }}
-        />
+      {/* Filters */}
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-end' }}>
         <Button
           variant="outlined"
           startIcon={<FilterList />}

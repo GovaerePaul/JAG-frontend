@@ -48,7 +48,6 @@ export interface DiscoverUsersParams {
     coordinates: Coordinates;
   };
   filters?: DiscoverUsersFilters;
-  search?: string;
   limit?: number;
   offset?: number;
 }

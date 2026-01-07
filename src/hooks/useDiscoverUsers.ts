@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { discoverUsers, DiscoverUsersParams, DiscoveredUser, Coordinates } from '@/lib/users-api';
 import { useAuth } from './useAuth';
 
@@ -16,12 +16,12 @@ interface UseDiscoverUsersReturn {
   error: string | null;
   currentDistance: number;
   isExpanding: boolean;
-  search: (params: { search?: string; filters?: DiscoverUsersParams['filters'] }) => Promise<void>;
+  search: (params: { filters?: DiscoverUsersParams['filters'] }) => Promise<void>;
   loadMore: () => Promise<void>;
   reset: () => void;
 }
 
-const DISTANCE_STEPS = [50, 75, 100, 150, 200, 300, 500];
+// Removed DISTANCE_STEPS - now using simple +100km increments
 
 export function useDiscoverUsers(
   options: UseDiscoverUsersOptions = {}
@@ -38,10 +38,10 @@ export function useDiscoverUsers(
   const [error, setError] = useState<string | null>(null);
   const [currentDistance, setCurrentDistance] = useState(initialDistance);
   const [isExpanding, setIsExpanding] = useState(false);
-  const [currentSearch, setCurrentSearch] = useState<string>('');
   const [currentFilters, setCurrentFilters] = useState<DiscoverUsersParams['filters']>();
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const attemptCountRef = useRef(0);
   const [userLocation, setUserLocation] = useState<{
     city: string;
     coordinates: Coordinates;
@@ -61,6 +61,9 @@ export function useDiscoverUsers(
       });
     }
   }, [userProfile]);
+
+  // Trigger initial search when location becomes available
+  const hasSearchedRef = useRef(false);
 
   // Get coordinates from city name (simplified - in production use a proper service)
   const getCityCoordinates = async (cityName: string): Promise<Coordinates | null> => {
@@ -89,7 +92,6 @@ export function useDiscoverUsers(
   const performSearch = useCallback(
     async (
       searchParams: {
-        search?: string;
         filters?: DiscoverUsersParams['filters'];
         distance?: number;
         reset?: boolean;
@@ -108,6 +110,11 @@ export function useDiscoverUsers(
         setCurrentDistance(searchDistance);
       }
 
+      // Track attempt count for expansion logic
+      if (searchParams.reset) {
+        attemptCountRef.current = 1; // First attempt
+      }
+
       try {
         const params: DiscoverUsersParams = {
           userLocation: userLocation || undefined,
@@ -115,7 +122,6 @@ export function useDiscoverUsers(
             ...searchParams.filters,
             maxDistance: searchDistance,
           },
-          search: searchParams.search,
           limit: 20,
           offset: searchParams.reset ? 0 : offset,
         };
@@ -133,18 +139,22 @@ export function useDiscoverUsers(
           }
           setHasMore(data.hasMore);
 
-          // Auto-expand if no results and autoExpand is enabled
+          // Auto-expand if no users found and autoExpand is enabled (max 3 attempts: current +100km, +200km)
           if (
             autoExpand &&
             data.users.length === 0 &&
+            attemptCountRef.current < 3 &&
             searchDistance < maxDistance
           ) {
-            const nextDistance = DISTANCE_STEPS.find((d) => d > searchDistance);
-            if (nextDistance && nextDistance <= maxDistance) {
+            const nextAttempt = attemptCountRef.current + 1;
+            const nextDistance = initialDistance + (nextAttempt - 1) * 100; // +100km per attempt
+
+            if (nextDistance <= maxDistance) {
+              console.log(`No users found at ${searchDistance}km (attempt ${attemptCountRef.current}), trying ${nextDistance}km (attempt ${nextAttempt})`);
+              attemptCountRef.current = nextAttempt;
               setTimeout(() => {
                 performSearch(
                   {
-                    search: searchParams.search,
                     filters: searchParams.filters,
                     distance: nextDistance,
                     reset: true,
@@ -165,18 +175,18 @@ export function useDiscoverUsers(
         setIsExpanding(false);
       }
     },
-    [userLocation, currentDistance, offset, autoExpand, maxDistance]
+    [userLocation, currentDistance, offset, autoExpand, maxDistance, initialDistance]
   );
 
   const search = useCallback(
-    async (params: { search?: string; filters?: DiscoverUsersParams['filters'] }) => {
-      setCurrentSearch(params.search || '');
+    async (params: { filters?: DiscoverUsersParams['filters'] }) => {
       setCurrentFilters(params.filters);
       setCurrentDistance(initialDistance);
       setOffset(0);
+      attemptCountRef.current = 0;
+      hasSearchedRef.current = true; // Mark as searched when manually triggered
       await performSearch(
         {
-          search: params.search,
           filters: params.filters,
           distance: initialDistance,
           reset: true,
@@ -191,7 +201,6 @@ export function useDiscoverUsers(
     if (!loading && hasMore) {
       await performSearch(
         {
-          search: currentSearch,
           filters: currentFilters,
           distance: currentDistance,
           reset: false,
@@ -199,16 +208,33 @@ export function useDiscoverUsers(
         false
       );
     }
-  }, [loading, hasMore, currentSearch, currentFilters, currentDistance, performSearch]);
+  }, [loading, hasMore, currentFilters, currentDistance, performSearch]);
 
   const reset = useCallback(() => {
     setUsers([]);
     setOffset(0);
     setCurrentDistance(initialDistance);
     setError(null);
-    setCurrentSearch('');
     setCurrentFilters(undefined);
+    attemptCountRef.current = 0;
+    hasSearchedRef.current = false;
   }, [initialDistance]);
+
+  // Trigger initial search when location becomes available
+  useEffect(() => {
+    if (userLocation && autoExpand && !hasSearchedRef.current && users.length === 0 && !loading) {
+      hasSearchedRef.current = true;
+      attemptCountRef.current = 0;
+      performSearch(
+        {
+          filters: currentFilters,
+          distance: initialDistance,
+          reset: true,
+        },
+        false
+      );
+    }
+  }, [userLocation, autoExpand, users.length, loading, currentFilters, initialDistance, performSearch]);
 
   return {
     users,
