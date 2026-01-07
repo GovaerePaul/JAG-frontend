@@ -23,14 +23,14 @@ export function useUnreadMessages(): UseUnreadMessagesReturn {
     return messages.filter((msg) => msg.status !== 'read').length;
   }, [messages]);
 
-  // Fetch messages only once when component first mounts
+  // Poll for new messages every 30 seconds
   useEffect(() => {
-    refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps = only on mount
+    const interval = setInterval(() => {
+      refetch();
+    }, 30000);
 
-  // No automatic polling - users refresh manually
-  // Real-time updates can be added later with WebSockets or similar
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   return {
     unreadCount,
