@@ -100,17 +100,57 @@ export default function QuestList({ onQuestCompleted }: QuestListProps = {}) {
   }, {} as Record<string, UserQuestStatus[]>);
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-        <EmojiEvents sx={{ fontSize: 32, color: 'warning.main' }} />
-        <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold' }}>
+    <Box sx={{ position: 'relative', zIndex: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+        <Box
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.1) 0%, rgba(255, 142, 83, 0.1) 100%)',
+          }}
+        >
+          <EmojiEvents
+            sx={{
+              fontSize: 32,
+              background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          />
+        </Box>
+        <Typography
+          variant="h5"
+          component="h2"
+          sx={{
+            fontWeight: 'bold',
+            background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
           {t('title')}
         </Typography>
       </Box>
 
       {Object.entries(questsByCategory).map(([category, categoryQuests]) => (
         <Box key={category} sx={{ mb: 4 }}>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'primary.main' }}>
+          <Typography
+            variant="h6"
+            sx={{
+              mb: 2,
+              fontWeight: 'bold',
+              background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
             {getCategoryLabel(category)}
           </Typography>
           
@@ -123,20 +163,40 @@ export default function QuestList({ onQuestCompleted }: QuestListProps = {}) {
               return (
                 <Paper
                   key={quest.id}
+                  elevation={0}
                   sx={{
                     p: 2.5,
+                    borderRadius: 3,
                     border: isCompleted ? '2px solid' : '1px solid',
-                    borderColor: isCompleted ? 'success.main' : 'divider',
-                    backgroundColor: isCompleted ? 'action.hover' : 'background.paper',
+                    borderColor: isCompleted ? '#4caf50' : 'rgba(254, 107, 139, 0.2)',
+                    backgroundColor: isCompleted
+                      ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%)'
+                      : 'rgba(255, 255, 255, 0.7)',
+                    background: isCompleted
+                      ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%)'
+                      : 'rgba(255, 255, 255, 0.7)',
                     transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 20px rgba(254, 107, 139, 0.15)',
+                      borderColor: isCompleted ? '#4caf50' : '#FE6B8B',
+                    },
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                     <Box sx={{ mt: 0.5 }}>
                       {isCompleted ? (
-                        <CheckCircle sx={{ color: 'success.main', fontSize: 28 }} />
+                        <CheckCircle sx={{ color: '#4caf50', fontSize: 32 }} />
                       ) : (
-                        <RadioButtonUnchecked sx={{ color: 'text.secondary', fontSize: 28 }} />
+                        <RadioButtonUnchecked
+                          sx={{
+                            color: '#FE6B8B',
+                            fontSize: 32,
+                            '&:hover': {
+                              color: '#FF8E53',
+                            },
+                          }}
+                        />
                       )}
                     </Box>
 
@@ -148,8 +208,14 @@ export default function QuestList({ onQuestCompleted }: QuestListProps = {}) {
                         <Chip
                           label={`+${quest.pointsReward} ${t('points')}`}
                           size="small"
-                          color={isCompleted ? 'success' : 'primary'}
-                          sx={{ fontWeight: 'bold' }}
+                          sx={{
+                            fontWeight: 'bold',
+                            background: isCompleted
+                              ? 'linear-gradient(45deg, #4caf50 30%, #66bb6a 90%)'
+                              : 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                            color: 'white',
+                            boxShadow: '0 2px 8px rgba(254, 107, 139, 0.3)',
+                          }}
                         />
                       </Box>
 
@@ -171,11 +237,12 @@ export default function QuestList({ onQuestCompleted }: QuestListProps = {}) {
                             variant="determinate"
                             value={progressPercent}
                             sx={{
-                              height: 8,
-                              borderRadius: 4,
-                              backgroundColor: 'action.disabledBackground',
+                              height: 10,
+                              borderRadius: 5,
+                              backgroundColor: 'rgba(254, 107, 139, 0.1)',
                               '& .MuiLinearProgress-bar': {
-                                borderRadius: 4,
+                                borderRadius: 5,
+                                background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
                               },
                             }}
                           />
@@ -183,8 +250,17 @@ export default function QuestList({ onQuestCompleted }: QuestListProps = {}) {
                       )}
 
                       {isCompleted && (
-                        <Typography variant="caption" color="success.main" sx={{ fontWeight: 'bold' }}>
-                          {t('completed')}
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            fontWeight: 'bold',
+                            color: '#4caf50',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                          }}
+                        >
+                          ✓ {t('completed')}
                         </Typography>
                       )}
                     </Box>

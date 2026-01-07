@@ -68,26 +68,64 @@ export default function DiscoverPage() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          {t('title')}
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          {t('subtitle')}
-        </Typography>
-      </Box>
+    <Box
+      sx={{
+        position: 'relative',
+        minHeight: '100vh',
+        py: 4,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, #fef5f8 0%, #fff5f0 50%, #f0f8ff 100%)',
+          zIndex: -1,
+        },
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{
+              fontWeight: 'bold',
+              background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            {t('title')}
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            {t('subtitle')}
+          </Typography>
+        </Box>
 
-      {/* Filters */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button
-          variant="outlined"
-          startIcon={<FilterList />}
-          onClick={() => setFiltersOpen(true)}
-        >
-          {t('filters')}
-        </Button>
-      </Box>
+        {/* Filters */}
+        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button
+            variant="outlined"
+            startIcon={<FilterList />}
+            onClick={() => setFiltersOpen(true)}
+            sx={{
+              borderColor: '#FE6B8B',
+              color: '#FE6B8B',
+              textTransform: 'none',
+              fontWeight: 600,
+              '&:hover': {
+                borderColor: '#FE6B8B',
+                background: 'rgba(254, 107, 139, 0.08)',
+              },
+            }}
+          >
+            {t('filters')}
+          </Button>
+        </Box>
 
       {/* Distance indicator */}
       {(isExpanding || currentDistance > 50) && (
@@ -197,6 +235,21 @@ export default function DiscoverPage() {
                   variant="outlined"
                   onClick={loadMore}
                   disabled={loading}
+                  sx={{
+                    borderColor: '#FE6B8B',
+                    color: '#FE6B8B',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    px: 4,
+                    '&:hover': {
+                      borderColor: '#FE6B8B',
+                      background: 'rgba(254, 107, 139, 0.08)',
+                    },
+                    '&:disabled': {
+                      borderColor: 'rgba(254, 107, 139, 0.3)',
+                      color: 'rgba(254, 107, 139, 0.3)',
+                    },
+                  }}
                 >
                   Load More
                 </Button>
@@ -233,7 +286,8 @@ export default function DiscoverPage() {
           setSendMessageOpen(false);
         }}
       />
-    </Container>
+      </Container>
+    </Box>
   );
 }
 

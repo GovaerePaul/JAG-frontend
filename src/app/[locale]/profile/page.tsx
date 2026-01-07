@@ -133,134 +133,263 @@ export default function ProfilePage() {
   const progressPercentage = (pointsInCurrentLevel / 100) * 100;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-          <Avatar
-            src={user.photoURL || undefined}
-            sx={{ 
-              width: 100, 
-              height: 100, 
-              mr: 3,
-              fontSize: '2rem'
-            }}
-          >
-            {user.displayName?.charAt(0) || user.email?.charAt(0)}
-          </Avatar>
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="h4" gutterBottom>
-              {user.displayName || t('noDisplayName')}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" gutterBottom>
-              {user.email}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
-              {user.emailVerified && (
-                <Chip 
-                  icon={<Verified />} 
-                  label={t('emailVerified')} 
-                  color="success" 
-                  size="small" 
-                />
-              )}
-              {/* Favorite Event Types for Receiving */}
-              {userProfile?.preferences?.favoriteEventTypeIdsForReceiving &&
-                userProfile.preferences.favoriteEventTypeIdsForReceiving.length > 0 &&
-                userProfile.preferences.favoriteEventTypeIdsForReceiving.map((eventTypeId) => {
-                  const eventType = eventTypes.find((et) => et.id === eventTypeId);
-                  if (!eventType) return null;
-                  return (
-                    <Chip
-                      key={eventTypeId}
-                      label={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <span>{eventType.icon}</span>
-                          <span>{eventType.name}</span>
-                        </Box>
-                      }
-                      color="primary"
-                      variant="outlined"
-                      size="small"
-                    />
-                  );
-                })}
-              {(!userProfile?.preferences?.favoriteEventTypeIdsForReceiving ||
-                userProfile.preferences.favoriteEventTypeIdsForReceiving.length === 0) && (
-                <Chip
-                  label={t('noFavoritesForReceiving')}
-                  variant="outlined"
-                  size="small"
-                  color="default"
-                />
-              )}
-            </Box>
-          </Box>
-          <Button
-            variant="outlined"
-            startIcon={<Edit />}
-            onClick={handleEditProfile}
-          >
-            {t('editProfile')}
-          </Button>
-        </Box>
-
-        <Divider sx={{ mb: 4 }} />
-
-        <Card elevation={2} sx={{ mb: 4 }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-              <EmojiEvents sx={{ fontSize: 48, color: 'warning.main' }} />
-              <Box sx={{ flexGrow: 1 }}>
-                <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
-                  {tGamification('level')} {gamification.level}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {gamification.points} {tGamification('points')}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {tGamification('totalEarned')}: {gamification.totalPointsEarned} {tGamification('points')}
-                </Typography>
-              </Box>
-            </Box>
-            <Box sx={{ mt: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  {tGamification('progress')}: {pointsInCurrentLevel}/100
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {tGamification('nextLevel')}: {pointsNeededForNextLevel} {tGamification('points')}
-                </Typography>
-              </Box>
-              {loading ? (
-                <CircularProgress size={24} />
-              ) : (
-                <LinearProgress 
-                  variant="determinate" 
-                  value={progressPercentage} 
-                  sx={{ height: 10, borderRadius: 5 }}
-                  color="warning"
-                />
-              )}
-            </Box>
-          </CardContent>
-        </Card>
-
-        <Box
+    <Box
+      sx={{
+        position: 'relative',
+        minHeight: '100vh',
+        py: 4,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, #fef5f8 0%, #fff5f0 50%, #f0f8ff 100%)',
+          zIndex: -1,
+        },
+      }}
+    >
+      <Container maxWidth="lg">
+        <Paper
+          elevation={12}
           sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              md: 'repeat(2, 1fr)',
+            p: 4,
+            borderRadius: 4,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.8)',
+            boxShadow: '0 8px 32px rgba(254, 107, 139, 0.1)',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: -100,
+              right: -100,
+              width: 300,
+              height: 300,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.08) 0%, rgba(255, 142, 83, 0.08) 100%)',
+              filter: 'blur(50px)',
             },
-            gap: 4,
           }}
         >
-          <Box>
-            <Card elevation={2}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom color="primary">
-                  {t('accountInformation')}
-                </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, position: 'relative', zIndex: 1 }}>
+            <Avatar
+              src={user.photoURL || undefined}
+              sx={{
+                width: 120,
+                height: 120,
+                mr: 3,
+                fontSize: '2.5rem',
+                border: '4px solid',
+                borderColor: 'transparent',
+                background: 'linear-gradient(135deg, #FE6B8B, #FF8E53)',
+                backgroundClip: 'padding-box',
+                boxShadow: '0 4px 20px rgba(254, 107, 139, 0.3)',
+              }}
+            >
+              {user.displayName?.charAt(0) || user.email?.charAt(0)}
+            </Avatar>
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography
+                variant="h4"
+                gutterBottom
+                sx={{
+                  fontWeight: 600,
+                  background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                {user.displayName || t('noDisplayName')}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" gutterBottom>
+                {user.email}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                {user.emailVerified && (
+                  <Chip
+                    icon={<Verified />}
+                    label={t('emailVerified')}
+                    color="success"
+                    size="small"
+                    sx={{ fontWeight: 500 }}
+                  />
+                )}
+                {/* Favorite Event Types for Receiving */}
+                {userProfile?.preferences?.favoriteEventTypeIdsForReceiving &&
+                  userProfile.preferences.favoriteEventTypeIdsForReceiving.length > 0 &&
+                  userProfile.preferences.favoriteEventTypeIdsForReceiving.map((eventTypeId) => {
+                    const eventType = eventTypes.find((et) => et.id === eventTypeId);
+                    if (!eventType) return null;
+                    return (
+                      <Chip
+                        key={eventTypeId}
+                        label={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <span>{eventType.icon}</span>
+                            <span>{eventType.name}</span>
+                          </Box>
+                        }
+                        sx={{
+                          borderColor: '#FE6B8B',
+                          color: '#FE6B8B',
+                          fontWeight: 500,
+                        }}
+                        variant="outlined"
+                        size="small"
+                      />
+                    );
+                  })}
+                {(!userProfile?.preferences?.favoriteEventTypeIdsForReceiving ||
+                  userProfile.preferences.favoriteEventTypeIdsForReceiving.length === 0) && (
+                  <Chip
+                    label={t('noFavoritesForReceiving')}
+                    variant="outlined"
+                    size="small"
+                    color="default"
+                  />
+                )}
+              </Box>
+            </Box>
+            <Button
+              variant="outlined"
+              startIcon={<Edit />}
+              onClick={handleEditProfile}
+              sx={{
+                borderColor: '#FE6B8B',
+                color: '#FE6B8B',
+                textTransform: 'none',
+                fontWeight: 600,
+                '&:hover': {
+                  borderColor: '#FE6B8B',
+                  background: 'rgba(254, 107, 139, 0.08)',
+                },
+              }}
+            >
+              {t('editProfile')}
+            </Button>
+          </Box>
+
+          <Divider sx={{ mb: 4, borderColor: 'rgba(254, 107, 139, 0.2)' }} />
+
+          <Card
+            elevation={0}
+            sx={{
+              mb: 4,
+              borderRadius: 3,
+              background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.05) 0%, rgba(255, 142, 83, 0.05) 100%)',
+              border: '1px solid rgba(254, 107, 139, 0.1)',
+            }}
+          >
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.1) 0%, rgba(255, 142, 83, 0.1) 100%)',
+                  }}
+                >
+                  <EmojiEvents
+                    sx={{
+                      fontSize: 40,
+                      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  />
+                </Box>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
+                    {tGamification('level')} {gamification.level}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {gamification.points} {tGamification('points')}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {tGamification('totalEarned')}: {gamification.totalPointsEarned} {tGamification('points')}
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ mt: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    {tGamification('progress')}: {pointsInCurrentLevel}/100
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    {tGamification('nextLevel')}: {pointsNeededForNextLevel} {tGamification('points')}
+                  </Typography>
+                </Box>
+                {loading ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  <LinearProgress
+                    variant="determinate"
+                    value={progressPercentage}
+                    sx={{
+                      height: 10,
+                      borderRadius: 5,
+                      backgroundColor: 'rgba(254, 107, 139, 0.1)',
+                      '& .MuiLinearProgress-bar': {
+                        background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                        borderRadius: 5,
+                      },
+                    }}
+                  />
+                )}
+              </Box>
+            </CardContent>
+          </Card>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: 'repeat(2, 1fr)',
+              },
+              gap: 4,
+              position: 'relative',
+              zIndex: 1,
+            }}
+          >
+            <Box>
+              <Card
+                elevation={0}
+                sx={{
+                  borderRadius: 3,
+                  background: 'rgba(255, 255, 255, 0.7)',
+                  border: '1px solid rgba(254, 107, 139, 0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: '0 4px 20px rgba(254, 107, 139, 0.15)',
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+              >
+                <CardContent>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{
+                      fontWeight: 600,
+                      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    {t('accountInformation')}
+                  </Typography>
                 <List>
                   <ListItem>
                     <ListItemIcon>
@@ -297,12 +426,34 @@ export default function ProfilePage() {
             </Card>
           </Box>
 
-          <Box>
-            <Card elevation={2}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom color="primary">
-                  {t('accountSecurity')}
-                </Typography>
+            <Box>
+              <Card
+                elevation={0}
+                sx={{
+                  borderRadius: 3,
+                  background: 'rgba(255, 255, 255, 0.7)',
+                  border: '1px solid rgba(254, 107, 139, 0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: '0 4px 20px rgba(254, 107, 139, 0.15)',
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+              >
+                <CardContent>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{
+                      fontWeight: 600,
+                      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    {t('accountSecurity')}
+                  </Typography>
                 <List>
                   <ListItem>
                     <ListItemIcon>
@@ -336,13 +487,35 @@ export default function ProfilePage() {
             </Card>
           </Box>
 
-          {/* Message Statistics */}
-          <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
-            <Card elevation={2}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom color="primary">
-                  {tHome('userDashboard.title')}
-                </Typography>
+            {/* Message Statistics */}
+            <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
+              <Card
+                elevation={0}
+                sx={{
+                  borderRadius: 3,
+                  background: 'rgba(255, 255, 255, 0.7)',
+                  border: '1px solid rgba(254, 107, 139, 0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: '0 4px 20px rgba(254, 107, 139, 0.15)',
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+              >
+                <CardContent>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{
+                      fontWeight: 600,
+                      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    {tHome('userDashboard.title')}
+                  </Typography>
                 <Box sx={{
                   display: 'flex',
                   flexDirection: { xs: 'column', sm: 'row' },
@@ -428,13 +601,35 @@ export default function ProfilePage() {
             </Card>
           </Box>
 
-          {/* Event Preferences */}
-          <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
-            <Card elevation={2}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom color="primary">
-                  {t('eventPreferences')}
-                </Typography>
+            {/* Event Preferences */}
+            <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
+              <Card
+                elevation={0}
+                sx={{
+                  borderRadius: 3,
+                  background: 'rgba(255, 255, 255, 0.7)',
+                  border: '1px solid rgba(254, 107, 139, 0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: '0 4px 20px rgba(254, 107, 139, 0.15)',
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+              >
+                <CardContent>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{
+                      fontWeight: 600,
+                      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    {t('eventPreferences')}
+                  </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                   {t('eventPreferencesDescription')}
                 </Typography>
@@ -656,10 +851,10 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           </Box>
-        </Box>
-      </Paper>
+          </Box>
+        </Paper>
 
-      <Dialog open={editDialogOpen} onClose={handleCancelEdit} maxWidth="sm" fullWidth>
+        <Dialog open={editDialogOpen} onClose={handleCancelEdit} maxWidth="sm" fullWidth>
         <DialogTitle>{t('editProfile')}</DialogTitle>
         <DialogContent>
           <TextField
@@ -674,14 +869,35 @@ export default function ProfilePage() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelEdit} startIcon={<Cancel />}>
+          <Button
+            onClick={handleCancelEdit}
+            startIcon={<Cancel />}
+            sx={{
+              textTransform: 'none',
+              color: 'text.secondary',
+            }}
+          >
             {t('cancel')}
           </Button>
-          <Button onClick={handleSaveProfile} variant="contained" startIcon={<Save />}>
+          <Button
+            onClick={handleSaveProfile}
+            variant="contained"
+            startIcon={<Save />}
+            sx={{
+              textTransform: 'none',
+              background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+              boxShadow: '0 4px 15px rgba(254, 107, 139, 0.3)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #FE6B8B 40%, #FF8E53 100%)',
+                boxShadow: '0 6px 20px rgba(254, 107, 139, 0.4)',
+              },
+            }}
+          >
             {t('save')}
           </Button>
         </DialogActions>
-      </Dialog>
-    </Container>
+        </Dialog>
+      </Container>
+    </Box>
   );
 }

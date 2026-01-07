@@ -8,7 +8,7 @@ import {
   Container,
   IconButton
 } from '@mui/material';
-import { Inbox, Explore, EmojiEvents } from '@mui/icons-material';
+import { Inbox, Explore, EmojiEvents, Favorite } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import UserDropdown from './UserDropdown';
@@ -40,56 +40,96 @@ export default function Navbar() {
   };
 
   return (
-    <AppBar position="sticky" elevation={1}>
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(254, 107, 139, 0.1)',
+        boxShadow: '0 2px 20px rgba(254, 107, 139, 0.08)',
+      }}
+    >
       <Container maxWidth="lg">
-        <Toolbar disableGutters>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
+        <Toolbar disableGutters sx={{ py: 1 }}>
+          <Box
             onClick={handleLogoClick}
             sx={{
-              mr: 2,
-              display: { xs: 'flex' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              mr: 3,
               cursor: 'pointer',
-              transition: 'opacity 0.2s',
+              transition: 'all 0.3s ease',
               '&:hover': {
-                opacity: 0.8,
+                transform: 'scale(1.05)',
               },
             }}
           >
-            JustGift
-          </Typography>
+            <Favorite
+              sx={{
+                fontSize: 28,
+                color: '#FE6B8B',
+                animation: 'pulse 2s ease-in-out infinite',
+                '@keyframes pulse': {
+                  '0%, 100%': {
+                    transform: 'scale(1)',
+                  },
+                  '50%': {
+                    transform: 'scale(1.1)',
+                  },
+                },
+              }}
+            />
+            <Typography
+              variant="h6"
+              noWrap
+              component="div"
+              sx={{
+                fontFamily: 'inherit',
+                fontWeight: 700,
+                letterSpacing: '0.05em',
+                background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textDecoration: 'none',
+              }}
+            >
+              JustGift
+            </Typography>
+          </Box>
 
           <Box sx={{ flexGrow: 1 }} />
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {user && (
               <>
                 <IconButton
-                  color="inherit"
                   onClick={handleQuestsClick}
                   aria-label="Quests"
                   sx={{
+                    color: 'text.primary',
+                    transition: 'all 0.3s ease',
                     '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      backgroundColor: 'rgba(254, 107, 139, 0.1)',
+                      color: '#FE6B8B',
+                      transform: 'translateY(-2px)',
                     },
                   }}
                 >
                   <EmojiEvents />
                 </IconButton>
                 <IconButton
-                  color="inherit"
                   onClick={handleDiscoverClick}
                   aria-label={t('title')}
                   sx={{
+                    color: 'text.primary',
+                    transition: 'all 0.3s ease',
                     '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      backgroundColor: 'rgba(254, 107, 139, 0.1)',
+                      color: '#FE6B8B',
+                      transform: 'translateY(-2px)',
                     },
                   }}
                 >
@@ -99,13 +139,16 @@ export default function Navbar() {
             )}
             {user && canReceive && (
               <IconButton
-                color="inherit"
                 onClick={handleMessagesClick}
                 aria-label="Messages"
                 sx={{
                   position: 'relative',
+                  color: 'text.primary',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    backgroundColor: 'rgba(254, 107, 139, 0.1)',
+                    color: '#FE6B8B',
+                    transform: 'translateY(-2px)',
                   },
                 }}
               >

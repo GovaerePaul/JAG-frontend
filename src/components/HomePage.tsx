@@ -52,7 +52,23 @@ export default function HomePage() {
   const progressPercentage = (pointsInCurrentLevel / 100) * 100;
 
   return (
-    <Box sx={{ py: 4 }}>
+    <Box
+      sx={{
+        py: 4,
+        position: 'relative',
+        minHeight: '100vh',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, #fef5f8 0%, #fff5f0 50%, #f0f8ff 100%)',
+          zIndex: -1,
+        },
+      }}
+    >
       <Container maxWidth="lg">
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography
@@ -63,7 +79,8 @@ export default function HomePage() {
               fontWeight: 'bold',
               background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
               backgroundClip: 'text',
-              textFillColor: 'transparent',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
               fontSize: { xs: '2.5rem', md: '3.5rem' }
             }}
           >
@@ -83,7 +100,22 @@ export default function HomePage() {
             <Button
               variant="contained"
               size="large"
-              sx={{ borderRadius: 3, px: 4, py: 1.5 }}
+              sx={{
+                borderRadius: 3,
+                px: 4,
+                py: 1.5,
+                background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                boxShadow: '0 4px 15px rgba(254, 107, 139, 0.3)',
+                textTransform: 'none',
+                fontSize: '1rem',
+                fontWeight: 600,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #FE6B8B 40%, #FF8E53 100%)',
+                  boxShadow: '0 6px 20px rgba(254, 107, 139, 0.4)',
+                  transform: 'translateY(-2px)',
+                },
+              }}
               onClick={() => router.push('/auth')}
             >
               {t('getStarted')}
@@ -93,9 +125,53 @@ export default function HomePage() {
 
         {user && (
           <>
-            <Paper sx={{ p: 4, mb: 3, backgroundColor: 'background.default' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 2 }}>
-                <EmojiEvents sx={{ fontSize: 40, color: 'warning.main' }} />
+            <Paper
+              elevation={12}
+              sx={{
+                p: 4,
+                mb: 3,
+                borderRadius: 4,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.8)',
+                boxShadow: '0 8px 32px rgba(254, 107, 139, 0.1)',
+                position: 'relative',
+                overflow: 'hidden',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: -50,
+                  right: -50,
+                  width: 200,
+                  height: 200,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.08) 0%, rgba(255, 142, 83, 0.08) 100%)',
+                  filter: 'blur(40px)',
+                },
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 2, position: 'relative', zIndex: 1 }}>
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.1) 0%, rgba(255, 142, 83, 0.1) 100%)',
+                  }}
+                >
+                  <EmojiEvents
+                    sx={{
+                      fontSize: 40,
+                      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  />
+                </Box>
                 <Box>
                   <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
                     {tGamification('level')} {gamification.level}
@@ -105,28 +181,48 @@ export default function HomePage() {
                   </Typography>
                 </Box>
               </Box>
-              <Box sx={{ mt: 2 }}>
+              <Box sx={{ mt: 2, position: 'relative', zIndex: 1 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                     {tGamification('progress')}: {pointsInCurrentLevel}/100
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                     {tGamification('nextLevel')}: {pointsNeededForNextLevel} {tGamification('points')}
                   </Typography>
                 </Box>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={progressPercentage} 
-                  sx={{ height: 8, borderRadius: 4 }}
-                  color="warning"
+                <LinearProgress
+                  variant="determinate"
+                  value={progressPercentage}
+                  sx={{
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: 'rgba(254, 107, 139, 0.1)',
+                    '& .MuiLinearProgress-bar': {
+                      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                      borderRadius: 5,
+                    },
+                  }}
                 />
               </Box>
-              <Box sx={{ mt: 3, textAlign: 'center' }}>
+              <Box sx={{ mt: 3, textAlign: 'center', position: 'relative', zIndex: 1 }}>
                 <Button
                   variant="outlined"
                   size="medium"
                   startIcon={<EmojiEvents />}
-                  sx={{ borderRadius: 2 }}
+                  sx={{
+                    borderRadius: 2,
+                    borderColor: '#FE6B8B',
+                    color: '#FE6B8B',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    px: 3,
+                    '&:hover': {
+                      borderColor: '#FE6B8B',
+                      background: 'rgba(254, 107, 139, 0.08)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(254, 107, 139, 0.2)',
+                    },
+                  }}
                   onClick={() => router.push('/quests')}
                 >
                   {t('viewQuests')}
@@ -134,15 +230,37 @@ export default function HomePage() {
               </Box>
             </Paper>
 
-            <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'background.default', mb: 3 }}>
-              <Typography variant="h6" gutterBottom>
+            <Paper
+              elevation={12}
+              sx={{
+                p: 4,
+                textAlign: 'center',
+                mb: 3,
+                borderRadius: 4,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.8)',
+                boxShadow: '0 8px 32px rgba(254, 107, 139, 0.1)',
+              }}
+            >
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{
+                  fontWeight: 600,
+                  background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
                 {t('userDashboard.title')}
               </Typography>
               <Box sx={{
                 display: 'flex',
                 flexDirection: { xs: 'column', sm: 'row' },
                 gap: 4,
-                mt: 2,
+                mt: 3,
                 justifyContent: 'center'
               }}>
                 {canReceive && (
@@ -153,25 +271,47 @@ export default function HomePage() {
                       flexDirection: 'column',
                       alignItems: 'center',
                       cursor: 'pointer',
-                      transition: 'transform 0.2s, opacity 0.2s',
+                      p: 3,
+                      borderRadius: 3,
+                      transition: 'all 0.3s ease',
+                      background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.05) 0%, rgba(255, 142, 83, 0.05) 100%)',
                       '&:hover': {
-                        transform: 'scale(1.05)',
-                        opacity: 0.8,
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 24px rgba(254, 107, 139, 0.2)',
+                        background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.1) 0%, rgba(255, 142, 83, 0.1) 100%)',
                       },
                     }}
                     onClick={() => router.push('/messages/received')}
                   >
                     <NotificationBadge count={unreadCount} pulse={unreadCount > 0}>
-                      <Inbox sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
+                      <Inbox
+                        sx={{
+                          fontSize: 40,
+                          mb: 1,
+                          background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                          backgroundClip: 'text',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
+                      />
                     </NotificationBadge>
                     {loadingCounts ? (
                       <CircularProgress size={24} sx={{ my: 1 }} />
                     ) : (
-                      <Typography variant="h4" color="primary">
+                      <Typography
+                        variant="h3"
+                        sx={{
+                          fontWeight: 'bold',
+                          background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                          backgroundClip: 'text',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
+                      >
                         {receivedCount}
                       </Typography>
                     )}
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontWeight: 500 }}>
                       {t('userDashboard.messagesReceived')}
                     </Typography>
                     {unreadCount > 0 && (
@@ -179,7 +319,7 @@ export default function HomePage() {
                         variant="caption"
                         sx={{
                           mt: 0.5,
-                          color: 'error.main',
+                          color: '#FE6B8B',
                           fontWeight: 'bold',
                           fontSize: '0.75rem',
                         }}
@@ -197,23 +337,45 @@ export default function HomePage() {
                       flexDirection: 'column',
                       alignItems: 'center',
                       cursor: 'pointer',
-                      transition: 'transform 0.2s, opacity 0.2s',
+                      p: 3,
+                      borderRadius: 3,
+                      transition: 'all 0.3s ease',
+                      background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.05) 0%, rgba(255, 142, 83, 0.05) 100%)',
                       '&:hover': {
-                        transform: 'scale(1.05)',
-                        opacity: 0.8,
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 24px rgba(254, 107, 139, 0.2)',
+                        background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.1) 0%, rgba(255, 142, 83, 0.1) 100%)',
                       },
                     }}
                     onClick={() => router.push('/messages/sent')}
                   >
-                    <Outbox sx={{ fontSize: 32, color: 'secondary.main', mb: 1 }} />
+                    <Outbox
+                      sx={{
+                        fontSize: 40,
+                        mb: 1,
+                        background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    />
                     {loadingCounts ? (
                       <CircularProgress size={24} sx={{ my: 1 }} />
                     ) : (
-                      <Typography variant="h4" color="secondary">
+                      <Typography
+                        variant="h3"
+                        sx={{
+                          fontWeight: 'bold',
+                          background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                          backgroundClip: 'text',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
+                      >
                         {sentCount}
                       </Typography>
                     )}
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontWeight: 500 }}>
                       {t('userDashboard.messagesSent')}
                     </Typography>
                   </Box>
@@ -222,8 +384,30 @@ export default function HomePage() {
             </Paper>
 
             {/* Discover Users Button */}
-            <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'background.default' }}>
-              <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+            <Paper
+              elevation={12}
+              sx={{
+                p: 4,
+                textAlign: 'center',
+                borderRadius: 4,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.8)',
+                boxShadow: '0 8px 32px rgba(254, 107, 139, 0.1)',
+              }}
+            >
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{
+                  mb: 2,
+                  fontWeight: 600,
+                  background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
                 {t('discoverUsers.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -233,7 +417,22 @@ export default function HomePage() {
                 variant="contained"
                 size="large"
                 startIcon={<Explore />}
-                sx={{ borderRadius: 3, px: 4, py: 1.5 }}
+                sx={{
+                  borderRadius: 3,
+                  px: 4,
+                  py: 1.5,
+                  background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                  boxShadow: '0 4px 15px rgba(254, 107, 139, 0.3)',
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #FE6B8B 40%, #FF8E53 100%)',
+                    boxShadow: '0 6px 20px rgba(254, 107, 139, 0.4)',
+                    transform: 'translateY(-2px)',
+                  },
+                }}
                 onClick={() => router.push('/discover')}
               >
                 {t('discoverUsers.button')}
