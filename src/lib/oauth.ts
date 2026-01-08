@@ -38,11 +38,28 @@ export const signInWithGoogle = async () => {
       try {
         result = await linkWithPopup(currentUser, provider);
       } catch (linkError: any) {
-        // If linking fails because account exists, sign out and sign in with new provider
-        // Our auto-merge logic will handle the rest
+        // If linking fails because account exists, sign out and sign in with the new provider
+        // Our auto-merge logic will handle merging the Firestore profiles
         if (linkError.code === 'auth/account-exists-with-different-credential') {
+          // Save current email before signing out
+          const currentEmail = currentUser.email;
+          
+          // Sign out to allow signing in with the new provider
           await auth.signOut();
+          
+          // Sign in with the new provider - this will create a new Firebase Auth account
+          // but our handleOAuthSignIn will merge it with the existing Firestore profile
           result = await signInWithPopup(auth, provider);
+          
+          // Verify email matches (should always match)
+          if (result.user.email === currentEmail) {
+            // Auto-merge will happen in handleOAuthSignIn
+            await handleOAuthSignIn(result);
+            return { user: result.user, error: null };
+          } else {
+            // Email mismatch - this shouldn't happen but handle it
+            return handleOAuthError(linkError);
+          }
         } else {
           throw linkError;
         }
@@ -86,11 +103,28 @@ export const signInWithFacebook = async () => {
       try {
         result = await linkWithPopup(currentUser, provider);
       } catch (linkError: any) {
-        // If linking fails because account exists, sign out and sign in with new provider
-        // Our auto-merge logic will handle the rest
+        // If linking fails because account exists, sign out and sign in with the new provider
+        // Our auto-merge logic will handle merging the Firestore profiles
         if (linkError.code === 'auth/account-exists-with-different-credential') {
+          // Save current email before signing out
+          const currentEmail = currentUser.email;
+          
+          // Sign out to allow signing in with the new provider
           await auth.signOut();
+          
+          // Sign in with the new provider - this will create a new Firebase Auth account
+          // but our handleOAuthSignIn will merge it with the existing Firestore profile
           result = await signInWithPopup(auth, provider);
+          
+          // Verify email matches (should always match)
+          if (result.user.email === currentEmail) {
+            // Auto-merge will happen in handleOAuthSignIn
+            await handleOAuthSignIn(result);
+            return { user: result.user, error: null };
+          } else {
+            // Email mismatch - this shouldn't happen but handle it
+            return handleOAuthError(linkError);
+          }
         } else {
           throw linkError;
         }
@@ -105,6 +139,44 @@ export const signInWithFacebook = async () => {
     return { user: result.user, error: null };
   } catch (error) {
     return handleOAuthError(error);
+  }
+};
+
+/**
+ * Handle OAuth sign-in for existing user when Firebase Auth blocks the link
+ * This updates Firestore to track that the provider is available, without changing Firebase Auth
+ */
+const handleOAuthSignInForExistingUser = async (currentUser: any, provider: 'google' | 'facebook') => {
+  const userEmail = currentUser.email;
+  if (!userEmail) return;
+  
+  try {
+    // Find existing profile by email
+    const usersRef = collection(db, 'users');
+    const emailQuery = query(usersRef, where('email', '==', userEmail));
+    const existingUsers = await getDocs(emailQuery);
+    
+    if (!existingUsers.empty) {
+      const existingDoc = existingUsers.docs[0];
+      const existingProfileRef = doc(db, 'users', existingDoc.id);
+      const existingData = existingDoc.data();
+      
+      // Track that this provider is available (even if Firebase Auth keeps separate accounts)
+      const availableProviders = existingData.availableProviders || [];
+      if (!availableProviders.includes(provider)) {
+        await updateDoc(existingProfileRef, {
+          availableProviders: [...availableProviders, provider],
+          updatedAt: new Date(),
+        });
+        console.log(`Tracked ${provider} as available provider for user ${userEmail}`);
+      }
+    }
+    
+    // Set auth token for API client
+    const token = await currentUser.getIdToken();
+    authApiClient.setAuthToken(token);
+  } catch (error) {
+    console.error('Error handling OAuth for existing user:', error);
   }
 };
 
