@@ -141,7 +141,14 @@
       "description": "Select your city to allow other users to find you.",
       "cityRequired": "Please select a city",
       "error": "Error updating location"
-    }
+    },
+    "changePhoto": "Change Photo",
+    "uploadPhoto": "Upload Photo",
+    "removePhoto": "Remove Photo",
+    "photoUploading": "Uploading...",
+    "photoUploaded": "Photo uploaded successfully",
+    "photoError": "Error uploading photo",
+    "photoSizeError": "Image is too large (max 10MB)"
   },
   "messages": {
     "received": {

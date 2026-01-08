@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth, UserPreferences } from '@/hooks/useAuth';
 import {
@@ -53,6 +53,11 @@ import NotificationBadge from '@/components/NotificationBadge';
 import CityAutocomplete from '@/components/discover/CityAutocomplete';
 import { Alert } from '@mui/material';
 import LevelIcon from '@/components/LevelIcon';
+import { uploadProfilePicture, deleteProfilePicture } from '@/lib/storage';
+import { updateUserProfileOnBackend } from '@/lib/auth';
+import { CameraAlt, Delete } from '@mui/icons-material';
+import { reload } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
@@ -76,6 +81,12 @@ export default function ProfilePage() {
   } | null>(null);
   const [updatingLocation, setUpdatingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null);
+  const [currentPhotoURL, setCurrentPhotoURL] = useState<string | null>(null);
 
   // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
   const gamification = {
@@ -118,7 +129,7 @@ export default function ProfilePage() {
 
   const handleUpdateLocation = async () => {
     if (!selectedLocationCity || !selectedLocationCity.city.trim()) {
-      setLocationError(t('location.cityRequired') || 'Veuillez sélectionner une ville');
+      setLocationError(t('location.cityRequired') || 'Please select a city');
       return;
     }
 
@@ -133,10 +144,10 @@ export default function ProfilePage() {
         setSelectedLocationCity(null);
         // The userProfile will update automatically via onSnapshot
       } else {
-        setLocationError(response.error || t('location.error') || 'Erreur lors de la mise à jour');
+        setLocationError(response.error || t('location.error') || 'Error updating location');
       }
     } catch (err) {
-      setLocationError(err instanceof Error ? err.message : t('location.error') || 'Erreur lors de la mise à jour');
+      setLocationError(err instanceof Error ? err.message : t('location.error') || 'Error updating location');
     } finally {
       setUpdatingLocation(false);
     }
@@ -174,6 +185,142 @@ export default function ProfilePage() {
     if (!user.metadata?.lastSignInTime) return t('never');
     return new Date(user.metadata.lastSignInTime).toLocaleDateString();
   };
+
+  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setPhotoError(t('photoError') || 'File must be an image');
+      return;
+    }
+
+    // Check file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      setPhotoError(t('photoSizeError') || 'Image is too large (max 10MB)');
+      return;
+    }
+
+    setPhotoError(null);
+    setSelectedPhotoFile(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPhotoPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handlePhotoUpload = async () => {
+    if (!selectedPhotoFile || !user) return;
+
+    setUploadingPhoto(true);
+    setPhotoError(null);
+
+    try {
+      // Upload new photo
+      const newPhotoURL = await uploadProfilePicture(user.uid, selectedPhotoFile);
+
+      // Delete old photo if it exists
+      if (user.photoURL) {
+        try {
+          await deleteProfilePicture(user.photoURL);
+        } catch (error) {
+          // Ignore deletion errors
+          console.warn('Error deleting old photo:', error);
+        }
+      }
+
+      // Update profile
+      const result = await updateUserProfileOnBackend({ photoURL: newPhotoURL });
+      if (result.success) {
+        // Update local state immediately to display new photo
+        setCurrentPhotoURL(newPhotoURL);
+        
+        // Reload Firebase Auth user to sync
+        if (user) {
+          try {
+            await reload(user);
+          } catch (error) {
+            // Ignore reload errors, local state is already updated
+            console.warn('Error reloading user:', error);
+          }
+        }
+        
+        setPhotoDialogOpen(false);
+        setPhotoPreview(null);
+        setSelectedPhotoFile(null);
+      } else {
+        setPhotoError(result.error || t('photoError') || 'Error updating profile');
+      }
+    } catch (error) {
+      setPhotoError(
+        error instanceof Error ? error.message : t('photoError') || 'Error uploading photo'
+      );
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (!user || !user.photoURL) return;
+
+    setUploadingPhoto(true);
+    setPhotoError(null);
+
+    try {
+      // Delete photo from Storage
+      await deleteProfilePicture(user.photoURL);
+
+      // Update profile with empty photoURL
+      const result = await updateUserProfileOnBackend({ photoURL: '' });
+      if (result.success) {
+        // Update local state immediately to remove photo
+        setCurrentPhotoURL(null);
+        
+        // Reload Firebase Auth user to sync
+        if (user) {
+          try {
+            await reload(user);
+          } catch (error) {
+            // Ignore reload errors, local state is already updated
+            console.warn('Error reloading user:', error);
+          }
+        }
+        
+        setPhotoDialogOpen(false);
+        setPhotoPreview(null);
+        setSelectedPhotoFile(null);
+      } else {
+        setPhotoError(result.error || t('photoError') || 'Error removing photo');
+      }
+    } catch (error) {
+      setPhotoError(
+        error instanceof Error ? error.message : t('photoError') || 'Error removing photo'
+      );
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handlePhotoDialogClose = () => {
+    if (uploadingPhoto) return; // Prevent closing during upload
+    setPhotoDialogOpen(false);
+    setPhotoPreview(null);
+    setSelectedPhotoFile(null);
+    setPhotoError(null);
+  };
+
+  // Update currentPhotoURL when user.photoURL changes
+  useEffect(() => {
+    if (user?.photoURL) {
+      setCurrentPhotoURL(user.photoURL);
+    } else {
+      setCurrentPhotoURL(null);
+    }
+  }, [user?.photoURL]);
 
   const currentLevelPoints = (gamification.level - 1) * 100;
   const nextLevelPoints = gamification.level * 100;
@@ -227,7 +374,7 @@ export default function ProfilePage() {
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, mb: 4, position: 'relative', zIndex: 1, gap: { xs: 2, sm: 0 } }}>
             <Box sx={{ position: 'relative', alignSelf: { xs: 'center', sm: 'flex-start' } }}>
               <Avatar
-                src={user.photoURL || undefined}
+                src={currentPhotoURL || user.photoURL || undefined}
                 sx={{
                   width: { xs: 80, sm: 120 },
                   height: { xs: 80, sm: 120 },
@@ -239,13 +386,18 @@ export default function ProfilePage() {
                   background: 'linear-gradient(135deg, #FE6B8B, #FF8E53)',
                   backgroundClip: 'padding-box',
                   boxShadow: '0 4px 20px rgba(254, 107, 139, 0.3)',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    opacity: 0.9,
+                  },
                 }}
+                onClick={() => setPhotoDialogOpen(true)}
               >
                 {user.displayName?.charAt(0) || user.email?.charAt(0)}
               </Avatar>
-              {/* Icon Edit on mobile only */}
+              {/* Icon Edit photo - visible on desktop */}
               <IconButton
-                onClick={handleEditProfile}
+                onClick={() => setPhotoDialogOpen(true)}
                 sx={{
                   position: 'absolute',
                   bottom: 0,
@@ -256,11 +408,37 @@ export default function ProfilePage() {
                   height: { xs: 32, sm: 36 },
                   border: '3px solid white',
                   boxShadow: '0 2px 8px rgba(254, 107, 139, 0.3)',
-                  display: { xs: 'flex', sm: 'none' },
+                  display: { xs: 'none', sm: 'flex' },
                   alignItems: 'center',
                   justifyContent: 'center',
                   '&:hover': {
                     backgroundColor: '#FF8E53',
+                    transform: 'scale(1.1)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+                aria-label={t('changePhoto')}
+              >
+                <CameraAlt sx={{ fontSize: { xs: 18, sm: 20 } }} />
+              </IconButton>
+              {/* Icon Edit profile on mobile only */}
+              <IconButton
+                onClick={handleEditProfile}
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: { xs: 0, sm: -8 },
+                  backgroundColor: '#FF8E53',
+                  color: 'white',
+                  width: { xs: 32, sm: 36 },
+                  height: { xs: 32, sm: 36 },
+                  border: '3px solid white',
+                  boxShadow: '0 2px 8px rgba(254, 107, 139, 0.3)',
+                  display: { xs: 'flex', sm: 'none' },
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  '&:hover': {
+                    backgroundColor: '#FE6B8B',
                     transform: 'scale(1.1)',
                   },
                   transition: 'all 0.3s ease',
@@ -1129,6 +1307,158 @@ export default function ProfilePage() {
               }}
             >
               {updatingLocation ? (t('common.loading') || 'Chargement...') : (t('save') || 'Enregistrer')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Photo Upload Dialog */}
+        <Dialog open={photoDialogOpen} onClose={handlePhotoDialogClose} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CameraAlt sx={{ color: '#FE6B8B' }} />
+            <Typography
+              sx={{
+                fontWeight: 600,
+                background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              {t('changePhoto')}
+            </Typography>
+          </DialogTitle>
+          <DialogContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+              {photoError && (
+                <Alert
+                  severity="error"
+                  onClose={() => setPhotoError(null)}
+                  sx={{
+                    borderRadius: 2,
+                    '& .MuiAlert-icon': {
+                      color: '#FE6B8B',
+                    },
+                  }}
+                >
+                  {photoError}
+                </Alert>
+              )}
+
+              {/* Preview of new photo or current photo */}
+              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Avatar
+                  src={photoPreview || user.photoURL || undefined}
+                  sx={{
+                    width: 150,
+                    height: 150,
+                    fontSize: '3rem',
+                    border: '4px solid',
+                    borderColor: 'transparent',
+                    background: 'linear-gradient(135deg, #FE6B8B, #FF8E53)',
+                    backgroundClip: 'padding-box',
+                    boxShadow: '0 4px 20px rgba(254, 107, 139, 0.3)',
+                  }}
+                >
+                  {user.displayName?.charAt(0) || user.email?.charAt(0)}
+                </Avatar>
+              </Box>
+
+              {/* Input file caché */}
+              <input
+                accept="image/*"
+                style={{ display: 'none' }}
+                id="photo-upload-input"
+                type="file"
+                onChange={handlePhotoSelect}
+                disabled={uploadingPhoto}
+              />
+              <label htmlFor="photo-upload-input">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  fullWidth
+                  startIcon={<CameraAlt />}
+                  disabled={uploadingPhoto}
+                  sx={{
+                    textTransform: 'none',
+                    borderColor: '#FE6B8B',
+                    color: '#FE6B8B',
+                    '&:hover': {
+                      borderColor: '#FF8E53',
+                      backgroundColor: 'rgba(254, 107, 139, 0.04)',
+                    },
+                  }}
+                >
+                  {photoPreview ? t('changePhoto') : t('uploadPhoto')}
+                </Button>
+              </label>
+
+              {uploadingPhoto && (
+                <Box sx={{ width: '100%' }}>
+                  <LinearProgress
+                    sx={{
+                      borderRadius: 1,
+                      height: 6,
+                      backgroundColor: 'rgba(254, 107, 139, 0.1)',
+                      '& .MuiLinearProgress-bar': {
+                        background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                      },
+                    }}
+                  />
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                    {t('photoUploading')}
+                  </Typography>
+                </Box>
+              )}
+
+              {user.photoURL && (
+                <Button
+                  variant="outlined"
+                  color="error"
+                  fullWidth
+                  startIcon={<Delete />}
+                  onClick={handleRemovePhoto}
+                  disabled={uploadingPhoto}
+                  sx={{
+                    textTransform: 'none',
+                  }}
+                >
+                  {t('removePhoto')}
+                </Button>
+              )}
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={handlePhotoDialogClose}
+              disabled={uploadingPhoto}
+              sx={{
+                textTransform: 'none',
+                color: 'text.secondary',
+              }}
+            >
+              {t('cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handlePhotoUpload}
+              disabled={uploadingPhoto || !selectedPhotoFile}
+              startIcon={uploadingPhoto ? <CircularProgress size={20} /> : <Save />}
+              sx={{
+                textTransform: 'none',
+                background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                boxShadow: '0 4px 15px rgba(254, 107, 139, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #FE6B8B 40%, #FF8E53 100%)',
+                  boxShadow: '0 6px 20px rgba(254, 107, 139, 0.4)',
+                },
+                '&:disabled': {
+                  background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                  opacity: 0.6,
+                },
+              }}
+            >
+              {uploadingPhoto ? (t('photoUploading') || 'Upload...') : (t('save') || 'Enregistrer')}
             </Button>
           </DialogActions>
         </Dialog>

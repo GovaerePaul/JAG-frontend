@@ -141,7 +141,14 @@
       "description": "Sélectionnez votre ville pour permettre aux autres utilisateurs de vous trouver.",
       "cityRequired": "Veuillez sélectionner une ville",
       "error": "Erreur lors de la mise à jour de la localisation"
-    }
+    },
+    "changePhoto": "Modifier la photo",
+    "uploadPhoto": "Télécharger une photo",
+    "removePhoto": "Supprimer la photo",
+    "photoUploading": "Téléchargement en cours...",
+    "photoUploaded": "Photo téléchargée avec succès",
+    "photoError": "Erreur lors du téléchargement de la photo",
+    "photoSizeError": "L'image est trop grande (max 10MB)"
   },
   "messages": {
     "received": {
