@@ -18,6 +18,7 @@ import SendMessageForm from '@/components/messages/SendMessageForm';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useUserStats } from '@/hooks/useUserStats';
 import NotificationBadge from '@/components/NotificationBadge';
+import LevelIcon from '@/components/LevelIcon';
 
 interface GamificationData {
   points: number;
@@ -162,15 +163,7 @@ export default function HomePage() {
                     background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.1) 0%, rgba(255, 142, 83, 0.1) 100%)',
                   }}
                 >
-                  <EmojiEvents
-                    sx={{
-                      fontSize: 40,
-                      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}
-                  />
+                  <LevelIcon level={gamification.level} size={56} />
                 </Box>
                 <Box>
                   <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>

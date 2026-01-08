@@ -35,7 +35,6 @@ import {
   Edit,
   Save,
   Cancel,
-  EmojiEvents,
   Inbox,
   Outbox,
   Favorite,
@@ -53,6 +52,7 @@ import { useQuests } from '@/hooks/useQuests';
 import NotificationBadge from '@/components/NotificationBadge';
 import CityAutocomplete from '@/components/discover/CityAutocomplete';
 import { Alert } from '@mui/material';
+import LevelIcon from '@/components/LevelIcon';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
@@ -379,15 +379,7 @@ export default function ProfilePage() {
                     background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.1) 0%, rgba(255, 142, 83, 0.1) 100%)',
                   }}
                 >
-                  <EmojiEvents
-                    sx={{
-                      fontSize: 40,
-                      background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}
-                  />
+                  <LevelIcon level={gamification.level} size={56} />
                 </Box>
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>

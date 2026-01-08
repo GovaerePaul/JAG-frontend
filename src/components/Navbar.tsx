@@ -8,7 +8,7 @@ import {
   Container,
   IconButton
 } from '@mui/material';
-import { Inbox, Explore, EmojiEvents, Favorite } from '@mui/icons-material';
+import { Inbox, Explore, EmojiEvents } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import UserDropdown from './UserDropdown';
@@ -16,6 +16,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import NotificationBadge from '@/components/NotificationBadge';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 
 export default function Navbar() {
   const router = useRouter();
@@ -57,48 +58,27 @@ export default function Navbar() {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: { xs: 0.5, sm: 1 },
               mr: { xs: 1, sm: 3 },
               cursor: 'pointer',
               transition: 'all 0.3s ease',
+              height: { xs: 54, sm: 62 },
               '&:hover': {
                 transform: 'scale(1.05)',
               },
             }}
           >
-            <Favorite
-              sx={{
-                fontSize: { xs: 22, sm: 28 },
-                color: '#FE6B8B',
-                animation: 'pulse 2s ease-in-out infinite',
-                '@keyframes pulse': {
-                  '0%, 100%': {
-                    transform: 'scale(1)',
-                  },
-                  '50%': {
-                    transform: 'scale(1.1)',
-                  },
-                },
+            <Image
+              src="/logo.svg"
+              alt="JustGift Logo"
+              width={0}
+              height={0}
+              style={{
+                width: 'auto',
+                height: '100%',
+                objectFit: 'contain',
               }}
+              priority
             />
-            <Typography
-              variant="h6"
-              noWrap
-              component="div"
-              sx={{
-                fontFamily: 'inherit',
-                fontWeight: 700,
-                letterSpacing: '0.05em',
-                fontSize: { xs: '1rem', sm: '1.25rem' },
-                background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textDecoration: 'none',
-              }}
-            >
-              JustGift
-            </Typography>
           </Box>
 
           <Box sx={{ flexGrow: 1 }} />
