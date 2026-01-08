@@ -88,7 +88,6 @@ export default function ProfilePage() {
   const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null);
   const [currentPhotoURL, setCurrentPhotoURL] = useState<string | null>(null);
 
-  // Update currentPhotoURL when user.photoURL changes
   useEffect(() => {
     if (user?.photoURL) {
       setCurrentPhotoURL(user.photoURL);
@@ -96,8 +95,6 @@ export default function ProfilePage() {
       setCurrentPhotoURL(null);
     }
   }, [user?.photoURL]);
-
-  // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
   const gamification = {
     points: userProfile?.points ?? 0,
     level: userProfile?.level ?? 1,
@@ -199,13 +196,11 @@ export default function ProfilePage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check file type
     if (!file.type.startsWith('image/')) {
       setPhotoError(t('photoError') || 'File must be an image');
       return;
     }
 
-    // Check file size (10MB max)
     if (file.size > 10 * 1024 * 1024) {
       setPhotoError(t('photoSizeError') || 'Image is too large (max 10MB)');
       return;
@@ -214,7 +209,6 @@ export default function ProfilePage() {
     setPhotoError(null);
     setSelectedPhotoFile(file);
 
-    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setPhotoPreview(e.target?.result as string);
@@ -229,31 +223,24 @@ export default function ProfilePage() {
     setPhotoError(null);
 
     try {
-      // Upload new photo
       const newPhotoURL = await uploadProfilePicture(user.uid, selectedPhotoFile);
 
-      // Delete old photo if it exists
       if (user.photoURL) {
         try {
           await deleteProfilePicture(user.photoURL);
         } catch (error) {
-          // Ignore deletion errors
           console.warn('Error deleting old photo:', error);
         }
       }
 
-      // Update profile
       const result = await updateUserProfileOnBackend({ photoURL: newPhotoURL });
       if (result.success) {
-        // Update local state immediately to display new photo
         setCurrentPhotoURL(newPhotoURL);
         
-        // Reload Firebase Auth user to sync
         if (user) {
           try {
             await reload(user);
           } catch (error) {
-            // Ignore reload errors, local state is already updated
             console.warn('Error reloading user:', error);
           }
         }
@@ -280,21 +267,16 @@ export default function ProfilePage() {
     setPhotoError(null);
 
     try {
-      // Delete photo from Storage
       await deleteProfilePicture(user.photoURL);
 
-      // Update profile with empty photoURL
       const result = await updateUserProfileOnBackend({ photoURL: '' });
       if (result.success) {
-        // Update local state immediately to remove photo
         setCurrentPhotoURL(null);
         
-        // Reload Firebase Auth user to sync
         if (user) {
           try {
             await reload(user);
           } catch (error) {
-            // Ignore reload errors, local state is already updated
             console.warn('Error reloading user:', error);
           }
         }
@@ -315,7 +297,7 @@ export default function ProfilePage() {
   };
 
   const handlePhotoDialogClose = () => {
-    if (uploadingPhoto) return; // Prevent closing during upload
+    if (uploadingPhoto) return;
     setPhotoDialogOpen(false);
     setPhotoPreview(null);
     setSelectedPhotoFile(null);
@@ -395,7 +377,6 @@ export default function ProfilePage() {
               >
                 {user.displayName?.charAt(0) || user.email?.charAt(0)}
               </Avatar>
-              {/* Icon Edit photo - visible on desktop */}
               <IconButton
                 onClick={() => setPhotoDialogOpen(true)}
                 sx={{
@@ -421,7 +402,6 @@ export default function ProfilePage() {
               >
                 <CameraAlt sx={{ fontSize: { xs: 18, sm: 20 } }} />
               </IconButton>
-              {/* Icon Edit profile on mobile only */}
               <IconButton
                 onClick={handleEditProfile}
                 sx={{
@@ -476,7 +456,6 @@ export default function ProfilePage() {
                     sx={{ fontWeight: 500 }}
                   />
                 )}
-                {/* Favorite Event Types for Receiving */}
                 {userProfile?.preferences?.favoriteEventTypeIdsForReceiving &&
                   userProfile.preferences.favoriteEventTypeIdsForReceiving.length > 0 &&
                   userProfile.preferences.favoriteEventTypeIdsForReceiving.map((eventTypeId) => {
@@ -512,7 +491,6 @@ export default function ProfilePage() {
                 )}
               </Box>
             </Box>
-            {/* Button Edit on desktop only */}
             <Button
               variant="outlined"
               startIcon={<Edit />}
@@ -738,7 +716,6 @@ export default function ProfilePage() {
             </Card>
           </Box>
 
-          {/* Location Card */}
           <Box>
             <Card
               elevation={0}
@@ -806,7 +783,6 @@ export default function ProfilePage() {
             </Card>
           </Box>
 
-            {/* Message Statistics */}
             <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
               <Card
                 elevation={0}
@@ -920,7 +896,6 @@ export default function ProfilePage() {
             </Card>
           </Box>
 
-            {/* Event Preferences */}
             <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
               <Card
                 elevation={0}
@@ -957,7 +932,6 @@ export default function ProfilePage() {
                   <CircularProgress />
                 ) : (
                   <>
-                    {/* Favorites for Receiving */}
                     {canReceive && (
                       <Box sx={{ mb: 4 }}>
                         <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
@@ -967,7 +941,6 @@ export default function ProfilePage() {
                           {t('favoritesForReceivingDescription')}
                         </Typography>
 
-                        {/* Current Favorites for Receiving */}
                         {userProfile?.preferences?.favoriteEventTypeIdsForReceiving &&
                           userProfile.preferences.favoriteEventTypeIdsForReceiving.length > 0 && (
                             <Box sx={{ mb: 2 }}>
@@ -1005,7 +978,6 @@ export default function ProfilePage() {
                             </Box>
                           )}
 
-                        {/* Available Event Types to Add */}
                         <Box
                           sx={{
                             display: 'grid',
@@ -1068,7 +1040,6 @@ export default function ProfilePage() {
                       </Box>
                     )}
 
-                    {/* Favorites for Sending */}
                     {canSend && (
                       <Box>
                         <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
@@ -1078,7 +1049,6 @@ export default function ProfilePage() {
                           {t('favoritesForSendingDescription')}
                         </Typography>
 
-                        {/* All Event Types - checked by default, user can uncheck */}
                         <Box
                           sx={{
                             display: 'grid',
@@ -1217,7 +1187,6 @@ export default function ProfilePage() {
           </DialogActions>
         </Dialog>
 
-        {/* Location Edit Dialog */}
         <Dialog open={locationDialogOpen} onClose={() => setLocationDialogOpen(false)} maxWidth="sm" fullWidth>
           <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <LocationOn sx={{ color: '#FE6B8B' }} />
@@ -1311,7 +1280,6 @@ export default function ProfilePage() {
           </DialogActions>
         </Dialog>
 
-        {/* Photo Upload Dialog */}
         <Dialog open={photoDialogOpen} onClose={handlePhotoDialogClose} maxWidth="sm" fullWidth>
           <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CameraAlt sx={{ color: '#FE6B8B' }} />
@@ -1344,7 +1312,6 @@ export default function ProfilePage() {
                 </Alert>
               )}
 
-              {/* Preview of new photo or current photo */}
               <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Avatar
                   src={photoPreview || user.photoURL || undefined}
@@ -1363,7 +1330,6 @@ export default function ProfilePage() {
                 </Avatar>
               </Box>
 
-              {/* Input file caché */}
               <input
                 accept="image/*"
                 style={{ display: 'none' }}
