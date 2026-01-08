@@ -29,13 +29,24 @@ export const signInWithGoogle = async () => {
     provider.addScope('profile');
     provider.addScope('email');
     
-    // Check if user is already signed in - if so, link the account instead
+    // Check if user is already signed in
     const currentUser = auth.currentUser;
     let result: UserCredential;
     
     if (currentUser) {
-      // User already signed in - link Google account to existing account
-      result = await linkWithPopup(currentUser, provider);
+      // Try to link the account first
+      try {
+        result = await linkWithPopup(currentUser, provider);
+      } catch (linkError: any) {
+        // If linking fails because account exists, sign out and sign in with new provider
+        // Our auto-merge logic will handle the rest
+        if (linkError.code === 'auth/account-exists-with-different-credential') {
+          await auth.signOut();
+          result = await signInWithPopup(auth, provider);
+        } else {
+          throw linkError;
+        }
+      }
     } else {
       // User not signed in - normal sign in
       result = await signInWithPopup(auth, provider);
@@ -66,13 +77,24 @@ export const signInWithFacebook = async () => {
     provider.addScope('email');
     provider.addScope('public_profile');
     
-    // Check if user is already signed in - if so, link the account instead
+    // Check if user is already signed in
     const currentUser = auth.currentUser;
     let result: UserCredential;
     
     if (currentUser) {
-      // User already signed in - link Facebook account to existing account
-      result = await linkWithPopup(currentUser, provider);
+      // Try to link the account first
+      try {
+        result = await linkWithPopup(currentUser, provider);
+      } catch (linkError: any) {
+        // If linking fails because account exists, sign out and sign in with new provider
+        // Our auto-merge logic will handle the rest
+        if (linkError.code === 'auth/account-exists-with-different-credential') {
+          await auth.signOut();
+          result = await signInWithPopup(auth, provider);
+        } else {
+          throw linkError;
+        }
+      }
     } else {
       // User not signed in - normal sign in
       result = await signInWithPopup(auth, provider);
