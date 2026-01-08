@@ -88,6 +88,15 @@ export default function ProfilePage() {
   const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null);
   const [currentPhotoURL, setCurrentPhotoURL] = useState<string | null>(null);
 
+  // Update currentPhotoURL when user.photoURL changes
+  useEffect(() => {
+    if (user?.photoURL) {
+      setCurrentPhotoURL(user.photoURL);
+    } else {
+      setCurrentPhotoURL(null);
+    }
+  }, [user?.photoURL]);
+
   // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
   const gamification = {
     points: userProfile?.points ?? 0,
@@ -312,15 +321,6 @@ export default function ProfilePage() {
     setSelectedPhotoFile(null);
     setPhotoError(null);
   };
-
-  // Update currentPhotoURL when user.photoURL changes
-  useEffect(() => {
-    if (user?.photoURL) {
-      setCurrentPhotoURL(user.photoURL);
-    } else {
-      setCurrentPhotoURL(null);
-    }
-  }, [user?.photoURL]);
 
   const currentLevelPoints = (gamification.level - 1) * 100;
   const nextLevelPoints = gamification.level * 100;
