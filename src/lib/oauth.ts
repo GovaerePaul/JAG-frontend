@@ -2,8 +2,11 @@ import {
   GoogleAuthProvider,
   FacebookAuthProvider,
   signInWithPopup,
+  linkWithPopup,
   UserCredential,
-  AuthError
+  AuthError,
+  fetchSignInMethodsForEmail,
+  OAuthProvider
 } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
@@ -26,7 +29,18 @@ export const signInWithGoogle = async () => {
     provider.addScope('profile');
     provider.addScope('email');
     
-    const result = await signInWithPopup(auth, provider);
+    // Check if user is already signed in - if so, link the account instead
+    const currentUser = auth.currentUser;
+    let result: UserCredential;
+    
+    if (currentUser) {
+      // User already signed in - link Google account to existing account
+      result = await linkWithPopup(currentUser, provider);
+    } else {
+      // User not signed in - normal sign in
+      result = await signInWithPopup(auth, provider);
+    }
+    
     await handleOAuthSignIn(result);
     
     return { user: result.user, error: null };
@@ -52,7 +66,18 @@ export const signInWithFacebook = async () => {
     provider.addScope('email');
     provider.addScope('public_profile');
     
-    const result = await signInWithPopup(auth, provider);
+    // Check if user is already signed in - if so, link the account instead
+    const currentUser = auth.currentUser;
+    let result: UserCredential;
+    
+    if (currentUser) {
+      // User already signed in - link Facebook account to existing account
+      result = await linkWithPopup(currentUser, provider);
+    } else {
+      // User not signed in - normal sign in
+      result = await signInWithPopup(auth, provider);
+    }
+    
     await handleOAuthSignIn(result);
     
     return { user: result.user, error: null };
