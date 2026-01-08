@@ -23,15 +23,6 @@ export function useUnreadMessages(): UseUnreadMessagesReturn {
     return messages.filter((msg) => msg.status !== 'read').length;
   }, [messages]);
 
-  // Poll for new messages every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refetch();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [refetch]);
-
   return {
     unreadCount,
     loading,
