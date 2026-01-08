@@ -1,12 +1,23 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import LoginForm from '../LoginForm'
-import { signIn, translateFirebaseError } from '@/lib/auth'
+import { signIn, getFirebaseErrorKey } from '@/lib/auth'
+
+// Mock next-intl
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}));
 
 // Mock the auth functions
 jest.mock('@/lib/auth', () => ({
   signIn: jest.fn(),
-  translateFirebaseError: jest.fn(),
+  getFirebaseErrorKey: jest.fn(),
+}))
+
+// Mock OAuth functions
+jest.mock('@/lib/oauth', () => ({
+  signInWithGoogle: jest.fn(),
+  signInWithFacebook: jest.fn(),
 }))
 
 // Mock Firebase
@@ -15,10 +26,16 @@ jest.mock('@/lib/firebase', () => ({
     currentUser: null,
     onAuthStateChanged: jest.fn(),
   },
+  db: {},
+}))
+
+// Mock Firebase Functions
+jest.mock('@/lib/firebase-functions', () => ({
+  functions: {},
 }))
 
 const mockSignIn = signIn as jest.MockedFunction<typeof signIn>
-const mockTranslateFirebaseError = translateFirebaseError as jest.MockedFunction<typeof translateFirebaseError>
+const mockGetFirebaseErrorKey = getFirebaseErrorKey as jest.MockedFunction<typeof getFirebaseErrorKey>
 
 describe('LoginForm Component', () => {
   const mockOnSuccess = jest.fn()
@@ -40,18 +57,18 @@ describe('LoginForm Component', () => {
   it('should render login form with all fields', () => {
     renderLoginForm()
 
-    expect(screen.getByText('Connexion')).toBeInTheDocument()
-    expect(screen.getByText('Connectez-vous à votre compte JustGift')).toBeInTheDocument()
+    expect(screen.getByText('login.title')).toBeInTheDocument()
+    expect(screen.getByText('login.subtitle')).toBeInTheDocument()
     expect(screen.getByRole('textbox', { name: /email/i })).toBeInTheDocument()
     expect(screen.getAllByDisplayValue('')).toHaveLength(2)
-    expect(screen.getByRole('button', { name: 'Se connecter' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'S\'inscrire' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /loginbutton/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'login.signUp' })).toBeInTheDocument()
   })
 
   it('should disable submit button when fields are empty', () => {
     renderLoginForm()
-
-    const submitButton = screen.getByRole('button', { name: 'Se connecter' })
+    
+    const submitButton = screen.getByRole('button', { name: /loginbutton/i })
     expect(submitButton).toBeDisabled()
   })
 
@@ -61,7 +78,7 @@ describe('LoginForm Component', () => {
 
     const emailInput = screen.getByRole('textbox', { name: /email/i })
     const passwordInput = screen.getAllByDisplayValue('')[1]
-    const submitButton = screen.getByRole('button', { name: 'Se connecter' })
+    const submitButton = screen.getByRole('button', { name: /loginbutton/i })
 
     await user.type(emailInput, 'test@example.com')
     await user.type(passwordInput, 'password123')
@@ -74,7 +91,7 @@ describe('LoginForm Component', () => {
     renderLoginForm()
 
     const passwordInput = screen.getAllByDisplayValue('')[1]
-    const toggleButton = screen.getByLabelText('Afficher le mot de passe')
+    const toggleButton = screen.getByLabelText('login.showPassword')
 
     // Initially password should be hidden
     expect(passwordInput).toHaveAttribute('type', 'password')
@@ -91,13 +108,13 @@ describe('LoginForm Component', () => {
   it('should clear error when user types', async () => {
     const user = userEvent.setup()
     mockSignIn.mockResolvedValue({ user: null, error: 'Test error' })
-    mockTranslateFirebaseError.mockReturnValue('Erreur de test')
+    mockGetFirebaseErrorKey.mockReturnValue('auth.errors.unknown')
 
     renderLoginForm()
 
     const emailInput = screen.getByRole('textbox', { name: /email/i })
     const passwordInput = screen.getAllByDisplayValue('')[1]
-    const submitButton = screen.getByRole('button', { name: 'Se connecter' })
+    const submitButton = screen.getByRole('button', { name: /loginbutton/i })
 
     // Fill form and submit to trigger error
     await user.type(emailInput, 'test@example.com')
@@ -105,20 +122,20 @@ describe('LoginForm Component', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Erreur de test')).toBeInTheDocument()
+      expect(screen.getByText('auth.errors.unknown')).toBeInTheDocument()
     })
 
     // Start typing again - error should disappear
     await user.type(emailInput, 'a')
 
-    expect(screen.queryByText('Erreur de test')).not.toBeInTheDocument()
+    expect(screen.queryByText('auth.errors.unknown')).not.toBeInTheDocument()
   })
 
   it('should call onSwitchToRegister when sign up button is clicked', async () => {
     const user = userEvent.setup()
     renderLoginForm()
 
-    const signUpButton = screen.getByRole('button', { name: 'S\'inscrire' })
+    const signUpButton = screen.getByRole('button', { name: 'login.signUp' })
     await user.click(signUpButton)
 
     expect(mockOnSwitchToRegister).toHaveBeenCalled()
@@ -133,7 +150,7 @@ describe('LoginForm Component', () => {
 
     const emailInput = screen.getByRole('textbox', { name: /email/i })
     const passwordInput = screen.getAllByDisplayValue('')[1]
-    const submitButton = screen.getByRole('button', { name: 'Se connecter' })
+    const submitButton = screen.getByRole('button', { name: /loginbutton/i })
 
     await user.type(emailInput, 'test@example.com')
     await user.type(passwordInput, 'password123')
@@ -151,21 +168,21 @@ describe('LoginForm Component', () => {
   it('should handle login error', async () => {
     const user = userEvent.setup()
     mockSignIn.mockResolvedValue({ user: null, error: 'auth/invalid-credential' })
-    mockTranslateFirebaseError.mockReturnValue('Identifiants invalides.')
+    mockGetFirebaseErrorKey.mockReturnValue('auth.errors.invalidCredential')
 
     renderLoginForm()
 
     const emailInput = screen.getByRole('textbox', { name: /email/i })
     const passwordInput = screen.getAllByDisplayValue('')[1]
-    const submitButton = screen.getByRole('button', { name: 'Se connecter' })
+    const submitButton = screen.getByRole('button', { name: /loginbutton/i })
 
     await user.type(emailInput, 'test@example.com')
     await user.type(passwordInput, 'wrongpassword')
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Identifiants invalides.')).toBeInTheDocument()
-      expect(mockTranslateFirebaseError).toHaveBeenCalledWith('auth/invalid-credential')
+      expect(screen.getByText('auth.errors.invalidCredential')).toBeInTheDocument()
+      expect(mockGetFirebaseErrorKey).toHaveBeenCalledWith('auth/invalid-credential')
     })
   })
 
@@ -180,21 +197,21 @@ describe('LoginForm Component', () => {
 
     const emailInput = screen.getByRole('textbox', { name: /email/i })
     const passwordInput = screen.getAllByDisplayValue('')[1]
-    const submitButton = screen.getByRole('button', { name: 'Se connecter' })
+    const submitButton = screen.getByRole('button', { name: /loginbutton/i })
 
     await user.type(emailInput, 'test@example.com')
     await user.type(passwordInput, 'password123')
     await user.click(submitButton)
 
     // Check loading state
-    expect(screen.getByText('Connexion...')).toBeInTheDocument()
+    expect(screen.getByText('login.loadingButton')).toBeInTheDocument()
     expect(submitButton).toBeDisabled()
     expect(emailInput).toBeDisabled()
     expect(passwordInput).toBeDisabled()
 
     // Wait for completion
     await waitFor(() => {
-      expect(screen.getByText('Se connecter')).toBeInTheDocument()
+      expect(screen.getByText('login.loginButton')).toBeInTheDocument()
     })
   })
 
@@ -208,7 +225,7 @@ describe('LoginForm Component', () => {
 
     const emailInput = screen.getByRole('textbox', { name: /email/i })
     const passwordInput = screen.getAllByDisplayValue('')[1]
-    const submitButton = screen.getByRole('button', { name: 'Se connecter' })
+    const submitButton = screen.getByRole('button', { name: /loginbutton/i })
 
     await user.type(emailInput, 'test@example.com')
     await user.type(passwordInput, 'password123')

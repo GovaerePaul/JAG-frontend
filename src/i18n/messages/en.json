@@ -1,5 +1,15 @@
 {
   "auth": {
+    "errors": {
+      "emailAlreadyInUse": "This email address is already in use",
+      "weakPassword": "Password must be at least 6 characters long",
+      "invalidEmail": "Invalid email address",
+      "userNotFound": "No account associated with this email address",
+      "wrongPassword": "Incorrect password",
+      "invalidCredential": "Invalid credentials",
+      "tooManyRequests": "Too many attempts. Please try again later",
+      "unknown": "An error occurred. Please try again"
+    },
     "login": {
       "title": "Login",
       "subtitle": "Sign in to your JustGift account",
@@ -32,6 +42,20 @@
       "roleSenderDescription": "Send supportive messages to others",
       "roleReceiverDescription": "Receive supportive messages from others",
       "roleBothDescription": "Participate on both sides of the community"
+    },
+    "oauth": {
+      "continueWithGoogle": "Continue with Google",
+      "continueWithFacebook": "Continue with Facebook",
+      "orDivider": "or",
+      "quickSignup": "Quick and easy signup with",
+      "errors": {
+        "popupClosed": "The login window was closed",
+        "popupBlocked": "The login window was blocked. Please allow pop-ups",
+        "accountExistsDifferent": "An account already exists with this email address but with a different login method",
+        "userDisabled": "This account has been disabled",
+        "operationNotAllowed": "This login method is not enabled",
+        "unauthorizedDomain": "This domain is not authorized for authentication"
+      }
     },
     "common": {
       "errors": {

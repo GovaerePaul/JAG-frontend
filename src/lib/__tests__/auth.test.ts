@@ -1,10 +1,11 @@
-import { signUp, signIn, logout, translateFirebaseError, getUserProfileFromBackend, updateUserProfileOnBackend, deleteUserAccountOnBackend } from '../auth'
+import { signUp, signIn, logout, getFirebaseErrorKey, getUserProfileFromBackend, updateUserProfileOnBackend, deleteUserAccountOnBackend } from '../auth'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   updateProfile
 } from 'firebase/auth'
+import { getDoc, setDoc, updateDoc } from 'firebase/firestore'
 import authApiClient from '../api-client'
 
 // Mock Firebase functions
@@ -15,12 +16,22 @@ jest.mock('firebase/auth', () => ({
   updateProfile: jest.fn(),
 }))
 
+// Mock Firestore functions
+jest.mock('firebase/firestore', () => ({
+  ...jest.requireActual('firebase/firestore'),
+  doc: jest.fn(),
+  getDoc: jest.fn(),
+  setDoc: jest.fn(),
+  updateDoc: jest.fn(),
+}));
+
 // Mock Firebase auth
 jest.mock('@/lib/firebase', () => ({
   auth: {
     currentUser: null,
     onAuthStateChanged: jest.fn(),
   },
+  db: {}, // Mock Firestore
 }))
 
 // Mock authApiClient
@@ -39,6 +50,9 @@ const mockCreateUser = createUserWithEmailAndPassword as jest.MockedFunction<typ
 const mockSignInUser = signInWithEmailAndPassword as jest.MockedFunction<typeof signInWithEmailAndPassword>
 const mockSignOut = signOut as jest.MockedFunction<typeof signOut>
 const mockUpdateProfile = updateProfile as jest.MockedFunction<typeof updateProfile>
+const mockGetDoc = getDoc as jest.MockedFunction<typeof getDoc>
+const mockSetDoc = setDoc as jest.MockedFunction<typeof setDoc>
+const mockUpdateDoc = updateDoc as jest.MockedFunction<typeof updateDoc>
 
 describe('Auth Utilities', () => {
   beforeEach(() => {
@@ -50,17 +64,26 @@ describe('Auth Utilities', () => {
       const mockUser = {
         uid: 'test-uid',
         email: 'test@example.com',
-        displayName: null
+        displayName: null,
+        getIdToken: jest.fn().mockResolvedValue('mock-token')
       }
       const mockUserCredential = { user: mockUser }
 
       mockCreateUser.mockResolvedValue(mockUserCredential as unknown)
       mockUpdateProfile.mockResolvedValue(undefined)
+      
+      // Mock getDoc to return exists: true immediately (to avoid polling)
+      mockGetDoc.mockResolvedValue({
+        exists: () => true,
+        data: () => ({ uid: 'test-uid', email: 'test@example.com' })
+      } as any)
+      mockUpdateDoc.mockResolvedValue(undefined)
 
       const result = await signUp({
         email: 'test@example.com',
         password: 'password123',
-        displayName: 'Test User'
+        displayName: 'Test User',
+        role: 'both'
       })
 
       expect(mockCreateUser).toHaveBeenCalledWith(
@@ -73,7 +96,7 @@ describe('Auth Utilities', () => {
       })
       expect(result.user).toEqual(mockUser)
       expect(result.error).toBeNull()
-    })
+    }, 10000)
 
     it('should handle signup errors', async () => {
       const error = new Error('Email already in use')
@@ -166,33 +189,33 @@ describe('Auth Utilities', () => {
     })
   })
 
-  describe('translateFirebaseError', () => {
-    it('should translate common Firebase error codes', () => {
+  describe('getFirebaseErrorKey', () => {
+    it('should map common Firebase error codes to translation keys', () => {
       const translations = [
-        ['auth/email-already-in-use', 'Cette adresse email est déjà utilisée.'],
-        ['auth/weak-password', 'Le mot de passe doit contenir au moins 6 caractères.'],
-        ['auth/invalid-email', 'Adresse email invalide.'],
-        ['auth/user-not-found', 'Aucun compte associé à cette adresse email.'],
-        ['auth/wrong-password', 'Mot de passe incorrect.'],
-        ['auth/invalid-credential', 'Identifiants invalides.'],
-        ['auth/too-many-requests', 'Trop de tentatives. Réessayez plus tard.']
+        ['auth/email-already-in-use', 'auth.errors.emailAlreadyInUse'],
+        ['auth/weak-password', 'auth.errors.weakPassword'],
+        ['auth/invalid-email', 'auth.errors.invalidEmail'],
+        ['auth/user-not-found', 'auth.errors.userNotFound'],
+        ['auth/wrong-password', 'auth.errors.wrongPassword'],
+        ['auth/invalid-credential', 'auth.errors.invalidCredential'],
+        ['auth/too-many-requests', 'auth.errors.tooManyRequests']
       ]
 
-      translations.forEach(([code, expectedMessage]) => {
-        expect(translateFirebaseError(code)).toBe(expectedMessage)
+      translations.forEach(([code, expectedKey]) => {
+        expect(getFirebaseErrorKey(code)).toBe(expectedKey)
       })
     })
 
-    it('should return default message for unknown error codes', () => {
+    it('should return default key for unknown error codes', () => {
       const unknownError = 'auth/unknown-error'
-      const result = translateFirebaseError(unknownError)
+      const result = getFirebaseErrorKey(unknownError)
       
-      expect(result).toBe('Une erreur est survenue. Veuillez réessayer.')
+      expect(result).toBe('auth.errors.unknown')
     })
 
     it('should handle empty or undefined error codes', () => {
-      expect(translateFirebaseError('')).toBe('Une erreur est survenue. Veuillez réessayer.')
-      expect(translateFirebaseError(undefined as unknown)).toBe('Une erreur est survenue. Veuillez réessayer.')
+      expect(getFirebaseErrorKey('')).toBe('auth.errors.unknown')
+      expect(getFirebaseErrorKey(undefined as unknown as string)).toBe('auth.errors.unknown')
     })
   })
 

@@ -121,23 +121,40 @@ export const deleteUserAccountOnBackend = async () => {
   return { success: result.success, error: result.error };
 };
 
-export const translateFirebaseError = (errorCode: string): string => {
+/**
+ * Map Firebase error codes to translation keys
+ * Returns a translation key that should be used with t() from useTranslations
+ */
+export const getFirebaseErrorKey = (errorCode: string): string => {
   switch (errorCode) {
     case 'auth/email-already-in-use':
-      return 'Cette adresse email est déjà utilisée.';
+      return 'auth.errors.emailAlreadyInUse';
     case 'auth/weak-password':
-      return 'Le mot de passe doit contenir au moins 6 caractères.';
+      return 'auth.errors.weakPassword';
     case 'auth/invalid-email':
-      return 'Adresse email invalide.';
+      return 'auth.errors.invalidEmail';
     case 'auth/user-not-found':
-      return 'Aucun compte associé à cette adresse email.';
+      return 'auth.errors.userNotFound';
     case 'auth/wrong-password':
-      return 'Mot de passe incorrect.';
+      return 'auth.errors.wrongPassword';
     case 'auth/invalid-credential':
-      return 'Identifiants invalides.';
+      return 'auth.errors.invalidCredential';
     case 'auth/too-many-requests':
-      return 'Trop de tentatives. Réessayez plus tard.';
+      return 'auth.errors.tooManyRequests';
+    // OAuth specific errors
+    case 'auth/popup-closed':
+      return 'auth.oauth.errors.popupClosed';
+    case 'auth/popup-blocked':
+      return 'auth.oauth.errors.popupBlocked';
+    case 'auth/account-exists-different-credential':
+      return 'auth.oauth.errors.accountExistsDifferent';
+    case 'auth/user-disabled':
+      return 'auth.oauth.errors.userDisabled';
+    case 'auth/operation-not-allowed':
+      return 'auth.oauth.errors.operationNotAllowed';
+    case 'auth/unauthorized-domain':
+      return 'auth.oauth.errors.unauthorizedDomain';
     default:
-      return 'Une erreur est survenue. Veuillez réessayer.';
+      return 'auth.errors.unknown';
   }
 };

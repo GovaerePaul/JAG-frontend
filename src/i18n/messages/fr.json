@@ -1,5 +1,15 @@
 {
   "auth": {
+    "errors": {
+      "emailAlreadyInUse": "Cette adresse email est déjà utilisée",
+      "weakPassword": "Le mot de passe doit contenir au moins 6 caractères",
+      "invalidEmail": "Adresse email invalide",
+      "userNotFound": "Aucun compte associé à cette adresse email",
+      "wrongPassword": "Mot de passe incorrect",
+      "invalidCredential": "Identifiants invalides",
+      "tooManyRequests": "Trop de tentatives. Réessayez plus tard",
+      "unknown": "Une erreur est survenue. Veuillez réessayer"
+    },
     "login": {
       "title": "Connexion",
       "subtitle": "Connectez-vous à votre compte JustGift",
@@ -32,6 +42,20 @@
       "roleSenderDescription": "Envoyez des messages de soutien à d'autres personnes",
       "roleReceiverDescription": "Recevez des messages de soutien d'autres personnes",
       "roleBothDescription": "Participez des deux côtés de la communauté"
+    },
+    "oauth": {
+      "continueWithGoogle": "Continuer avec Google",
+      "continueWithFacebook": "Continuer avec Facebook",
+      "orDivider": "ou",
+      "quickSignup": "Inscription rapide et facile avec",
+      "errors": {
+        "popupClosed": "La fenêtre de connexion a été fermée",
+        "popupBlocked": "La fenêtre de connexion a été bloquée. Veuillez autoriser les pop-ups",
+        "accountExistsDifferent": "Un compte existe déjà avec cette adresse email mais avec une méthode de connexion différente",
+        "userDisabled": "Ce compte a été désactivé",
+        "operationNotAllowed": "Cette méthode de connexion n'est pas activée",
+        "unauthorizedDomain": "Ce domaine n'est pas autorisé pour l'authentification"
+      }
     },
     "common": {
       "errors": {

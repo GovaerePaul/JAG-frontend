@@ -36,6 +36,7 @@ export interface UserProfile {
   location?: UserLocation;
   birthDate?: Timestamp;
   preferences?: UserPreferences;
+  secondaryProviderUIDs?: string[]; // UIDs from linked OAuth providers (Google, Facebook, etc.)
 }
 
 export const useAuth = () => {
@@ -62,24 +63,71 @@ export const useAuth = () => {
       return;
     }
 
-    const userDocRef = doc(db, 'users', user.uid);
-    const unsubscribe = onSnapshot(
-      userDocRef,
-      (docSnapshot) => {
-        if (docSnapshot.exists()) {
-          setUserProfile(docSnapshot.data() as UserProfile);
-        } else {
-          setUserProfile(null);
-        }
-        setLoading(false);
-      },
-      (error) => {
-        setUserProfile(null);
-        setLoading(false);
-      }
-    );
+    let unsubscribe: (() => void) | undefined;
 
-    return () => unsubscribe();
+    const loadProfile = async () => {
+      const userDocRef = doc(db, 'users', user.uid);
+      
+      unsubscribe = onSnapshot(
+        userDocRef,
+        async (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            const data = docSnapshot.data();
+            
+            // Check if this is an alias account (from OAuth auto-merge)
+            if (data.isAlias && data.mainProfileUID) {
+              // Load the main profile instead
+              const mainProfileRef = doc(db, 'users', data.mainProfileUID);
+              const mainUnsubscribe = onSnapshot(
+                mainProfileRef,
+                (mainSnapshot) => {
+                  if (mainSnapshot.exists()) {
+                    setUserProfile(mainSnapshot.data() as UserProfile);
+                  } else {
+                    setUserProfile(null);
+                  }
+                  setLoading(false);
+                },
+                (error) => {
+                  console.error('Error loading main profile:', error);
+                  setUserProfile(null);
+                  setLoading(false);
+                }
+              );
+              
+              // Replace unsubscribe function
+              if (unsubscribe) {
+                const oldUnsubscribe = unsubscribe;
+                unsubscribe = () => {
+                  oldUnsubscribe();
+                  mainUnsubscribe();
+                };
+              }
+            } else {
+              // Normal profile
+              setUserProfile(data as UserProfile);
+              setLoading(false);
+            }
+          } else {
+            setUserProfile(null);
+            setLoading(false);
+          }
+        },
+        (error) => {
+          console.error('Error loading profile:', error);
+          setUserProfile(null);
+          setLoading(false);
+        }
+      );
+    };
+
+    loadProfile();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [user]);
 
   const canSend = userProfile?.role === 'sender' || userProfile?.role === 'both';
