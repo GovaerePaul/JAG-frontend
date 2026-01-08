@@ -38,7 +38,9 @@ jobs:
       uses: actions/configure-pages@v4
         
     - name: Build Next.js
-      run: npm run build:pages
+      run: |
+        rm -rf .next out
+        npm run build:pages
       env:
         NODE_ENV: production
         NEXT_PUBLIC_FIREBASE_API_KEY: ${{ vars.NEXT_PUBLIC_FIREBASE_API_KEY }}
