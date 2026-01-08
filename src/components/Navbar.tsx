@@ -17,6 +17,7 @@ import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import NotificationBadge from '@/components/NotificationBadge';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { getLogoPath } from '@/utils/level-icons';
 
 export default function Navbar() {
   const router = useRouter();
@@ -68,7 +69,7 @@ export default function Navbar() {
             }}
           >
             <Image
-              src="/logo.svg"
+              src={getLogoPath()}
               alt="JustGift Logo"
               width={0}
               height={0}
