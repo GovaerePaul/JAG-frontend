@@ -218,15 +218,16 @@ export function useDiscoverUsers(
 
   const search = useCallback(
     async (params: { filters?: DiscoverUsersParams['filters'] }) => {
+      const searchDistance = params.filters?.maxDistance || initialDistance;
       setCurrentFilters(params.filters);
-      setCurrentDistance(initialDistance);
+      setCurrentDistance(searchDistance);
       setOffset(0);
       attemptCountRef.current = 0;
       hasSearchedRef.current = true; // Mark as searched when manually triggered
       await performSearch(
         {
           filters: params.filters,
-          distance: initialDistance,
+          distance: searchDistance,
           reset: true,
         },
         false
