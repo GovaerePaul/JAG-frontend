@@ -16,7 +16,10 @@ const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) 
 
 export const auth: Auth = getAuth(app);
 export const db: Firestore = getFirestore(app);
-export const storage: FirebaseStorage = getStorage(app);
+export const storage: FirebaseStorage = getStorage(
+  app,
+  firebaseConfig.storageBucket ? `gs://${firebaseConfig.storageBucket}` : undefined
+);
 
 if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   try {
