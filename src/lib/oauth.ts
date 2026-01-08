@@ -31,57 +31,51 @@ export const signInWithGoogle = async () => {
     
     // Check if user is already signed in
     const currentUser = auth.currentUser;
-    let result: UserCredential;
     
     if (currentUser) {
-      // Try to link the account first
-      try {
-        result = await linkWithPopup(currentUser, provider);
-      } catch (linkError: any) {
-        // If linking fails because account exists, sign out and sign in with the new provider
-        // Our auto-merge logic will handle merging the Firestore profiles
-        if (linkError.code === 'auth/account-exists-with-different-credential') {
-          // Save current email and provider before signing out
-          const currentEmail = currentUser.email;
-          
-          // Sign out to allow signing in with the new provider
-          await auth.signOut();
-          
-          // Try to sign in with the new provider
-          try {
-            result = await signInWithPopup(auth, provider);
-            // Success - auto-merge will happen in handleOAuthSignIn
-            await handleOAuthSignIn(result);
-            return { user: result.user, error: null };
-          } catch (signInError: any) {
-            // If sign in also fails, it means Firebase Auth already has a separate account for this provider
-            // Reconnect with the original provider (Google) and track that Facebook is available
-            if (signInError.code === 'auth/account-exists-with-different-credential') {
-              // Reconnect with Google (the original provider)
-              const googleProvider = new GoogleAuthProvider();
-              googleProvider.addScope('profile');
-              googleProvider.addScope('email');
-              result = await signInWithPopup(auth, googleProvider);
-              
-              // Update Firestore to track that Facebook is also available
-              await handleOAuthSignInForExistingUser(result.user, 'facebook');
-              return { user: result.user, error: null };
-            }
-            throw signInError;
-          }
-        } else {
-          throw linkError;
-        }
-      }
-    } else {
-      // User not signed in - normal sign in
-      result = await signInWithPopup(auth, provider);
+      // User already signed in - just update Firestore to track Google as available
+      // Don't try to link Firebase Auth accounts, just update Firestore
+      await handleOAuthSignInForExistingUser(currentUser, 'google');
+      return { user: currentUser, error: null };
     }
     
+    // User not signed in - normal sign in
+    // This will create a new Firebase Auth account if needed, but Firestore will merge by email
+    const result = await signInWithPopup(auth, provider);
     await handleOAuthSignIn(result);
     
     return { user: result.user, error: null };
   } catch (error) {
+    // If sign in fails because account exists, try to get email from error and update Firestore
+    const authError = error as AuthError;
+    if (authError.code === 'auth/account-exists-with-different-credential') {
+      const email = (authError as any).customData?.email;
+      if (email) {
+        // Find existing profile and update it
+        const usersRef = collection(db, 'users');
+        const emailQuery = query(usersRef, where('email', '==', email));
+        const existingUsers = await getDocs(emailQuery);
+        
+        if (!existingUsers.empty) {
+          // Profile exists - just track that Google is available
+          const existingDoc = existingUsers.docs[0];
+          const existingProfileRef = doc(db, 'users', existingDoc.id);
+          const existingData = existingDoc.data();
+          
+          const availableProviders = existingData.availableProviders || [];
+          if (!availableProviders.includes('google')) {
+            await updateDoc(existingProfileRef, {
+              availableProviders: [...availableProviders, 'google'],
+              updatedAt: new Date(),
+            });
+          }
+          
+          // Return error to show user they need to sign in with existing method
+          return { user: null, error: 'auth/account-exists-different-credential' };
+        }
+      }
+    }
+    
     return handleOAuthError(error);
   }
 };
@@ -105,57 +99,51 @@ export const signInWithFacebook = async () => {
     
     // Check if user is already signed in
     const currentUser = auth.currentUser;
-    let result: UserCredential;
     
     if (currentUser) {
-      // Try to link the account first
-      try {
-        result = await linkWithPopup(currentUser, provider);
-      } catch (linkError: any) {
-        // If linking fails because account exists, sign out and sign in with the new provider
-        // Our auto-merge logic will handle merging the Firestore profiles
-        if (linkError.code === 'auth/account-exists-with-different-credential') {
-          // Save current email and provider before signing out
-          const currentEmail = currentUser.email;
-          
-          // Sign out to allow signing in with the new provider
-          await auth.signOut();
-          
-          // Try to sign in with the new provider
-          try {
-            result = await signInWithPopup(auth, provider);
-            // Success - auto-merge will happen in handleOAuthSignIn
-            await handleOAuthSignIn(result);
-            return { user: result.user, error: null };
-          } catch (signInError: any) {
-            // If sign in also fails, it means Firebase Auth already has a separate account for this provider
-            // Reconnect with the original provider (Facebook) and track that Google is available
-            if (signInError.code === 'auth/account-exists-with-different-credential') {
-              // Reconnect with Facebook (the original provider)
-              const facebookProvider = new FacebookAuthProvider();
-              facebookProvider.addScope('email');
-              facebookProvider.addScope('public_profile');
-              result = await signInWithPopup(auth, facebookProvider);
-              
-              // Update Firestore to track that Google is also available
-              await handleOAuthSignInForExistingUser(result.user, 'google');
-              return { user: result.user, error: null };
-            }
-            throw signInError;
-          }
-        } else {
-          throw linkError;
-        }
-      }
-    } else {
-      // User not signed in - normal sign in
-      result = await signInWithPopup(auth, provider);
+      // User already signed in - just update Firestore to track Facebook as available
+      // Don't try to link Firebase Auth accounts, just update Firestore
+      await handleOAuthSignInForExistingUser(currentUser, 'facebook');
+      return { user: currentUser, error: null };
     }
     
+    // User not signed in - normal sign in
+    // This will create a new Firebase Auth account if needed, but Firestore will merge by email
+    const result = await signInWithPopup(auth, provider);
     await handleOAuthSignIn(result);
     
     return { user: result.user, error: null };
   } catch (error) {
+    // If sign in fails because account exists, try to get email from error and update Firestore
+    const authError = error as AuthError;
+    if (authError.code === 'auth/account-exists-with-different-credential') {
+      const email = (authError as any).customData?.email;
+      if (email) {
+        // Find existing profile and update it
+        const usersRef = collection(db, 'users');
+        const emailQuery = query(usersRef, where('email', '==', email));
+        const existingUsers = await getDocs(emailQuery);
+        
+        if (!existingUsers.empty) {
+          // Profile exists - just track that Facebook is available
+          const existingDoc = existingUsers.docs[0];
+          const existingProfileRef = doc(db, 'users', existingDoc.id);
+          const existingData = existingDoc.data();
+          
+          const availableProviders = existingData.availableProviders || [];
+          if (!availableProviders.includes('facebook')) {
+            await updateDoc(existingProfileRef, {
+              availableProviders: [...availableProviders, 'facebook'],
+              updatedAt: new Date(),
+            });
+          }
+          
+          // Return error to show user they need to sign in with existing method
+          return { user: null, error: 'auth/account-exists-different-credential' };
+        }
+      }
+    }
+    
     return handleOAuthError(error);
   }
 };
