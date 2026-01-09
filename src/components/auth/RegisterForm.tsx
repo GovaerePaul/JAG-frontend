@@ -229,7 +229,8 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
           {t('oauth.continueWithGoogle')}
         </Button>
 
-        <Button
+        {/* Temporarily hidden - Facebook OAuth not working */}
+        {/* <Button
           fullWidth
           variant="outlined"
           onClick={handleFacebookSignIn}
@@ -259,7 +260,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
           }}
         >
           {t('oauth.continueWithFacebook')}
-        </Button>
+        </Button> */}
       </Box>
 
       {/* Divider */}
