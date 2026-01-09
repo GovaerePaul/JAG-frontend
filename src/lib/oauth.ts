@@ -77,12 +77,30 @@ const handleOAuthSignIn = async (result: UserCredential) => {
   console.log('✅ OAuth sign-in with email:', userEmail);
   
   try {
-    // IMPORTANT: Backend might have created document with empty email (if not deployed yet)
-    // So we need to update BOTH: the document with this email AND the document with user.uid
+    // IMPORTANT: Backend trigger creates document asynchronously
+    // We need to wait for it to be created before checking/updating
     
-    // Step 1: Check if backend created a document for this UID (might have empty email)
     const currentUserRef = doc(db, 'users', user.uid);
-    const currentUserDoc = await getDoc(currentUserRef);
+    let currentUserDoc;
+    let retries = 0;
+    const maxRetries = 10; // Wait up to 5 seconds (10 * 500ms)
+    
+    // Wait for backend to create the document
+    while (retries < maxRetries) {
+      currentUserDoc = await getDoc(currentUserRef);
+      if (currentUserDoc.exists()) {
+        console.log('✅ Backend created document, found after', retries * 500, 'ms');
+        break;
+      }
+      console.log('⏳ Waiting for backend to create document... (attempt', retries + 1, ')');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      retries++;
+    }
+    
+    if (!currentUserDoc || !currentUserDoc.exists()) {
+      console.error('❌ Backend did not create document after 5 seconds');
+      throw new Error('Document creation timeout');
+    }
     
     // Step 2: Check if a document already exists with this email
     const usersRef = collection(db, 'users');
