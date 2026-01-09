@@ -77,13 +77,54 @@ const handleOAuthSignIn = async (result: UserCredential) => {
   console.log('✅ OAuth sign-in with email:', userEmail);
   
   try {
-    // Backend already created document with correct email, just check if we need to update existing profile
+    // IMPORTANT: Backend might have created document with empty email (if not deployed yet)
+    // So we need to update BOTH: the document with this email AND the document with user.uid
+    
+    // Step 1: Check if backend created a document for this UID (might have empty email)
+    const currentUserRef = doc(db, 'users', user.uid);
+    const currentUserDoc = await getDoc(currentUserRef);
+    
+    // Step 2: Check if a document already exists with this email
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', userEmail));
     const snapshot = await getDocs(q);
     
-    if (!snapshot.empty) {
-      // Document exists with this email → update it
+    if (currentUserDoc.exists()) {
+      // Backend already created a document for this UID
+      const currentData = currentUserDoc.data();
+      
+      if (!currentData.email || currentData.email === '') {
+        // Document has empty email → update it with correct email
+        console.log('📝 Updating current UID document with correct email:', user.uid);
+        await updateDoc(currentUserRef, {
+          email: userEmail,
+          displayName: user.displayName || currentData.displayName || 'User',
+          photoURL: user.photoURL || currentData.photoURL || '',
+          updatedAt: new Date(),
+        });
+      } else {
+        // Document already has correct email → just update other fields
+        console.log('📝 Updating current UID document:', user.uid);
+        await updateDoc(currentUserRef, {
+          displayName: user.displayName || currentData.displayName || 'User',
+          photoURL: user.photoURL || currentData.photoURL || '',
+          updatedAt: new Date(),
+        });
+      }
+      
+      // If there's ALSO another document with this email (different UID), update it too
+      if (!snapshot.empty && snapshot.docs[0].id !== user.uid) {
+        const oldDocRef = doc(db, 'users', snapshot.docs[0].id);
+        const oldData = snapshot.docs[0].data();
+        console.log('📝 Also updating old document with same email:', snapshot.docs[0].id);
+        await updateDoc(oldDocRef, {
+          displayName: user.displayName || oldData.displayName || 'User',
+          photoURL: user.photoURL || oldData.photoURL || '',
+          updatedAt: new Date(),
+        });
+      }
+    } else if (!snapshot.empty) {
+      // No document for current UID, but one exists with this email → update it
       const docRef = doc(db, 'users', snapshot.docs[0].id);
       const existingData = snapshot.docs[0].data();
       
@@ -95,7 +136,7 @@ const handleOAuthSignIn = async (result: UserCredential) => {
         updatedAt: new Date(),
       });
     } else {
-      // No document found - backend trigger will create it automatically
+      // No document found - backend trigger will create it
       console.log('⏳ Waiting for backend to create document:', user.uid);
     }
     
