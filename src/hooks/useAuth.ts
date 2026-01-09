@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, where, limit, onSnapshot, getDocs, Timestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 export type UserRole = 'sender' | 'receiver' | 'both';
@@ -64,17 +64,35 @@ export const useAuth = () => {
       return;
     }
 
-    const userDocRef = doc(db, 'users', user.uid);
+    // Try to find document by UID first (normal case)
+    const usersRef = collection(db, 'users');
+    const qByUid = query(usersRef, where('uid', '==', user.uid), limit(1));
     
     const unsubscribe = onSnapshot(
-      userDocRef,
-      (docSnapshot) => {
-        if (docSnapshot.exists()) {
-          setUserProfile(docSnapshot.data() as UserProfile);
+      qByUid,
+      async (querySnapshot) => {
+        if (!querySnapshot.empty) {
+          // Found by UID - normal case
+          setUserProfile(querySnapshot.docs[0].data() as UserProfile);
+          setLoading(false);
+        } else if (user.email) {
+          // Not found by UID - try by email (Facebook OAuth case)
+          console.log('⚠️ Document not found by UID, searching by email:', user.email);
+          const qByEmail = query(usersRef, where('email', '==', user.email), limit(1));
+          const emailSnapshot = await getDocs(qByEmail);
+          
+          if (!emailSnapshot.empty) {
+            setUserProfile(emailSnapshot.docs[0].data() as UserProfile);
+            console.log('✅ Found document by email:', emailSnapshot.docs[0].id);
+          } else {
+            console.error('❌ No document found for email:', user.email);
+            setUserProfile(null);
+          }
+          setLoading(false);
         } else {
           setUserProfile(null);
+          setLoading(false);
         }
-        setLoading(false);
       },
       (error) => {
         console.error('Error loading profile:', error);
