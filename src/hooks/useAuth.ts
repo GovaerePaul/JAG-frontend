@@ -67,6 +67,7 @@ export const useAuth = () => {
     let isMounted = true;
     let emailFallbackDone = false;
     let emailUnsubscribe: (() => void) | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
 
     // Get email from providerData (Facebook puts it there, not in user.email)
     const userEmail = user.providerData?.[0]?.email || user.email;
@@ -95,6 +96,11 @@ export const useAuth = () => {
             emailUnsubscribe();
             emailUnsubscribe = null;
           }
+          // Clear timeout if document found
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+          }
         } else if (userEmail && !emailFallbackDone) {
           // Not found by UID - try by email (Facebook OAuth case) - only once
           emailFallbackDone = true;
@@ -115,22 +121,44 @@ export const useAuth = () => {
                 // Create a new object to ensure React detects the change
                 setUserProfile({ ...profileData });
                 console.log('✅ Found document by email:', emailSnapshot.docs[0].id);
+                setLoading(false);
+                // Clear timeout if document found
+                if (timeoutId) {
+                  clearTimeout(timeoutId);
+                  timeoutId = null;
+                }
               } else {
-                console.error('❌ No document found for email:', userEmail);
-                setUserProfile(null);
+                // Wait a bit more for backend trigger (max 3 seconds)
+                if (!timeoutId) {
+                  timeoutId = setTimeout(() => {
+                    if (!isMounted) return;
+                    console.error('❌ No document found for email after timeout:', userEmail);
+                    setUserProfile(null);
+                    setLoading(false);
+                  }, 3000);
+                }
               }
-              setLoading(false);
             },
             (error) => {
               if (!isMounted) return;
               console.error('Error searching by email:', error);
               setUserProfile(null);
               setLoading(false);
+              if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+              }
             }
           );
         } else {
-          setUserProfile(null);
-          setLoading(false);
+          // Wait a bit for backend trigger to create document (max 3 seconds)
+          if (!timeoutId) {
+            timeoutId = setTimeout(() => {
+              if (!isMounted) return;
+              setUserProfile(null);
+              setLoading(false);
+            }, 3000);
+          }
         }
       },
       (error) => {
@@ -138,6 +166,10 @@ export const useAuth = () => {
         console.error('Error loading profile:', error);
         setUserProfile(null);
         setLoading(false);
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
       }
     );
 
@@ -146,6 +178,9 @@ export const useAuth = () => {
       unsubscribe();
       if (emailUnsubscribe) {
         emailUnsubscribe();
+      }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
     };
   }, [user?.uid]);

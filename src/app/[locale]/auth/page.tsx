@@ -23,9 +23,14 @@ export default function AuthPage() {
 
   useEffect(() => {
     // Only redirect once, and only if we're done loading and have a user
+    // Wait a bit to ensure user profile is loaded
     if (!loading && user && !hasRedirectedRef.current) {
       hasRedirectedRef.current = true;
-      router.push('/');
+      // Small delay to ensure everything is stable
+      const timeoutId = setTimeout(() => {
+        router.push('/');
+      }, 100);
+      return () => clearTimeout(timeoutId);
     }
     
     // Reset redirect flag if user disappears
@@ -45,11 +50,9 @@ export default function AuthPage() {
   };
 
   const handleAuthSuccess = () => {
-    // Prevent multiple redirects
-    if (!hasRedirectedRef.current) {
-      hasRedirectedRef.current = true;
-      router.push('/');
-    }
+    // Prevent multiple redirects - let the useEffect handle the redirect
+    // This prevents double redirects
+    hasRedirectedRef.current = true;
   };
 
   if (user) {
