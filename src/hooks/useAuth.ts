@@ -79,7 +79,11 @@ export const useAuth = () => {
         
         if (!querySnapshot.empty) {
           // Found by UID - normal case
-          setUserProfile(querySnapshot.docs[0].data() as UserProfile);
+          const profileData = querySnapshot.docs[0].data() as UserProfile;
+          console.log('📊 UserProfile loaded from Firestore:', profileData);
+          console.log('📊 Points:', profileData.points);
+          console.log('📊 Level:', profileData.level);
+          setUserProfile(profileData);
           setLoading(false);
           emailFallbackDone = true; // Prevent email fallback
           // Clean up email listener if it exists
@@ -100,7 +104,11 @@ export const useAuth = () => {
               if (!isMounted) return;
               
               if (!emailSnapshot.empty) {
-                setUserProfile(emailSnapshot.docs[0].data() as UserProfile);
+                const profileData = emailSnapshot.docs[0].data() as UserProfile;
+                console.log('📊 UserProfile loaded from Firestore (by email):', profileData);
+                console.log('📊 Points:', profileData.points);
+                console.log('📊 Level:', profileData.level);
+                setUserProfile(profileData);
                 console.log('✅ Found document by email:', emailSnapshot.docs[0].id);
               } else {
                 console.error('❌ No document found for email:', user.email);
