@@ -78,24 +78,15 @@ const handleOAuthSignIn = async (result: UserCredential) => {
   console.log('✅ OAuth sign-in with email:', userEmail);
   
   try {
-    // Backend trigger handles document creation intelligently:
-    // - If no document exists with this email → creates new document
-    // - If document already exists with this email → does nothing (no duplicate)
+    // Backend trigger handles document creation/migration:
+    // - If no document exists with this email → creates new document with user.uid as ID
+    // - If document already exists with this email → migrates to new UID (preserves data)
     
     // Wait a bit for backend trigger to complete (it's async)
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Check if document exists (either newly created or existing)
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('email', '==', userEmail));
-    const snapshot = await getDocs(q);
-    
-    if (snapshot.empty) {
-      console.error('❌ No document found for email:', userEmail);
-      throw new Error('User document not found after sign-in');
-    }
-    
-    console.log('✅ User document found:', snapshot.docs[0].id);
+    // Document should now exist with user.uid as ID (after migration if needed)
+    // The useAuth hook will automatically pick it up via the onSnapshot listener
     
     // Set auth token for API client
     const token = await user.getIdToken();
