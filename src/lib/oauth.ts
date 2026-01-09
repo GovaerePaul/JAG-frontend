@@ -212,38 +212,79 @@ const handleOAuthSignIn = async (result: UserCredential) => {
     const emailQuery = query(usersRef, where('email', '==', userEmail));
     const existingUsers = await getDocs(emailQuery);
     
+    // Also check if profile exists for current UID (might have been created by trigger)
+    const currentUserRef = doc(db, 'users', user.uid);
+    const currentUserSnapshot = await getDoc(currentUserRef);
+    
     if (!existingUsers.empty) {
       // Found existing profile with same email - AUTO-MERGE
       const existingDoc = existingUsers.docs[0];
       const existingData = existingDoc.data();
       const existingProfileRef = doc(db, 'users', existingDoc.id);
       
-      console.log('Auto-merging account:', {
-        existingUID: existingDoc.id,
-        newUID: user.uid,
-        email: userEmail,
-        provider: result.providerId
-      });
+      // If the existing profile is the same as current UID, just update it
+      if (existingDoc.id === user.uid) {
+        console.log('Updating existing profile for current UID');
+        const providerName = result.providerId === 'google.com' ? 'google' : 'facebook';
+        const availableProviders = existingData.availableProviders || [];
+        const updatedProviders = availableProviders.includes(providerName)
+          ? availableProviders
+          : [...availableProviders, providerName];
+        
+        await updateDoc(existingProfileRef, {
+          displayName: user.displayName || existingData.displayName || 'User',
+          photoURL: user.photoURL || existingData.photoURL || '',
+          email: userEmail, // Ensure email is set
+          availableProviders: updatedProviders,
+          updatedAt: new Date(),
+        });
+      } else {
+        // Different UID - merge into existing profile
+        console.log('Auto-merging account:', {
+          existingUID: existingDoc.id,
+          newUID: user.uid,
+          email: userEmail,
+          provider: result.providerId
+        });
+        
+        // Determine provider name from providerId
+        const providerName = result.providerId === 'google.com' ? 'google' : 'facebook';
+        const availableProviders = existingData.availableProviders || [];
+        const updatedProviders = availableProviders.includes(providerName)
+          ? availableProviders
+          : [...availableProviders, providerName];
+        
+        // Update existing profile with OAuth data (only non-critical fields)
+        await updateDoc(existingProfileRef, {
+          // Update displayName only if OAuth provides one and existing is empty/default
+          displayName: user.displayName || existingData.displayName || 'User',
+          // Update photoURL only if OAuth provides one and existing is empty
+          photoURL: user.photoURL || existingData.photoURL || '',
+          // Track available providers
+          availableProviders: updatedProviders,
+          updatedAt: new Date(),
+        });
+        
+        // Also update/create profile for current UID to avoid Firestore errors
+        if (!currentUserSnapshot.exists()) {
+          await setDoc(currentUserRef, {
+            uid: user.uid,
+            email: userEmail,
+            displayName: user.displayName || 'User',
+            photoURL: user.photoURL || '',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            isActive: true,
+            role: 'both',
+            points: 50,
+            level: 1,
+            totalPointsEarned: 50,
+            availableProviders: [providerName],
+          });
+        }
+      }
       
-      // Determine provider name from providerId
-      const providerName = result.providerId === 'google.com' ? 'google' : 'facebook';
-      const availableProviders = existingData.availableProviders || [];
-      const updatedProviders = availableProviders.includes(providerName)
-        ? availableProviders
-        : [...availableProviders, providerName];
-      
-      // Update existing profile with OAuth data (only non-critical fields)
-      await updateDoc(existingProfileRef, {
-        // Update displayName only if OAuth provides one and existing is empty/default
-        displayName: user.displayName || existingData.displayName || 'User',
-        // Update photoURL only if OAuth provides one and existing is empty
-        photoURL: user.photoURL || existingData.photoURL || '',
-        // Track available providers
-        availableProviders: updatedProviders,
-        updatedAt: new Date(),
-      });
-      
-    } else {
+    } else if (currentUserSnapshot.exists()) {
       // No existing profile - create new one with current UID
       const userRef = doc(db, 'users', user.uid);
       const docSnapshot = await getDoc(userRef);

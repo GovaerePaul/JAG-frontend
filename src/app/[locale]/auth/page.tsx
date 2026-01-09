@@ -19,12 +19,14 @@ export default function AuthPage() {
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
   const { user } = useAuth();
   const router = useRouter();
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (user && !hasRedirected) {
+      setHasRedirected(true);
       router.push('/');
     }
-  }, [user, router]);
+  }, [user, router, hasRedirected]);
 
   const handleSwitchToRegister = () => {
     setSlideDirection('left');
@@ -37,7 +39,11 @@ export default function AuthPage() {
   };
 
   const handleAuthSuccess = () => {
-    router.push('/');
+    // Prevent multiple redirects
+    if (!hasRedirected) {
+      setHasRedirected(true);
+      router.push('/');
+    }
   };
 
   if (user) {
