@@ -56,8 +56,8 @@ class AuthApiClient {
     return result;
   }
 
-  public async getUserStats(): Promise<ApiResponse> {
-    return this.callFunction('getUserStatsFunction', undefined, 'Failed to get user stats');
+  public async getUserStats(email?: string): Promise<ApiResponse> {
+    return this.callFunction('getUserStatsFunction', email ? {email} : undefined, 'Failed to get user stats');
   }
 }
 

@@ -57,7 +57,6 @@ export const useAuth = () => {
   }, []);
 
   // Listen to user profile changes in Firestore
-  // Now that the trigger migrates documents to match UID, we only need to query by UID
   useEffect(() => {
     if (!user) {
       setUserProfile(null);
@@ -66,8 +65,13 @@ export const useAuth = () => {
     }
 
     let isMounted = true;
+    let emailFallbackDone = false;
+    let emailUnsubscribe: (() => void) | null = null;
 
-    // Query by document ID (which should match user.uid after migration)
+    // Get email from providerData (Facebook puts it there, not in user.email)
+    const userEmail = user.providerData?.[0]?.email || user.email;
+
+    // Try to find document by UID first (normal case)
     const usersRef = collection(db, 'users');
     const qByUid = query(usersRef, where('uid', '==', user.uid), limit(1));
     
@@ -77,17 +81,57 @@ export const useAuth = () => {
         if (!isMounted) return;
         
         if (!querySnapshot.empty) {
+          // Found by UID - normal case
           const profileData = querySnapshot.docs[0].data() as UserProfile;
           console.log('📊 UserProfile loaded from Firestore:', profileData);
           console.log('📊 Points:', profileData.points);
           console.log('📊 Level:', profileData.level);
           // Create a new object to ensure React detects the change
           setUserProfile({ ...profileData });
+          setLoading(false);
+          emailFallbackDone = true; // Prevent email fallback
+          // Clean up email listener if it exists
+          if (emailUnsubscribe) {
+            emailUnsubscribe();
+            emailUnsubscribe = null;
+          }
+        } else if (userEmail && !emailFallbackDone) {
+          // Not found by UID - try by email (Facebook OAuth case) - only once
+          emailFallbackDone = true;
+          console.log('⚠️ Document not found by UID, searching by email:', userEmail);
+          
+          // Use onSnapshot for email query too (so it updates if document changes)
+          const qByEmail = query(usersRef, where('email', '==', userEmail), limit(1));
+          emailUnsubscribe = onSnapshot(
+            qByEmail,
+            (emailSnapshot) => {
+              if (!isMounted) return;
+              
+              if (!emailSnapshot.empty) {
+                const profileData = emailSnapshot.docs[0].data() as UserProfile;
+                console.log('📊 UserProfile loaded from Firestore (by email):', profileData);
+                console.log('📊 Points:', profileData.points);
+                console.log('📊 Level:', profileData.level);
+                // Create a new object to ensure React detects the change
+                setUserProfile({ ...profileData });
+                console.log('✅ Found document by email:', emailSnapshot.docs[0].id);
+              } else {
+                console.error('❌ No document found for email:', userEmail);
+                setUserProfile(null);
+              }
+              setLoading(false);
+            },
+            (error) => {
+              if (!isMounted) return;
+              console.error('Error searching by email:', error);
+              setUserProfile(null);
+              setLoading(false);
+            }
+          );
         } else {
-          console.warn('⚠️ No document found for UID:', user.uid);
           setUserProfile(null);
+          setLoading(false);
         }
-        setLoading(false);
       },
       (error) => {
         if (!isMounted) return;
@@ -100,6 +144,9 @@ export const useAuth = () => {
     return () => {
       isMounted = false;
       unsubscribe();
+      if (emailUnsubscribe) {
+        emailUnsubscribe();
+      }
     };
   }, [user?.uid]);
 

@@ -27,6 +27,7 @@ export function useUserStats(): UseUserStatsReturn {
 
   // Stabilize user identifier
   const userId = useMemo(() => user?.uid || null, [user?.uid]);
+  const userEmail = useMemo(() => user?.email || user?.providerData?.[0]?.email || null, [user?.email, user?.providerData?.[0]?.email]);
 
   useEffect(() => {
     if (!userId) {
@@ -46,7 +47,7 @@ export function useUserStats(): UseUserStatsReturn {
     
     const fetchStats = async () => {
       try {
-        const response = await authApiClient.getUserStats();
+        const response = await authApiClient.getUserStats(userEmail || undefined);
         
         if (response.success && response.data) {
           // Handle case where data might be wrapped in 'result' property
@@ -69,7 +70,7 @@ export function useUserStats(): UseUserStatsReturn {
     };
 
     fetchStats();
-  }, [userId]);
+  }, [userId, userEmail]);
 
   const refetch = useCallback(async () => {
     if (!user) return;
@@ -79,7 +80,8 @@ export function useUserStats(): UseUserStatsReturn {
     setLoading(true);
     
     try {
-      const response = await authApiClient.getUserStats();
+      const email = user.email || user.providerData?.[0]?.email;
+      const response = await authApiClient.getUserStats(email || undefined);
       
       if (response.success && response.data) {
         let statsData = response.data;
