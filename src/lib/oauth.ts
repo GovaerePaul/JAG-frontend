@@ -132,12 +132,32 @@ const updateFirestoreForExistingUser = async (userEmail: string, provider: 'goog
  */
 const handleOAuthSignIn = async (result: UserCredential) => {
   const user = result.user;
-  const userEmail = user.email;
+  
+  // Try to get email from multiple sources:
+  // 1. user.email (direct - sometimes not populated for Facebook)
+  // 2. user.providerData[0].email (from OAuth provider - this is where Facebook puts it)
+  let userEmail = user.email;
+  
+  // Facebook sometimes doesn't populate user.email directly, but puts it in providerData
+  if (!userEmail && user.providerData && user.providerData.length > 0) {
+    // Find the Facebook provider data
+    const facebookProvider = user.providerData.find(p => p.providerId === 'facebook.com');
+    if (facebookProvider?.email) {
+      userEmail = facebookProvider.email;
+      console.log('✅ Email found in providerData:', userEmail);
+    }
+  }
   
   // Email is required - OAuth providers should always provide it
   if (!userEmail) {
+    console.error('No email found in:', {
+      'user.email': user.email,
+      'providerData': user.providerData?.map(p => ({ providerId: p.providerId, email: p.email }))
+    });
     throw new Error('No email provided by OAuth provider');
   }
+  
+  console.log('✅ Using email for OAuth sign-in:', userEmail);
   
   try {
     // Check if a profile already exists with this email (from any provider)
