@@ -66,6 +66,7 @@ export const useAuth = () => {
 
     let isMounted = true;
     let emailFallbackDone = false;
+    let emailUnsubscribe: (() => void) | null = null;
 
     // Try to find document by UID first (normal case)
     const usersRef = collection(db, 'users');
@@ -81,29 +82,39 @@ export const useAuth = () => {
           setUserProfile(querySnapshot.docs[0].data() as UserProfile);
           setLoading(false);
           emailFallbackDone = true; // Prevent email fallback
+          // Clean up email listener if it exists
+          if (emailUnsubscribe) {
+            emailUnsubscribe();
+            emailUnsubscribe = null;
+          }
         } else if (user.email && !emailFallbackDone) {
           // Not found by UID - try by email (Facebook OAuth case) - only once
           emailFallbackDone = true;
           console.log('⚠️ Document not found by UID, searching by email:', user.email);
           
+          // Use onSnapshot for email query too (so it updates if document changes)
           const qByEmail = query(usersRef, where('email', '==', user.email), limit(1));
-          getDocs(qByEmail).then((emailSnapshot) => {
-            if (!isMounted) return;
-            
-            if (!emailSnapshot.empty) {
-              setUserProfile(emailSnapshot.docs[0].data() as UserProfile);
-              console.log('✅ Found document by email:', emailSnapshot.docs[0].id);
-            } else {
-              console.error('❌ No document found for email:', user.email);
+          emailUnsubscribe = onSnapshot(
+            qByEmail,
+            (emailSnapshot) => {
+              if (!isMounted) return;
+              
+              if (!emailSnapshot.empty) {
+                setUserProfile(emailSnapshot.docs[0].data() as UserProfile);
+                console.log('✅ Found document by email:', emailSnapshot.docs[0].id);
+              } else {
+                console.error('❌ No document found for email:', user.email);
+                setUserProfile(null);
+              }
+              setLoading(false);
+            },
+            (error) => {
+              if (!isMounted) return;
+              console.error('Error searching by email:', error);
               setUserProfile(null);
+              setLoading(false);
             }
-            setLoading(false);
-          }).catch((error) => {
-            if (!isMounted) return;
-            console.error('Error searching by email:', error);
-            setUserProfile(null);
-            setLoading(false);
-          });
+          );
         } else {
           setUserProfile(null);
           setLoading(false);
@@ -120,6 +131,9 @@ export const useAuth = () => {
     return () => {
       isMounted = false;
       unsubscribe();
+      if (emailUnsubscribe) {
+        emailUnsubscribe();
+      }
     };
   }, [user]);
 
