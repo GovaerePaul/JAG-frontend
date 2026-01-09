@@ -55,7 +55,7 @@ const handleOAuthSignIn = async (result: UserCredential) => {
   // Debug: Log all available data
   console.log('🔍 UserCredential result:', {
     'user.uid': user.uid,
-    'user.email': user.email,
+    'user.email': user.providerData[0]?.email,
     'user.displayName': user.displayName,
     'user.photoURL': user.photoURL,
     'providerData': user.providerData?.map(p => ({
@@ -67,7 +67,7 @@ const handleOAuthSignIn = async (result: UserCredential) => {
   });
   
   // Get email from providerData (Facebook puts it there, not in user.email)
-  const userEmail = user.email;
+  const userEmail = user.providerData[0]?.email || user.email;
   
   if (!userEmail) {
     console.error('❌ No email found in UserCredential');
