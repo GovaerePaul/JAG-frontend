@@ -28,9 +28,9 @@ import { useTranslations } from 'next-intl';
 import { useEventTypes } from '@/hooks/useEventTypes';
 import { sendMessage, SendMessageData } from '@/lib/messages-api';
 import { useReceivableUsers } from '@/hooks/useReceivableUsers';
-import { invalidateReceivedMessagesCache } from '@/hooks/useReceivedMessages';
-import { invalidateSentMessagesCache } from '@/hooks/useSentMessages';
-import { invalidateUserStatsCache } from '@/hooks/useUserStats';
+import { useReceivedMessages } from '@/hooks/useReceivedMessages';
+import { useSentMessages } from '@/hooks/useSentMessages';
+import { useUserStats } from '@/hooks/useUserStats';
 
 interface SendMessageFormProps {
   open: boolean;
@@ -49,6 +49,9 @@ export default function SendMessageForm({
 }: SendMessageFormProps) {
   const { eventTypes, loading: eventsLoading } = useEventTypes();
   const { users: receivableUsers, loading: usersLoading } = useReceivableUsers();
+  const { refetch: refetchReceivedMessages } = useReceivedMessages();
+  const { refetch: refetchSentMessages } = useSentMessages();
+  const { refetch: refetchUserStats } = useUserStats();
   const t = useTranslations('messages.send');
   const tCommon = useTranslations('common');
   const [formData, setFormData] = useState<SendMessageData>({
@@ -104,9 +107,12 @@ export default function SendMessageForm({
     const response = await sendMessage(formData);
 
     if (response.success) {
-      invalidateReceivedMessagesCache();
-      invalidateSentMessagesCache();
-      invalidateUserStatsCache();
+      // Refetch data after successful message send
+      await Promise.all([
+        refetchReceivedMessages(),
+        refetchSentMessages(),
+        refetchUserStats(),
+      ]);
 
       setSuccess(true);
       setTimeout(() => {

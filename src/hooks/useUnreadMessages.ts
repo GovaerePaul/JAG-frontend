@@ -12,7 +12,7 @@ interface UseUnreadMessagesReturn {
 
 /**
  * Hook to count unread messages
- * Uses shared cache from useReceivedMessages to avoid duplicate API calls
+ * Uses useReceivedMessages to get messages
  * Unread messages are those with status !== 'read'
  */
 export function useUnreadMessages(): UseUnreadMessagesReturn {

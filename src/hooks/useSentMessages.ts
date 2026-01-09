@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getSentMessages, MessageSummary } from '@/lib/messages-api';
 import { useAuth } from './useAuth';
 
@@ -11,25 +11,12 @@ interface UseSentMessagesReturn {
   refetch: () => Promise<void>;
 }
 
-// Global cache to share sent messages across components
-export const sentMessagesCache = {
-  data: null as MessageSummary[] | null,
-  timestamp: 0,
-  promise: null as Promise<void> | null,
-};
-
-export function invalidateSentMessagesCache() {
-  sentMessagesCache.data = null;
-  sentMessagesCache.timestamp = 0;
-}
-
-const CACHE_DURATION = 30000; // 30 seconds
-
 export function useSentMessages(): UseSentMessagesReturn {
   const { user } = useAuth();
   const [messages, setMessages] = useState<MessageSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const fetchingRef = useRef<Promise<void> | null>(null);
 
   const fetchMessages = useCallback(async () => {
     if (!user) {
@@ -38,21 +25,9 @@ export function useSentMessages(): UseSentMessagesReturn {
       return;
     }
 
-    // Check cache first
-    const now = Date.now();
-    if (sentMessagesCache.data && (now - sentMessagesCache.timestamp) < CACHE_DURATION) {
-      setMessages(sentMessagesCache.data);
-      setLoading(false);
-      return;
-    }
-
     // If already fetching, wait for that promise
-    if (sentMessagesCache.promise) {
-      await sentMessagesCache.promise;
-      if (sentMessagesCache.data) {
-        setMessages(sentMessagesCache.data);
-      }
-      setLoading(false);
+    if (fetchingRef.current) {
+      await fetchingRef.current;
       return;
     }
 
@@ -62,8 +37,6 @@ export function useSentMessages(): UseSentMessagesReturn {
       try {
         const response = await getSentMessages();
         if (response.success && response.data) {
-          sentMessagesCache.data = response.data;
-          sentMessagesCache.timestamp = Date.now();
           setMessages(response.data);
         } else {
           setError(response.error || 'Failed to fetch messages');
@@ -73,11 +46,11 @@ export function useSentMessages(): UseSentMessagesReturn {
         setError(errorMessage);
       } finally {
         setLoading(false);
-        sentMessagesCache.promise = null;
+        fetchingRef.current = null;
       }
     })();
 
-    sentMessagesCache.promise = fetchPromise;
+    fetchingRef.current = fetchPromise;
     await fetchPromise;
   }, [user]);
 
@@ -86,7 +59,6 @@ export function useSentMessages(): UseSentMessagesReturn {
   }, [fetchMessages]);
 
   const refetch = useCallback(async () => {
-    invalidateSentMessagesCache();
     await fetchMessages();
   }, [fetchMessages]);
 

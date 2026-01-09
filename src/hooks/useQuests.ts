@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './useAuth';
 import { getUserQuests, UserQuestStatus } from '@/lib/quests-api';
 
@@ -11,24 +11,12 @@ interface UseQuestsReturn {
   refetch: () => Promise<void>;
 }
 
-export const questsCache = {
-  data: null as UserQuestStatus[] | null,
-  timestamp: 0,
-  promise: null as Promise<void> | null,
-};
-
-export function invalidateQuestsCache() {
-  questsCache.data = null;
-  questsCache.timestamp = 0;
-}
-
-const CACHE_DURATION = 60000;
-
 export function useQuests(): UseQuestsReturn {
   const { user } = useAuth();
   const [quests, setQuests] = useState<UserQuestStatus[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fetchingRef = useRef<Promise<void> | null>(null);
 
   const fetchQuests = useCallback(async () => {
     if (!user) {
@@ -36,17 +24,9 @@ export function useQuests(): UseQuestsReturn {
       return;
     }
 
-    const now = Date.now();
-    if (questsCache.data && (now - questsCache.timestamp) < CACHE_DURATION) {
-      setQuests(questsCache.data);
-      return;
-    }
-
-    if (questsCache.promise) {
-      await questsCache.promise;
-      if (questsCache.data) {
-        setQuests(questsCache.data);
-      }
+    // If already fetching, wait for that promise
+    if (fetchingRef.current) {
+      await fetchingRef.current;
       return;
     }
 
@@ -56,8 +36,6 @@ export function useQuests(): UseQuestsReturn {
       try {
         const response = await getUserQuests();
         if (response.success && response.data) {
-          questsCache.data = response.data;
-          questsCache.timestamp = Date.now();
           setQuests(response.data);
         } else {
           setError(response.error || 'Failed to fetch quests');
@@ -67,11 +45,11 @@ export function useQuests(): UseQuestsReturn {
         setError(errorMessage);
       } finally {
         setLoading(false);
-        questsCache.promise = null;
+        fetchingRef.current = null;
       }
     })();
 
-    questsCache.promise = fetchPromise;
+    fetchingRef.current = fetchPromise;
     await fetchPromise;
   }, [user]);
 
@@ -80,7 +58,6 @@ export function useQuests(): UseQuestsReturn {
   }, [fetchQuests]);
 
   const refetch = useCallback(async () => {
-    invalidateQuestsCache();
     await fetchQuests();
   }, [fetchQuests]);
 
