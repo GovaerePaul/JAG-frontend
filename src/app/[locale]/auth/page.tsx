@@ -23,18 +23,16 @@ export default function AuthPage() {
 
   useEffect(() => {
     // Only redirect once, and only if we're done loading and have a user
-    // Wait a bit to ensure user profile is loaded
     if (!loading && user && !hasRedirectedRef.current) {
       hasRedirectedRef.current = true;
-      // Small delay to ensure everything is stable
-      const timeoutId = setTimeout(() => {
+      // Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(() => {
         router.push('/');
-      }, 100);
-      return () => clearTimeout(timeoutId);
+      });
     }
     
     // Reset redirect flag if user disappears
-    if (!user) {
+    if (!user && hasRedirectedRef.current) {
       hasRedirectedRef.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -56,7 +54,8 @@ export default function AuthPage() {
     hasRedirectedRef.current = true;
   };
 
-  if (user) {
+  // Don't render if user is authenticated (redirect will happen)
+  if (user && !loading) {
     return null;
   }
 

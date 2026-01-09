@@ -68,6 +68,7 @@ export const useAuth = () => {
     let emailFallbackDone = false;
     let emailUnsubscribe: (() => void) | null = null;
     let timeoutId: NodeJS.Timeout | null = null;
+    let loadingSet = false; // Track if we've set loading to false
 
     // Get email from providerData (Facebook puts it there, not in user.email)
     const userEmail = user.providerData?.[0]?.email || user.email;
@@ -85,11 +86,12 @@ export const useAuth = () => {
           // Found by UID - normal case
           const profileData = querySnapshot.docs[0].data() as UserProfile;
           console.log('📊 UserProfile loaded from Firestore:', profileData);
-          console.log('📊 Points:', profileData.points);
-          console.log('📊 Level:', profileData.level);
           // Create a new object to ensure React detects the change
           setUserProfile({ ...profileData });
-          setLoading(false);
+          if (!loadingSet) {
+            setLoading(false);
+            loadingSet = true;
+          }
           emailFallbackDone = true; // Prevent email fallback
           // Clean up email listener if it exists
           if (emailUnsubscribe) {
@@ -116,12 +118,13 @@ export const useAuth = () => {
               if (!emailSnapshot.empty) {
                 const profileData = emailSnapshot.docs[0].data() as UserProfile;
                 console.log('📊 UserProfile loaded from Firestore (by email):', profileData);
-                console.log('📊 Points:', profileData.points);
-                console.log('📊 Level:', profileData.level);
                 // Create a new object to ensure React detects the change
                 setUserProfile({ ...profileData });
                 console.log('✅ Found document by email:', emailSnapshot.docs[0].id);
-                setLoading(false);
+                if (!loadingSet) {
+                  setLoading(false);
+                  loadingSet = true;
+                }
                 // Clear timeout if document found
                 if (timeoutId) {
                   clearTimeout(timeoutId);
@@ -131,19 +134,21 @@ export const useAuth = () => {
                 // Wait a bit more for backend trigger (max 3 seconds)
                 if (!timeoutId) {
                   timeoutId = setTimeout(() => {
-                    if (!isMounted) return;
+                    if (!isMounted || loadingSet) return;
                     console.error('❌ No document found for email after timeout:', userEmail);
                     setUserProfile(null);
                     setLoading(false);
+                    loadingSet = true;
                   }, 3000);
                 }
               }
             },
             (error) => {
-              if (!isMounted) return;
+              if (!isMounted || loadingSet) return;
               console.error('Error searching by email:', error);
               setUserProfile(null);
               setLoading(false);
+              loadingSet = true;
               if (timeoutId) {
                 clearTimeout(timeoutId);
                 timeoutId = null;
@@ -154,18 +159,20 @@ export const useAuth = () => {
           // Wait a bit for backend trigger to create document (max 3 seconds)
           if (!timeoutId) {
             timeoutId = setTimeout(() => {
-              if (!isMounted) return;
+              if (!isMounted || loadingSet) return;
               setUserProfile(null);
               setLoading(false);
+              loadingSet = true;
             }, 3000);
           }
         }
       },
       (error) => {
-        if (!isMounted) return;
+        if (!isMounted || loadingSet) return;
         console.error('Error loading profile:', error);
         setUserProfile(null);
         setLoading(false);
+        loadingSet = true;
         if (timeoutId) {
           clearTimeout(timeoutId);
           timeoutId = null;
