@@ -3,7 +3,8 @@ import {
   FacebookAuthProvider,
   signInWithPopup,
   UserCredential,
-  AuthError
+  AuthError,
+  reload
 } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
@@ -75,7 +76,18 @@ export const signInWithFacebook = async () => {
     // User not signed in - normal sign in
     // This will create a new Firebase Auth account if needed, but Firestore will merge by email
     const result = await signInWithPopup(auth, provider);
-    await handleOAuthSignIn(result);
+    
+    // Handle OAuth sign-in (Firestore operations)
+    // Wrap in try-catch to prevent infinite loops if there's an error
+    try {
+      await handleOAuthSignIn(result);
+    } catch (handleError) {
+      // If handleOAuthSignIn fails, still return the user but log the error
+      // This prevents infinite loops if there's an error in Firestore operations
+      console.error('Error in handleOAuthSignIn (non-blocking):', handleError);
+      // Don't throw - return user anyway so they can still sign in
+      // The error will be logged but won't block the sign-in
+    }
     
     return { user: result.user, error: null };
   } catch (error) {
@@ -132,29 +144,64 @@ const updateFirestoreForExistingUser = async (userEmail: string, provider: 'goog
  */
 const handleOAuthSignIn = async (result: UserCredential) => {
   const user = result.user;
-  
-  // Try to get email from multiple sources:
-  // 1. user.email (direct - sometimes not populated for Facebook)
-  // 2. user.providerData[0].email (from OAuth provider - this is where Facebook puts it)
   let userEmail = user.email;
   
-  // Facebook sometimes doesn't populate user.email directly, but puts it in providerData
-  if (!userEmail && user.providerData && user.providerData.length > 0) {
-    // Find the Facebook provider data
-    const facebookProvider = user.providerData.find(p => p.providerId === 'facebook.com');
-    if (facebookProvider?.email) {
-      userEmail = facebookProvider.email;
-      console.log('✅ Email found in providerData:', userEmail);
+  // For Facebook, email might not be immediately available in user.email
+  // Try multiple methods to get it
+  if (!userEmail && result.providerId === 'facebook.com') {
+    // Method 1: Reload user to get updated data
+    try {
+      await reload(user);
+      userEmail = user.email;
+      console.log('✅ Email after reload:', userEmail);
+    } catch (reloadError) {
+      console.warn('Could not reload user:', reloadError);
+    }
+    
+    // Method 2: Try to get from providerData
+    if (!userEmail && user.providerData && user.providerData.length > 0) {
+      const facebookProvider = user.providerData.find(p => p.providerId === 'facebook.com');
+      if (facebookProvider?.email) {
+        userEmail = facebookProvider.email;
+        console.log('✅ Email found in providerData:', userEmail);
+      }
+    }
+    
+    // Method 3: Fetch from Facebook Graph API using access token
+    if (!userEmail) {
+      const credential = FacebookAuthProvider.credentialFromResult(result);
+      if (credential?.accessToken) {
+        try {
+          const response = await fetch(
+            `https://graph.facebook.com/me?fields=email&access_token=${credential.accessToken}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            if (data.email) {
+              userEmail = data.email;
+              console.log('✅ Email from Facebook Graph API:', userEmail);
+            } else {
+              console.warn('⚠️ Facebook Graph API response:', data);
+            }
+          } else {
+            const errorData = await response.json();
+            console.error('❌ Facebook Graph API error:', errorData);
+          }
+        } catch (error) {
+          console.error('❌ Error calling Facebook Graph API:', error);
+        }
+      }
     }
   }
   
-  // Email is required - OAuth providers should always provide it
+  // Email is required
   if (!userEmail) {
-    console.error('No email found in:', {
+    console.error('❌ No email found. User data:', {
       'user.email': user.email,
+      'providerId': result.providerId,
       'providerData': user.providerData?.map(p => ({ providerId: p.providerId, email: p.email }))
     });
-    throw new Error('No email provided by OAuth provider');
+    throw new Error('No email provided by OAuth provider. Please ensure your Facebook account has a verified email address.');
   }
   
   console.log('✅ Using email for OAuth sign-in:', userEmail);
