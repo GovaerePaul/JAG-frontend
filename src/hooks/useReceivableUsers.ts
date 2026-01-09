@@ -17,12 +17,37 @@ export function useReceivableUsers(): UseReceivableUsersReturn {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUsers = useCallback(async () => {
+  useEffect(() => {
     if (!user) {
       setUsers([]);
       setLoading(false);
       return;
     }
+
+    setLoading(true);
+    setError(null);
+    
+    const fetchUsers = async () => {
+      try {
+        const response = await getReceivableUsers();
+        if (response.success && response.data) {
+          setUsers(response.data);
+        } else {
+          setError(response.error || 'Failed to fetch users');
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [user?.uid]);
+
+  const refetch = useCallback(async () => {
+    if (!user) return;
 
     setLoading(true);
     setError(null);
@@ -41,14 +66,6 @@ export function useReceivableUsers(): UseReceivableUsersReturn {
       setLoading(false);
     }
   }, [user]);
-
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
-
-  const refetch = useCallback(async () => {
-    await fetchUsers();
-  }, [fetchUsers]);
 
   return { users, loading, error, refetch };
 }

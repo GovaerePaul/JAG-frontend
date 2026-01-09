@@ -17,12 +17,37 @@ export function useReceivedMessages(): UseReceivedMessagesReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchMessages = useCallback(async () => {
+  useEffect(() => {
     if (!user) {
       setMessages([]);
       setLoading(false);
       return;
     }
+
+    setLoading(true);
+    setError(null);
+    
+    const fetchMessages = async () => {
+      try {
+        const response = await getReceivedMessages();
+        if (response.success && response.data) {
+          setMessages(response.data);
+        } else {
+          setError(response.error || 'Failed to fetch messages');
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch messages';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, [user?.uid]);
+
+  const refetch = useCallback(async () => {
+    if (!user) return;
 
     setLoading(true);
     setError(null);
@@ -41,14 +66,6 @@ export function useReceivedMessages(): UseReceivedMessagesReturn {
       setLoading(false);
     }
   }, [user]);
-
-  useEffect(() => {
-    fetchMessages();
-  }, [fetchMessages]);
-
-  const refetch = useCallback(async () => {
-    await fetchMessages();
-  }, [fetchMessages]);
 
   return { messages, loading, error, refetch };
 }

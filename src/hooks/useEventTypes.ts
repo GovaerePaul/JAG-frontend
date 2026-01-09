@@ -17,7 +17,30 @@ export function useEventTypes(): UseEventTypesReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEventTypes = useCallback(async () => {
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    
+    const fetchEventTypes = async () => {
+      try {
+        const response = await getEventTypes(locale);
+        if (response.success && response.data) {
+          setEventTypes(response.data);
+        } else {
+          setError(response.error || 'Failed to fetch event types');
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch event types';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEventTypes();
+  }, [locale]);
+
+  const refetch = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -35,14 +58,6 @@ export function useEventTypes(): UseEventTypesReturn {
       setLoading(false);
     }
   }, [locale]);
-
-  useEffect(() => {
-    fetchEventTypes();
-  }, [fetchEventTypes]);
-
-  const refetch = useCallback(async () => {
-    await fetchEventTypes();
-  }, [fetchEventTypes]);
 
   return {
     eventTypes,

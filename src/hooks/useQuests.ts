@@ -17,12 +17,37 @@ export function useQuests(): UseQuestsReturn {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchQuests = useCallback(async () => {
+  useEffect(() => {
     if (!user) {
       setQuests([]);
       setLoading(false);
       return;
     }
+
+    setLoading(true);
+    setError(null);
+    
+    const fetchQuests = async () => {
+      try {
+        const response = await getUserQuests();
+        if (response.success && response.data) {
+          setQuests(response.data);
+        } else {
+          setError(response.error || 'Failed to fetch quests');
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch quests';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuests();
+  }, [user?.uid]);
+
+  const refetch = useCallback(async () => {
+    if (!user) return;
 
     setLoading(true);
     setError(null);
@@ -41,14 +66,6 @@ export function useQuests(): UseQuestsReturn {
       setLoading(false);
     }
   }, [user]);
-
-  useEffect(() => {
-    fetchQuests();
-  }, [fetchQuests]);
-
-  const refetch = useCallback(async () => {
-    await fetchQuests();
-  }, [fetchQuests]);
 
   return { quests, loading, error, refetch };
 }

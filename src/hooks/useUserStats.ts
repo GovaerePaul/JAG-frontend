@@ -24,7 +24,7 @@ export function useUserStats(): UseUserStatsReturn {
   });
   const [loading, setLoading] = useState(true);
 
-  const fetchStats = useCallback(async () => {
+  useEffect(() => {
     if (!user) {
       setMessageCounts({ messagesSentCount: 0, messagesReceivedCount: 0 });
       setLoading(false);
@@ -33,13 +33,45 @@ export function useUserStats(): UseUserStatsReturn {
 
     setLoading(true);
     
+    const fetchStats = async () => {
+      try {
+        // Send email to backend as fallback (for Facebook OAuth case)
+        const userEmail = user.email || user.providerData?.[0]?.email;
+        const response = await authApiClient.getUserStats(userEmail || undefined);
+        
+        if (response.success && response.data) {
+          // Handle case where data might be wrapped in 'result' property
+          let statsData = response.data;
+          if (statsData && typeof statsData === 'object' && 'result' in statsData) {
+            statsData = (statsData as any).result;
+          }
+          
+          const stats = statsData as UserStats;
+          setMessageCounts({
+            messagesSentCount: stats.messagesSentCount ?? 0,
+            messagesReceivedCount: stats.messagesReceivedCount ?? 0,
+          });
+        }
+      } catch (error) {
+        console.error('❌ Error fetching user stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [user?.uid, user?.email]);
+
+  const refetch = useCallback(async () => {
+    if (!user) return;
+
+    setLoading(true);
+    
     try {
-      // Send email to backend as fallback (for Facebook OAuth case)
       const userEmail = user.email || user.providerData?.[0]?.email;
       const response = await authApiClient.getUserStats(userEmail || undefined);
       
       if (response.success && response.data) {
-        // Handle case where data might be wrapped in 'result' property
         let statsData = response.data;
         if (statsData && typeof statsData === 'object' && 'result' in statsData) {
           statsData = (statsData as any).result;
@@ -57,14 +89,6 @@ export function useUserStats(): UseUserStatsReturn {
       setLoading(false);
     }
   }, [user]);
-
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
-
-  const refetch = useCallback(async () => {
-    await fetchStats();
-  }, [fetchStats]);
   
   return { messageCounts, loading, refetch };
 }
