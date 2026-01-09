@@ -68,6 +68,9 @@ export const useAuth = () => {
     let emailFallbackDone = false;
     let emailUnsubscribe: (() => void) | null = null;
 
+    // Get email from providerData (Facebook puts it there, not in user.email)
+    const userEmail = user.providerData?.[0]?.email || user.email;
+
     // Try to find document by UID first (normal case)
     const usersRef = collection(db, 'users');
     const qByUid = query(usersRef, where('uid', '==', user.uid), limit(1));
@@ -92,13 +95,13 @@ export const useAuth = () => {
             emailUnsubscribe();
             emailUnsubscribe = null;
           }
-        } else if (user.email && !emailFallbackDone) {
+        } else if (userEmail && !emailFallbackDone) {
           // Not found by UID - try by email (Facebook OAuth case) - only once
           emailFallbackDone = true;
-          console.log('⚠️ Document not found by UID, searching by email:', user.email);
+          console.log('⚠️ Document not found by UID, searching by email:', userEmail);
           
           // Use onSnapshot for email query too (so it updates if document changes)
-          const qByEmail = query(usersRef, where('email', '==', user.email), limit(1));
+          const qByEmail = query(usersRef, where('email', '==', userEmail), limit(1));
           emailUnsubscribe = onSnapshot(
             qByEmail,
             (emailSnapshot) => {
@@ -113,7 +116,7 @@ export const useAuth = () => {
                 setUserProfile({ ...profileData });
                 console.log('✅ Found document by email:', emailSnapshot.docs[0].id);
               } else {
-                console.error('❌ No document found for email:', user.email);
+                console.error('❌ No document found for email:', userEmail);
                 setUserProfile(null);
               }
               setLoading(false);
