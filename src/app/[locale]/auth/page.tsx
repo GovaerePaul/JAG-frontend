@@ -46,8 +46,8 @@ export default function AuthPage() {
 
   const handleAuthSuccess = () => {
     // Prevent multiple redirects
-    if (!hasRedirected) {
-      setHasRedirected(true);
+    if (!hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
       router.push('/');
     }
   };

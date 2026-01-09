@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { getReceivableUsers, ReceivableUser } from '@/lib/users-api';
 
@@ -16,41 +16,30 @@ export function useReceivableUsers(): UseReceivableUsersReturn {
   const [users, setUsers] = useState<ReceivableUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const fetchingRef = useRef<Promise<void> | null>(null);
 
   const fetchUsers = useCallback(async () => {
     if (!user) {
       setUsers([]);
-      return;
-    }
-
-    // If already fetching, wait for that promise
-    if (fetchingRef.current) {
-      await fetchingRef.current;
+      setLoading(false);
       return;
     }
 
     setLoading(true);
     setError(null);
-    const fetchPromise = (async () => {
-      try {
-        const response = await getReceivableUsers();
-        if (response.success && response.data) {
-          setUsers(response.data);
-        } else {
-          setError(response.error || 'Failed to fetch users');
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
-        fetchingRef.current = null;
+    
+    try {
+      const response = await getReceivableUsers();
+      if (response.success && response.data) {
+        setUsers(response.data);
+      } else {
+        setError(response.error || 'Failed to fetch users');
       }
-    })();
-
-    fetchingRef.current = fetchPromise;
-    await fetchPromise;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
   useEffect(() => {
