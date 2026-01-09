@@ -6,7 +6,7 @@ import {
   AuthError
 } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import authApiClient from './api-client';
 
 /**
@@ -77,65 +77,24 @@ const handleOAuthSignIn = async (result: UserCredential) => {
   console.log('✅ OAuth sign-in with email:', userEmail);
   
   try {
-    // IMPORTANT: Backend trigger creates document asynchronously
-    // We need to wait for it to be created before checking/updating
+    // Backend trigger handles document creation intelligently:
+    // - If no document exists with this email → creates new document
+    // - If document already exists with this email → does nothing (no duplicate)
     
-    const currentUserRef = doc(db, 'users', user.uid);
-    let currentUserDoc;
-    let retries = 0;
-    const maxRetries = 10; // Wait up to 5 seconds (10 * 500ms)
+    // Wait a bit for backend trigger to complete (it's async)
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Wait for backend to create the document
-    while (retries < maxRetries) {
-      currentUserDoc = await getDoc(currentUserRef);
-      if (currentUserDoc.exists()) {
-        console.log('✅ Backend created document, found after', retries * 500, 'ms');
-        break;
-      }
-      console.log('⏳ Waiting for backend to create document... (attempt', retries + 1, ')');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      retries++;
-    }
-    
-    if (!currentUserDoc || !currentUserDoc.exists()) {
-      console.error('❌ Backend did not create document after 5 seconds');
-      throw new Error('Document creation timeout');
-    }
-    
-    // Step 2: Check if a document already exists with this email
+    // Check if document exists (either newly created or existing)
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', userEmail));
     const snapshot = await getDocs(q);
     
-    if (currentUserDoc.exists()) {
-      // Backend already created a document for this UID
-      const currentData = currentUserDoc.data();
-      
-      if (!currentData.email || currentData.email === '') {
-        // Document has empty email → update ONLY the email (don't overwrite user's profile changes)
-        console.log('📝 Updating email only for document:', user.uid);
-        await updateDoc(currentUserRef, {
-          email: userEmail,
-          updatedAt: new Date(),
-        });
-      } else {
-        // Document already complete → don't update anything (user may have customized their profile)
-        console.log('✅ Document already complete, no update needed:', user.uid);
-      }
-      
-      // If there's ALSO another document with this email (different UID), don't touch it either
-      if (!snapshot.empty && snapshot.docs[0].id !== user.uid) {
-        console.log('⚠️ Found another document with same email (not updating it):', snapshot.docs[0].id);
-      }
-    } else if (!snapshot.empty) {
-      // No document for current UID, but one exists with this email
-      // This means user is signing in with a different provider for the same email
-      // Don't update anything - the existing profile should be preserved
-      console.log('✅ Existing document found with this email (preserving user data):', snapshot.docs[0].id);
-    } else {
-      // No document found - backend trigger will create it
-      console.log('⏳ Waiting for backend to create document:', user.uid);
+    if (snapshot.empty) {
+      console.error('❌ No document found for email:', userEmail);
+      throw new Error('User document not found after sign-in');
     }
+    
+    console.log('✅ User document found:', snapshot.docs[0].id);
     
     // Set auth token for API client
     const token = await user.getIdToken();
