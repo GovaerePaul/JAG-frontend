@@ -3,7 +3,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { CircularProgress } from '@mui/material';
 import { useRouter, usePathname } from '@/i18n/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Navbar from '../Navbar';
 
 interface AuthGuardProps {
@@ -14,12 +14,20 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const hasRedirectedRef = useRef(false);
   
   const isAuthPage = pathname.includes('/auth');
 
   useEffect(() => {
-    if (!loading && !user && !isAuthPage) {
+    // Only redirect once, and only if we're done loading and have no user
+    if (!loading && !user && !isAuthPage && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
       router.push('/auth');
+    }
+    
+    // Reset redirect flag if user appears or we're on auth page
+    if (user || isAuthPage) {
+      hasRedirectedRef.current = false;
     }
   }, [user, loading, router, isAuthPage]);
 

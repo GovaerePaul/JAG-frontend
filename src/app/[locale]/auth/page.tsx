@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import {
   Container,
@@ -17,16 +17,22 @@ import { useAuth } from '@/hooks/useAuth';
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [hasRedirected, setHasRedirected] = useState(false);
+  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
-    if (user && !hasRedirected) {
-      setHasRedirected(true);
+    // Only redirect once, and only if we're done loading and have a user
+    if (!loading && user && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
       router.push('/');
     }
-  }, [user, router, hasRedirected]);
+    
+    // Reset redirect flag if user disappears
+    if (!user) {
+      hasRedirectedRef.current = false;
+    }
+  }, [user, loading, router]);
 
   const handleSwitchToRegister = () => {
     setSlideDirection('left');

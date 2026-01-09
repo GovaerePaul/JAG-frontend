@@ -22,12 +22,13 @@ export function useUserStats(): UseUserStatsReturn {
     messagesSentCount: 0,
     messagesReceivedCount: 0,
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const fetchingRef = useRef<Promise<void> | null>(null);
 
   const fetchStats = useCallback(async () => {
     if (!user) {
       setMessageCounts({ messagesSentCount: 0, messagesReceivedCount: 0 });
+      setLoading(false);
       return;
     }
 
@@ -38,11 +39,13 @@ export function useUserStats(): UseUserStatsReturn {
       return;
     }
 
+    console.log('📊 Setting loading to true');
     setLoading(true);
     const fetchPromise = (async () => {
       try {
         // Send email to backend as fallback (for Facebook OAuth case)
         const userEmail = user.email || user.providerData?.[0]?.email;
+        console.log('📊 Fetching stats for email:', userEmail);
         const response = await authApiClient.getUserStats(userEmail || undefined);
         
         if (response.success && response.data) {
@@ -59,23 +62,19 @@ export function useUserStats(): UseUserStatsReturn {
           };
           
           console.log('📊 Setting counts:', counts);
-          // Use functional update to ensure React detects the change
-          setMessageCounts((prev) => {
-            console.log('📊 Previous counts:', prev);
-            console.log('📊 New counts:', counts);
-            // Only update if values actually changed
-            if (prev.messagesSentCount !== counts.messagesSentCount || 
-                prev.messagesReceivedCount !== counts.messagesReceivedCount) {
-              console.log('📊 Values changed, updating state');
-              return counts;
-            }
-            console.log('📊 Values unchanged, keeping previous state');
-            return prev;
+          // Force update - always set new object to ensure React detects change
+          setMessageCounts({
+            messagesSentCount: counts.messagesSentCount,
+            messagesReceivedCount: counts.messagesReceivedCount,
           });
+          console.log('📊 State update called, setting loading to false');
+        } else {
+          console.warn('📊 No data in response:', response);
         }
       } catch (error) {
         console.error('❌ Error fetching user stats:', error);
       } finally {
+        console.log('📊 Setting loading to false');
         setLoading(false);
         fetchingRef.current = null;
       }
