@@ -80,26 +80,16 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
     setLoading(true);
     setError('');
 
-    try {
-      const { user, error: authError } = await signInWithFacebook();
+    const { user, error: authError } = await signInWithFacebook();
 
-      if (authError) {
-        const errorKey = getFirebaseErrorKey(authError);
-        setError(t(errorKey));
-        setLoading(false);
-      } else if (user) {
-        // Small delay to ensure Firestore operations complete
-        await new Promise(resolve => setTimeout(resolve, 500));
-        onSuccess();
-        setLoading(false);
-      } else {
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error('Error in handleFacebookSignIn:', error);
-      setError(t('auth.errors.unknown'));
-      setLoading(false);
+    if (authError) {
+      const errorKey = getFirebaseErrorKey(authError);
+      setError(t(errorKey));
+    } else if (user) {
+      onSuccess();
     }
+
+    setLoading(false);
   };
 
   return (
