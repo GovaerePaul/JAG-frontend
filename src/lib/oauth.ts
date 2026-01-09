@@ -2,11 +2,8 @@ import {
   GoogleAuthProvider,
   FacebookAuthProvider,
   signInWithPopup,
-  linkWithPopup,
   UserCredential,
-  AuthError,
-  fetchSignInMethodsForEmail,
-  OAuthProvider
+  AuthError
 } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
@@ -33,9 +30,8 @@ export const signInWithGoogle = async () => {
     const currentUser = auth.currentUser;
     
     if (currentUser) {
-      // User already signed in - just update Firestore to track Google as available
-      // Don't try to link Firebase Auth accounts, just update Firestore
-      await handleOAuthSignInForExistingUser(currentUser, 'google');
+      // User already signed in - update Firestore to track Google as available
+      await updateFirestoreForExistingUser(currentUser.email || '', 'google');
       return { user: currentUser, error: null };
     }
     
@@ -46,36 +42,6 @@ export const signInWithGoogle = async () => {
     
     return { user: result.user, error: null };
   } catch (error) {
-    // If sign in fails because account exists, try to get email from error and update Firestore
-    const authError = error as AuthError;
-    if (authError.code === 'auth/account-exists-with-different-credential') {
-      const email = (authError as any).customData?.email;
-      if (email) {
-        // Find existing profile and update it
-        const usersRef = collection(db, 'users');
-        const emailQuery = query(usersRef, where('email', '==', email));
-        const existingUsers = await getDocs(emailQuery);
-        
-        if (!existingUsers.empty) {
-          // Profile exists - just track that Google is available
-          const existingDoc = existingUsers.docs[0];
-          const existingProfileRef = doc(db, 'users', existingDoc.id);
-          const existingData = existingDoc.data();
-          
-          const availableProviders = existingData.availableProviders || [];
-          if (!availableProviders.includes('google')) {
-            await updateDoc(existingProfileRef, {
-              availableProviders: [...availableProviders, 'google'],
-              updatedAt: new Date(),
-            });
-          }
-          
-          // Return error to show user they need to sign in with existing method
-          return { user: null, error: 'auth/account-exists-different-credential' };
-        }
-      }
-    }
-    
     return handleOAuthError(error);
   }
 };
@@ -101,9 +67,8 @@ export const signInWithFacebook = async () => {
     const currentUser = auth.currentUser;
     
     if (currentUser) {
-      // User already signed in - just update Firestore to track Facebook as available
-      // Don't try to link Firebase Auth accounts, just update Firestore
-      await handleOAuthSignInForExistingUser(currentUser, 'facebook');
+      // User already signed in - update Firestore to track Facebook as available
+      await updateFirestoreForExistingUser(currentUser.email || '', 'facebook');
       return { user: currentUser, error: null };
     }
     
@@ -114,46 +79,15 @@ export const signInWithFacebook = async () => {
     
     return { user: result.user, error: null };
   } catch (error) {
-    // If sign in fails because account exists, try to get email from error and update Firestore
-    const authError = error as AuthError;
-    if (authError.code === 'auth/account-exists-with-different-credential') {
-      const email = (authError as any).customData?.email;
-      if (email) {
-        // Find existing profile and update it
-        const usersRef = collection(db, 'users');
-        const emailQuery = query(usersRef, where('email', '==', email));
-        const existingUsers = await getDocs(emailQuery);
-        
-        if (!existingUsers.empty) {
-          // Profile exists - just track that Facebook is available
-          const existingDoc = existingUsers.docs[0];
-          const existingProfileRef = doc(db, 'users', existingDoc.id);
-          const existingData = existingDoc.data();
-          
-          const availableProviders = existingData.availableProviders || [];
-          if (!availableProviders.includes('facebook')) {
-            await updateDoc(existingProfileRef, {
-              availableProviders: [...availableProviders, 'facebook'],
-              updatedAt: new Date(),
-            });
-          }
-          
-          // Return error to show user they need to sign in with existing method
-          return { user: null, error: 'auth/account-exists-different-credential' };
-        }
-      }
-    }
-    
     return handleOAuthError(error);
   }
 };
 
 /**
- * Handle OAuth sign-in for existing user when Firebase Auth blocks the link
- * This updates Firestore to track that the provider is available, without changing Firebase Auth
+ * Update Firestore to track that a provider is available for an existing user
+ * This is called when a user is already signed in and clicks on an OAuth provider button
  */
-const handleOAuthSignInForExistingUser = async (currentUser: any, provider: 'google' | 'facebook') => {
-  const userEmail = currentUser.email;
+const updateFirestoreForExistingUser = async (userEmail: string, provider: 'google' | 'facebook') => {
   if (!userEmail) return;
   
   try {
@@ -163,11 +97,11 @@ const handleOAuthSignInForExistingUser = async (currentUser: any, provider: 'goo
     const existingUsers = await getDocs(emailQuery);
     
     if (!existingUsers.empty) {
+      // Found existing profile - update it to track the provider
       const existingDoc = existingUsers.docs[0];
       const existingProfileRef = doc(db, 'users', existingDoc.id);
       const existingData = existingDoc.data();
       
-      // Track that this provider is available (even if Firebase Auth keeps separate accounts)
       const availableProviders = existingData.availableProviders || [];
       if (!availableProviders.includes(provider)) {
         await updateDoc(existingProfileRef, {
@@ -176,35 +110,10 @@ const handleOAuthSignInForExistingUser = async (currentUser: any, provider: 'goo
         });
         console.log(`Tracked ${provider} as available provider for user ${userEmail}`);
       }
-    } else {
-      // Profile doesn't exist yet - create it with current user data
-      const userRef = doc(db, 'users', currentUser.uid);
-      const now = new Date();
-      const initialPoints = 50;
-      const initialLevel = 1;
-      
-      await setDoc(userRef, {
-        uid: currentUser.uid,
-        email: userEmail,
-        displayName: currentUser.displayName || 'User',
-        photoURL: currentUser.photoURL || '',
-        createdAt: now,
-        updatedAt: now,
-        isActive: true,
-        role: 'both',
-        points: initialPoints,
-        level: initialLevel,
-        totalPointsEarned: initialPoints,
-        availableProviders: [provider],
-        secondaryProviderUIDs: [],
-      });
     }
-    
-    // Set auth token for API client
-    const token = await currentUser.getIdToken();
-    authApiClient.setAuthToken(token);
   } catch (error) {
-    console.error('Error handling OAuth for existing user:', error);
+    console.error('Error updating Firestore for existing user:', error);
+    // Don't throw - this is not critical
   }
 };
 
@@ -231,7 +140,7 @@ const handleOAuthSignIn = async (result: UserCredential) => {
   }
   
   try {
-    // Step 1: Check if a profile already exists with this email (from any provider)
+    // Check if a profile already exists with this email (from any provider)
     const usersRef = collection(db, 'users');
     const emailQuery = query(usersRef, where('email', '==', userEmail));
     const existingUsers = await getDocs(emailQuery);
@@ -249,35 +158,26 @@ const handleOAuthSignIn = async (result: UserCredential) => {
         provider: result.providerId
       });
       
-      // Update existing profile with OAuth data (only if OAuth data is better/newer)
+      // Determine provider name from providerId
+      const providerName = result.providerId === 'google.com' ? 'google' : 'facebook';
+      const availableProviders = existingData.availableProviders || [];
+      const updatedProviders = availableProviders.includes(providerName)
+        ? availableProviders
+        : [...availableProviders, providerName];
+      
+      // Update existing profile with OAuth data (only non-critical fields)
       await updateDoc(existingProfileRef, {
         // Update displayName only if OAuth provides one and existing is empty/default
         displayName: user.displayName || existingData.displayName || 'User',
         // Update photoURL only if OAuth provides one and existing is empty
         photoURL: user.photoURL || existingData.photoURL || '',
+        // Track available providers
+        availableProviders: updatedProviders,
         updatedAt: new Date(),
-        // Store secondary provider UID for reference (for multi-provider support)
-        secondaryProviderUIDs: [
-          ...(existingData.secondaryProviderUIDs || []),
-          user.uid
-        ].filter((uid, index, self) => self.indexOf(uid) === index), // Remove duplicates
       });
       
-      // Create an alias document for the new UID pointing to the main profile
-      const newUserRef = doc(db, 'users', user.uid);
-      const newUserSnapshot = await getDoc(newUserRef);
-      
-      if (!newUserSnapshot.exists()) {
-        await setDoc(newUserRef, {
-          isAlias: true,
-          mainProfileUID: existingDoc.id,
-          email: userEmail,
-          createdAt: new Date(),
-        });
-      }
-      
     } else {
-      // No existing profile - create new one
+      // No existing profile - create new one with current UID
       const userRef = doc(db, 'users', user.uid);
       const docSnapshot = await getDoc(userRef);
       
@@ -294,6 +194,9 @@ const handleOAuthSignIn = async (result: UserCredential) => {
         const now = new Date();
         const initialPoints = 50; // Same as POINTS.REGISTRATION in backend
         const initialLevel = 1; // Level 1 for 50 points
+        
+        // Determine provider name
+        const providerName = result.providerId === 'google.com' ? 'google' : 'facebook';
         
         await setDoc(userRef, {
           // === Required fields ===
@@ -316,12 +219,7 @@ const handleOAuthSignIn = async (result: UserCredential) => {
           totalPointsEarned: initialPoints,
           
           // === Multi-provider support ===
-          secondaryProviderUIDs: [],                  // For tracking linked providers
-          
-          // === Optional fields (not provided by OAuth) ===
-          // location: undefined,                     // User can set later
-          // birthDate: undefined,                    // User can set later
-          // preferences: undefined,                  // User can set later
+          availableProviders: [providerName],
         });
       }
     }

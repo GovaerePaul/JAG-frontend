@@ -2,7 +2,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  updateProfile
+  updateProfile,
+  fetchSignInMethodsForEmail
 } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
@@ -24,6 +25,18 @@ export interface SignInData {
 
 export const signUp = async ({ email, password, displayName, role }: SignUpData) => {
   try {
+    // Check if email already exists with any provider (email/password, Google, Facebook)
+    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+    
+    if (signInMethods.length > 0) {
+      // Email already exists - return error
+      return { 
+        user: null, 
+        error: 'auth/email-already-in-use' 
+      };
+    }
+    
+    // Email doesn't exist - proceed with account creation
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
