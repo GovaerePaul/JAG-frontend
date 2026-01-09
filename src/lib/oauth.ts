@@ -94,47 +94,26 @@ const handleOAuthSignIn = async (result: UserCredential) => {
       const currentData = currentUserDoc.data();
       
       if (!currentData.email || currentData.email === '') {
-        // Document has empty email → update it with correct email
-        console.log('📝 Updating current UID document with correct email:', user.uid);
+        // Document has empty email → update ONLY the email (don't overwrite user's profile changes)
+        console.log('📝 Updating email only for document:', user.uid);
         await updateDoc(currentUserRef, {
           email: userEmail,
-          displayName: user.displayName || currentData.displayName || 'User',
-          photoURL: user.photoURL || currentData.photoURL || '',
           updatedAt: new Date(),
         });
       } else {
-        // Document already has correct email → just update other fields
-        console.log('📝 Updating current UID document:', user.uid);
-        await updateDoc(currentUserRef, {
-          displayName: user.displayName || currentData.displayName || 'User',
-          photoURL: user.photoURL || currentData.photoURL || '',
-          updatedAt: new Date(),
-        });
+        // Document already complete → don't update anything (user may have customized their profile)
+        console.log('✅ Document already complete, no update needed:', user.uid);
       }
       
-      // If there's ALSO another document with this email (different UID), update it too
+      // If there's ALSO another document with this email (different UID), don't touch it either
       if (!snapshot.empty && snapshot.docs[0].id !== user.uid) {
-        const oldDocRef = doc(db, 'users', snapshot.docs[0].id);
-        const oldData = snapshot.docs[0].data();
-        console.log('📝 Also updating old document with same email:', snapshot.docs[0].id);
-        await updateDoc(oldDocRef, {
-          displayName: user.displayName || oldData.displayName || 'User',
-          photoURL: user.photoURL || oldData.photoURL || '',
-          updatedAt: new Date(),
-        });
+        console.log('⚠️ Found another document with same email (not updating it):', snapshot.docs[0].id);
       }
     } else if (!snapshot.empty) {
-      // No document for current UID, but one exists with this email → update it
-      const docRef = doc(db, 'users', snapshot.docs[0].id);
-      const existingData = snapshot.docs[0].data();
-      
-      console.log('📝 Updating existing document:', snapshot.docs[0].id);
-      
-      await updateDoc(docRef, {
-        displayName: user.displayName || existingData.displayName || 'User',
-        photoURL: user.photoURL || existingData.photoURL || '',
-        updatedAt: new Date(),
-      });
+      // No document for current UID, but one exists with this email
+      // This means user is signing in with a different provider for the same email
+      // Don't update anything - the existing profile should be preserved
+      console.log('✅ Existing document found with this email (preserving user data):', snapshot.docs[0].id);
     } else {
       // No document found - backend trigger will create it
       console.log('⏳ Waiting for backend to create document:', user.uid);
