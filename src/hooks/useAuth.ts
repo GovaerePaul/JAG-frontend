@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { collection, query, where, limit, onSnapshot, getDocs, Timestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { getUserEmail } from '@/lib/userUtils';
 
 export type UserRole = 'sender' | 'receiver' | 'both';
 
@@ -70,7 +69,7 @@ export const useAuth = () => {
     let emailUnsubscribe: (() => void) | null = null;
 
     // Get email from providerData (Facebook puts it there, not in user.email)
-    const userEmail = getUserEmail(user);
+    const userEmail = user.providerData?.[0]?.email || user.email;
 
     // Try to find document by UID first (normal case)
     const usersRef = collection(db, 'users');
@@ -149,7 +148,7 @@ export const useAuth = () => {
         emailUnsubscribe();
       }
     };
-  }, [user]);
+  }, [user?.uid]);
 
   const canSend = userProfile?.role === 'sender' || userProfile?.role === 'both';
   const canReceive = userProfile?.role === 'receiver' || userProfile?.role === 'both';
