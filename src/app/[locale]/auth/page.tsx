@@ -37,7 +37,8 @@ export default function AuthPage() {
     if (!user) {
       hasRedirectedRef.current = false;
     }
-  }, [user, loading, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading]);
 
   const handleSwitchToRegister = () => {
     setSlideDirection('left');

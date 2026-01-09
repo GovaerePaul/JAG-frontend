@@ -29,7 +29,8 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     if (user || isAuthPage) {
       hasRedirectedRef.current = false;
     }
-  }, [user, loading, router, isAuthPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading, isAuthPage]);
 
   if (loading) {
     return (
