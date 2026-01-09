@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { getReceivedMessages, MessageSummary } from '@/lib/messages-api';
 import { useAuth } from './useAuth';
 
@@ -16,14 +16,25 @@ export function useReceivedMessages(): UseReceivedMessagesReturn {
   const [messages, setMessages] = useState<MessageSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchedUidRef = useRef<string | null>(null);
+
+  // Stabilize user identifier
+  const userId = useMemo(() => user?.uid || null, [user?.uid]);
 
   useEffect(() => {
-    if (!user) {
+    if (!userId) {
       setMessages([]);
       setLoading(false);
+      lastFetchedUidRef.current = null;
       return;
     }
 
+    // Skip if we already fetched for this user
+    if (lastFetchedUidRef.current === userId) {
+      return;
+    }
+
+    lastFetchedUidRef.current = userId;
     setLoading(true);
     setError(null);
     
@@ -44,11 +55,13 @@ export function useReceivedMessages(): UseReceivedMessagesReturn {
     };
 
     fetchMessages();
-  }, [user?.uid]);
+  }, [userId]);
 
   const refetch = useCallback(async () => {
     if (!user) return;
 
+    // Reset the ref to allow fetching again
+    lastFetchedUidRef.current = null;
     setLoading(true);
     setError(null);
     

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from './useAuth';
 import authApiClient from '@/lib/api-client';
 import { UserStats } from '@/lib/types';
@@ -23,20 +23,30 @@ export function useUserStats(): UseUserStatsReturn {
     messagesReceivedCount: 0,
   });
   const [loading, setLoading] = useState(true);
+  const lastFetchedUidRef = useRef<string | null>(null);
+
+  // Stabilize user identifier
+  const userId = useMemo(() => user?.uid || null, [user?.uid]);
+  const userEmail = useMemo(() => user?.email || user?.providerData?.[0]?.email || null, [user?.email, user?.providerData?.[0]?.email]);
 
   useEffect(() => {
-    if (!user) {
+    if (!userId) {
       setMessageCounts({ messagesSentCount: 0, messagesReceivedCount: 0 });
       setLoading(false);
+      lastFetchedUidRef.current = null;
       return;
     }
 
+    // Skip if we already fetched for this user
+    if (lastFetchedUidRef.current === userId) {
+      return;
+    }
+
+    lastFetchedUidRef.current = userId;
     setLoading(true);
     
     const fetchStats = async () => {
       try {
-        // Send email to backend as fallback (for Facebook OAuth case)
-        const userEmail = user.email || user.providerData?.[0]?.email;
         const response = await authApiClient.getUserStats(userEmail || undefined);
         
         if (response.success && response.data) {
@@ -60,16 +70,18 @@ export function useUserStats(): UseUserStatsReturn {
     };
 
     fetchStats();
-  }, [user?.uid, user?.email]);
+  }, [userId, userEmail]);
 
   const refetch = useCallback(async () => {
     if (!user) return;
 
+    // Reset the ref to allow fetching again
+    lastFetchedUidRef.current = null;
     setLoading(true);
     
     try {
-      const userEmail = user.email || user.providerData?.[0]?.email;
-      const response = await authApiClient.getUserStats(userEmail || undefined);
+      const email = user.email || user.providerData?.[0]?.email;
+      const response = await authApiClient.getUserStats(email || undefined);
       
       if (response.success && response.data) {
         let statsData = response.data;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from './useAuth';
 import { getUserQuests, UserQuestStatus } from '@/lib/quests-api';
 
@@ -16,14 +16,25 @@ export function useQuests(): UseQuestsReturn {
   const [quests, setQuests] = useState<UserQuestStatus[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchedUidRef = useRef<string | null>(null);
+
+  // Stabilize user identifier
+  const userId = useMemo(() => user?.uid || null, [user?.uid]);
 
   useEffect(() => {
-    if (!user) {
+    if (!userId) {
       setQuests([]);
       setLoading(false);
+      lastFetchedUidRef.current = null;
       return;
     }
 
+    // Skip if we already fetched for this user
+    if (lastFetchedUidRef.current === userId) {
+      return;
+    }
+
+    lastFetchedUidRef.current = userId;
     setLoading(true);
     setError(null);
     
@@ -44,11 +55,13 @@ export function useQuests(): UseQuestsReturn {
     };
 
     fetchQuests();
-  }, [user?.uid]);
+  }, [userId]);
 
   const refetch = useCallback(async () => {
     if (!user) return;
 
+    // Reset the ref to allow fetching again
+    lastFetchedUidRef.current = null;
     setLoading(true);
     setError(null);
     
