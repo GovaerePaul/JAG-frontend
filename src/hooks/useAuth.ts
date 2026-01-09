@@ -83,7 +83,8 @@ export const useAuth = () => {
           console.log('📊 UserProfile loaded from Firestore:', profileData);
           console.log('📊 Points:', profileData.points);
           console.log('📊 Level:', profileData.level);
-          setUserProfile(profileData);
+          // Create a new object to ensure React detects the change
+          setUserProfile({ ...profileData });
           setLoading(false);
           emailFallbackDone = true; // Prevent email fallback
           // Clean up email listener if it exists
@@ -108,7 +109,8 @@ export const useAuth = () => {
                 console.log('📊 UserProfile loaded from Firestore (by email):', profileData);
                 console.log('📊 Points:', profileData.points);
                 console.log('📊 Level:', profileData.level);
-                setUserProfile(profileData);
+                // Create a new object to ensure React detects the change
+                setUserProfile({ ...profileData });
                 console.log('✅ Found document by email:', emailSnapshot.docs[0].id);
               } else {
                 console.error('❌ No document found for email:', user.email);

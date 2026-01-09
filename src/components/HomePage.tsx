@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Container,
   Typography,
@@ -37,11 +37,12 @@ export default function HomePage() {
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
 
   // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
-  const gamification: GamificationData = {
+  // Memoize to ensure React detects changes when userProfile updates
+  const gamification: GamificationData = useMemo(() => ({
     points: userProfile?.points ?? 0,
     level: userProfile?.level ?? 1,
     totalPointsEarned: userProfile?.totalPointsEarned ?? 0,
-  };
+  }), [userProfile?.points, userProfile?.level, userProfile?.totalPointsEarned]);
 
   const receivedCount = messageCounts.messagesReceivedCount;
   const sentCount = messageCounts.messagesSentCount;
@@ -51,6 +52,9 @@ export default function HomePage() {
   console.log('🏠 HomePage render - receivedCount:', receivedCount, 'sentCount:', sentCount);
   console.log('🏠 HomePage render - loadingCounts:', loadingCounts);
   console.log('🏠 HomePage render - should show numbers?', !loadingCounts);
+  console.log('🏠 HomePage render - canReceive:', canReceive, 'canSend:', canSend);
+  console.log('🏠 HomePage render - userProfile:', userProfile);
+  console.log('🏠 HomePage render - gamification:', gamification);
   
   const currentLevelPoints = (gamification.level - 1) * 100;
   const nextLevelPoints = gamification.level * 100;
@@ -262,25 +266,25 @@ export default function HomePage() {
                 mt: 3,
                 justifyContent: 'center'
               }}>
-                {canReceive && (
+                {(canReceive || receivedCount > 0) && (
                   <Box
                     sx={{
                       textAlign: 'center',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      cursor: 'pointer',
+                      cursor: canReceive ? 'pointer' : 'default',
                       p: 3,
                       borderRadius: 3,
                       transition: 'all 0.3s ease',
                       background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.05) 0%, rgba(255, 142, 83, 0.05) 100%)',
-                      '&:hover': {
+                      '&:hover': canReceive ? {
                         transform: 'translateY(-4px)',
                         boxShadow: '0 8px 24px rgba(254, 107, 139, 0.2)',
                         background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.1) 0%, rgba(255, 142, 83, 0.1) 100%)',
-                      },
+                      } : {},
                     }}
-                    onClick={() => router.push('/messages/received')}
+                    onClick={canReceive ? () => router.push('/messages/received') : undefined}
                   >
                     <NotificationBadge count={unreadCount} pulse={unreadCount > 0}>
                       <Inbox
@@ -328,25 +332,25 @@ export default function HomePage() {
                     )}
                   </Box>
                 )}
-                {canSend && (
+                {(canSend || sentCount > 0) && (
                   <Box
                     sx={{
                       textAlign: 'center',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      cursor: 'pointer',
+                      cursor: canSend ? 'pointer' : 'default',
                       p: 3,
                       borderRadius: 3,
                       transition: 'all 0.3s ease',
                       background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.05) 0%, rgba(255, 142, 83, 0.05) 100%)',
-                      '&:hover': {
+                      '&:hover': canSend ? {
                         transform: 'translateY(-4px)',
                         boxShadow: '0 8px 24px rgba(254, 107, 139, 0.2)',
                         background: 'linear-gradient(135deg, rgba(254, 107, 139, 0.1) 0%, rgba(255, 142, 83, 0.1) 100%)',
-                      },
+                      } : {},
                     }}
-                    onClick={() => router.push('/messages/sent')}
+                    onClick={canSend ? () => router.push('/messages/sent') : undefined}
                   >
                     <Outbox
                       sx={{
