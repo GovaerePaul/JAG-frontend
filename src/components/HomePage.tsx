@@ -46,6 +46,9 @@ export default function HomePage() {
   const receivedCount = messageCounts.messagesReceivedCount;
   const sentCount = messageCounts.messagesSentCount;
   
+  // Debug logs
+  console.log('🏠 HomePage render - receivedCount:', receivedCount, 'sentCount:', sentCount, 'loadingCounts:', loadingCounts);
+  
   const currentLevelPoints = (gamification.level - 1) * 100;
   const nextLevelPoints = gamification.level * 100;
   const pointsInCurrentLevel = gamification.points - currentLevelPoints;
