@@ -23,6 +23,7 @@ import { useRouter } from '@/i18n/navigation';
 import { logout } from '@/lib/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations } from 'next-intl';
+import { getUserEmail } from '@/lib/userUtils';
 
 export default function UserDropdown() {
   const { user, loading } = useAuth();
@@ -84,7 +85,7 @@ export default function UserDropdown() {
               fontSize: { xs: '0.75rem', sm: '0.875rem' },
             }}
           >
-            {user.displayName ? user.displayName[0].toUpperCase() : user.email?.[0].toUpperCase()}
+            {user.displayName ? user.displayName[0].toUpperCase() : getUserEmail(user)?.[0].toUpperCase()}
           </Avatar>
         ) : (
           <Avatar
@@ -140,7 +141,7 @@ export default function UserDropdown() {
                 {user.displayName || t('user')}
               </Typography>
               <Typography variant="body2" color="text.secondary" noWrap>
-                {user.email}
+                {getUserEmail(user)}
               </Typography>
             </Box>,
             <Divider key="divider-1" />,

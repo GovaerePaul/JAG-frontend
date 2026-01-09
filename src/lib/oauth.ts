@@ -8,6 +8,7 @@ import {
 import { auth, db } from './firebase';
 import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import authApiClient from './api-client';
+import { getUserEmail } from './userUtils';
 
 /**
  * Sign in with Google OAuth provider
@@ -67,7 +68,7 @@ const handleOAuthSignIn = async (result: UserCredential) => {
   });
   
   // Get email from providerData (Facebook puts it there, not in user.email)
-  const userEmail = user.providerData[0]?.email || user.email;
+  const userEmail = getUserEmail(user);
   
   if (!userEmail) {
     console.error('❌ No email found in UserCredential');

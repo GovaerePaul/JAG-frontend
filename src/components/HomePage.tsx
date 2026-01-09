@@ -19,6 +19,7 @@ import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useUserStats } from '@/hooks/useUserStats';
 import NotificationBadge from '@/components/NotificationBadge';
 import LevelIcon from '@/components/LevelIcon';
+import { getUserEmail } from '@/lib/userUtils';
 
 interface GamificationData {
   points: number;
@@ -103,7 +104,7 @@ export default function HomePage() {
             sx={{ mb: 4, fontSize: { xs: '1.2rem', md: '1.5rem' } }}
           >
             {user
-              ? t('welcomeUser', { name: user.displayName || user.email || tCommon('user') })
+              ? t('welcomeUser', { name: user.displayName || getUserEmail(user) || tCommon('user') })
               : t('subtitle')
             }
           </Typography>

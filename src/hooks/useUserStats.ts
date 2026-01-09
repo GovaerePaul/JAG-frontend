@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from './useAuth';
 import authApiClient from '@/lib/api-client';
 import { UserStats } from '@/lib/types';
+import { getUserEmail } from '@/lib/userUtils';
 
 interface MessageCounts {
   messagesSentCount: number;
@@ -27,7 +28,7 @@ export function useUserStats(): UseUserStatsReturn {
 
   // Stabilize user identifier
   const userId = useMemo(() => user?.uid || null, [user?.uid]);
-  const userEmail = useMemo(() => user?.email || user?.providerData?.[0]?.email || null, [user?.email, user?.providerData?.[0]?.email]);
+  const userEmail = useMemo(() => getUserEmail(user), [user]);
 
   useEffect(() => {
     if (!userId) {
@@ -80,7 +81,7 @@ export function useUserStats(): UseUserStatsReturn {
     setLoading(true);
     
     try {
-      const email = user.email || user.providerData?.[0]?.email;
+      const email = getUserEmail(user);
       const response = await authApiClient.getUserStats(email || undefined);
       
       if (response.success && response.data) {

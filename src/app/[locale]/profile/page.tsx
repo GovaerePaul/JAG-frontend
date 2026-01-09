@@ -58,6 +58,7 @@ import { updateUserProfileOnBackend } from '@/lib/auth';
 import { CameraAlt, Delete } from '@mui/icons-material';
 import { reload } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { getUserEmail } from '@/lib/userUtils';
 
 export default function ProfilePage() {
   const t = useTranslations('profile');
@@ -375,7 +376,7 @@ export default function ProfilePage() {
                 }}
                 onClick={() => setPhotoDialogOpen(true)}
               >
-                {user.displayName?.charAt(0) || user.email?.charAt(0)}
+                {user.displayName?.charAt(0) || getUserEmail(user)?.charAt(0)}
               </Avatar>
               <IconButton
                 onClick={() => setPhotoDialogOpen(true)}
@@ -444,7 +445,7 @@ export default function ProfilePage() {
                 {user.displayName || t('noDisplayName')}
               </Typography>
               <Typography variant="body1" color="text.secondary" gutterBottom sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                {user.email}
+                {getUserEmail(user)}
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
                 {user.emailVerified && (
@@ -635,7 +636,7 @@ export default function ProfilePage() {
                     </ListItemIcon>
                     <ListItemText 
                       primary={t('emailAddress')}
-                      secondary={user.email}
+                      secondary={getUserEmail(user)}
                     />
                   </ListItem>
                   <ListItem>
@@ -1326,7 +1327,7 @@ export default function ProfilePage() {
                     boxShadow: '0 4px 20px rgba(254, 107, 139, 0.3)',
                   }}
                 >
-                  {user.displayName?.charAt(0) || user.email?.charAt(0)}
+                  {user.displayName?.charAt(0) || getUserEmail(user)?.charAt(0)}
                 </Avatar>
               </Box>
 
