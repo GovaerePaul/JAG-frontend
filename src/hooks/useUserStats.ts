@@ -47,9 +47,12 @@ export function useUserStats(): UseUserStatsReturn {
     // Check cache first
     const now = Date.now();
     if (userStatsCache.data && (now - userStatsCache.timestamp) < CACHE_DURATION) {
+      console.log('📊 Using cached stats:', userStatsCache.data);
       setMessageCounts(userStatsCache.data);
       return;
     }
+    
+    console.log('📊 Cache expired or empty, fetching fresh stats');
 
     // If already fetching, wait for that promise
     if (userStatsCache.promise) {
@@ -65,19 +68,27 @@ export function useUserStats(): UseUserStatsReturn {
       try {
         // Send email to backend as fallback (for Facebook OAuth case)
         const userEmail = user.email || user.providerData?.[0]?.email;
+        console.log('📊 Fetching user stats with email:', userEmail);
         const response = await authApiClient.getUserStats(userEmail || undefined);
+        console.log('📊 getUserStats response:', response);
+        
         if (response.success && response.data) {
           const stats = response.data as UserStats;
+          console.log('📊 Parsed stats:', stats);
           const counts = {
             messagesSentCount: stats.messagesSentCount ?? 0,
             messagesReceivedCount: stats.messagesReceivedCount ?? 0,
           };
+          console.log('📊 Setting counts:', counts);
           userStatsCache.data = counts;
           userStatsCache.timestamp = Date.now();
           setMessageCounts(counts);
+          console.log('📊 State updated, current messageCounts:', counts);
+        } else {
+          console.warn('⚠️ getUserStats failed or no data:', response);
         }
       } catch (error) {
-        // Silent fail
+        console.error('❌ Error fetching user stats:', error);
       } finally {
         setLoading(false);
         userStatsCache.promise = null;
