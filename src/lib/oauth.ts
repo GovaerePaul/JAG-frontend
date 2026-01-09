@@ -8,7 +8,6 @@ import {
 import { auth, db } from './firebase';
 import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import authApiClient from './api-client';
-import { invalidateUserStatsCache } from '@/hooks/useUserStats';
 
 /**
  * Sign in with Google OAuth provider
@@ -100,9 +99,6 @@ const handleOAuthSignIn = async (result: UserCredential) => {
     // Set auth token for API client
     const token = await user.getIdToken();
     authApiClient.setAuthToken(token);
-    
-    // Invalidate stats cache to force refresh after OAuth sign-in
-    invalidateUserStatsCache();
     
     console.log('✅ OAuth sign-in complete');
   } catch (error) {
