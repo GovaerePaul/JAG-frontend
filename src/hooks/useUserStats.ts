@@ -48,7 +48,8 @@ export function useUserStats(): UseUserStatsReturn {
     const now = Date.now();
     if (userStatsCache.data && (now - userStatsCache.timestamp) < CACHE_DURATION) {
       console.log('📊 Using cached stats:', userStatsCache.data);
-      setMessageCounts(userStatsCache.data);
+      // Force update with cached data (create new object to trigger re-render)
+      setMessageCounts({ ...userStatsCache.data });
       return;
     }
     
@@ -82,7 +83,8 @@ export function useUserStats(): UseUserStatsReturn {
           console.log('📊 Setting counts:', counts);
           userStatsCache.data = counts;
           userStatsCache.timestamp = Date.now();
-          setMessageCounts(counts);
+          // Force update with new object to trigger re-render
+          setMessageCounts({ ...counts });
           console.log('📊 State updated, current messageCounts:', counts);
         } else {
           console.warn('⚠️ getUserStats failed or no data:', response);
