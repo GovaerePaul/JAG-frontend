@@ -6,7 +6,7 @@ import {
   AuthError
 } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { doc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import authApiClient from './api-client';
 
 /**
@@ -77,13 +77,13 @@ const handleOAuthSignIn = async (result: UserCredential) => {
   console.log('✅ OAuth sign-in with email:', userEmail);
   
   try {
-    // Check if document already exists with this email
+    // Backend already created document with correct email, just check if we need to update existing profile
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', userEmail));
     const snapshot = await getDocs(q);
     
     if (!snapshot.empty) {
-      // Document exists → update it
+      // Document exists with this email → update it
       const docRef = doc(db, 'users', snapshot.docs[0].id);
       const existingData = snapshot.docs[0].data();
       
@@ -95,24 +95,8 @@ const handleOAuthSignIn = async (result: UserCredential) => {
         updatedAt: new Date(),
       });
     } else {
-      // Document doesn't exist → create it
-      const docRef = doc(db, 'users', user.uid);
-      
-      console.log('✨ Creating new document:', user.uid);
-      
-      await setDoc(docRef, {
-        uid: user.uid,
-        email: userEmail,
-        displayName: user.displayName || 'User',
-        photoURL: user.photoURL || '',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isActive: true,
-        role: 'both',
-        points: 50,
-        level: 1,
-        totalPointsEarned: 50,
-      });
+      // No document found - backend trigger will create it automatically
+      console.log('⏳ Waiting for backend to create document:', user.uid);
     }
     
     // Set auth token for API client
