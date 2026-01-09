@@ -63,7 +63,9 @@ export function useUserStats(): UseUserStatsReturn {
     setLoading(true);
     const fetchPromise = (async () => {
       try {
-        const response = await authApiClient.getUserStats();
+        // Send email to backend as fallback (for Facebook OAuth case)
+        const userEmail = user.email || user.providerData?.[0]?.email;
+        const response = await authApiClient.getUserStats(userEmail || undefined);
         if (response.success && response.data) {
           const stats = response.data as UserStats;
           const counts = {
