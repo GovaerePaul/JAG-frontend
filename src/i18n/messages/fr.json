@@ -45,6 +45,7 @@
     },
     "oauth": {
       "continueWithGoogle": "Continuer avec Google",
+      "continueWithFacebook": "Continuer avec Facebook",
       "orDivider": "ou",
       "quickSignup": "Inscription rapide et facile avec",
       "errors": {

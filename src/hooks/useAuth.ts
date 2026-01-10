@@ -24,6 +24,8 @@ export interface UserPreferences {
 export interface UserProfile {
   uid: string;
   email: string;
+  availableProviders?: string[]; // ["google", "facebook", "password"]
+  userProviderIds?: Record<string, string>; // { "google": "uid_google", "facebook": "uid_facebook" }
   displayName?: string;
   photoURL?: string;
   createdAt: string | Timestamp;
@@ -36,7 +38,7 @@ export interface UserProfile {
   location?: UserLocation;
   birthDate?: Timestamp;
   preferences?: UserPreferences;
-  secondaryProviderUIDs?: string[]; // UIDs from linked OAuth providers (Google, etc.)
+  secondaryProviderUIDs?: string[]; // Deprecated - use userProviderIds instead
 }
 
 export const useAuth = () => {
@@ -68,12 +70,15 @@ export const useAuth = () => {
     let timeoutId: NodeJS.Timeout | null = null;
     let loadingSet = false;
 
-    // Find document by UID only
+    // Find document by email (since document might have different UID if user logged in with different provider)
     const usersRef = collection(db, 'users');
-    const qByUid = query(usersRef, where('uid', '==', user.uid), limit(1));
+    const userEmail = user.email;
+    const qByEmail = userEmail 
+      ? query(usersRef, where('email', '==', userEmail), limit(1))
+      : query(usersRef, where('uid', '==', user.uid), limit(1)); // Fallback to UID if no email
     
     const unsubscribe = onSnapshot(
-      qByUid,
+      qByEmail,
       (querySnapshot) => {
         if (!isMounted) return;
         

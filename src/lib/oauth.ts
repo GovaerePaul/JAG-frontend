@@ -1,11 +1,12 @@
 import {
   GoogleAuthProvider,
+  FacebookAuthProvider,
   signInWithPopup,
   UserCredential,
   AuthError
 } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
 import authApiClient from './api-client';
 
 /**
@@ -27,27 +28,59 @@ export const signInWithGoogle = async () => {
 };
 
 /**
+ * Sign in with Facebook OAuth provider
+ */
+export const signInWithFacebook = async () => {
+  try {
+    const provider = new FacebookAuthProvider();
+    provider.addScope('email');
+    provider.addScope('public_profile');
+    
+    const result = await signInWithPopup(auth, provider);
+    await handleOAuthSignIn(result);
+    
+    return { user: result.user, error: null };
+  } catch (error) {
+    return handleOAuthError(error);
+  }
+};
+
+/**
  * Handle OAuth sign-in success
- * Backend trigger creates Firestore document based on UID
+ * Backend trigger creates or updates Firestore document based on email
  */
 const handleOAuthSignIn = async (result: UserCredential) => {
   const user = result.user;
   
   try {
-    // Backend trigger creates document with user.uid
+    // Backend trigger creates or updates document based on email
     // Wait a bit for backend trigger to complete (it's async)
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Verify document exists by UID
-    const userRef = doc(db, 'users', user.uid);
-    const userDoc = await getDoc(userRef);
-    
-    if (!userDoc.exists()) {
-      console.error('❌ No document found for UID:', user.uid);
-      throw new Error('User document not found after sign-in');
+    // Verify document exists by email (since document ID might be different UID)
+    if (!user.email) {
+      throw new Error('User email not available');
     }
     
-    console.log('✅ User document found for UID:', user.uid);
+    const usersRef = collection(db, 'users');
+    const emailQuery = query(usersRef, where('email', '==', user.email), limit(1));
+    const querySnapshot = await getDocs(emailQuery);
+    
+    if (querySnapshot.empty) {
+      // Fallback: try to find by UID (for backward compatibility)
+      const userRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userRef);
+      
+      if (!userDoc.exists()) {
+        console.error('❌ No document found for email:', user.email, 'or UID:', user.uid);
+        throw new Error('User document not found after sign-in');
+      }
+      
+      console.log('✅ User document found by UID (fallback):', user.uid);
+    } else {
+      const userDoc = querySnapshot.docs[0];
+      console.log('✅ User document found by email:', user.email, '(document ID:', userDoc.id, ')');
+    }
     
     // Set auth token for API client
     const token = await user.getIdToken();
