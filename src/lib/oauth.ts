@@ -58,12 +58,32 @@ const handleOAuthSignIn = async (result: UserCredential) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Verify document exists by email (since document ID might be different UID)
-    if (!user.email) {
+    // Get email from user.email or providerData
+    let userEmail = user.email || '';
+    
+    // If email is not in user.email, try to get it from providerData
+    if (!userEmail && user.providerData && user.providerData.length > 0) {
+      // Check all providerData entries for email
+      for (const provider of user.providerData) {
+        if (provider.email) {
+          userEmail = provider.email;
+          console.log(`📧 Email found in providerData: ${provider.providerId} -> ${userEmail}`);
+          break;
+        }
+      }
+    }
+    
+    if (!userEmail) {
+      console.error('❌ No email available from user or providerData:', {
+        uid: user.uid,
+        email: user.email,
+        providerData: user.providerData,
+      });
       throw new Error('User email not available');
     }
     
     const usersRef = collection(db, 'users');
-    const emailQuery = query(usersRef, where('email', '==', user.email), limit(1));
+    const emailQuery = query(usersRef, where('email', '==', userEmail), limit(1));
     const querySnapshot = await getDocs(emailQuery);
     
     if (querySnapshot.empty) {
@@ -79,7 +99,7 @@ const handleOAuthSignIn = async (result: UserCredential) => {
       console.log('✅ User document found by UID (fallback):', user.uid);
     } else {
       const userDoc = querySnapshot.docs[0];
-      console.log('✅ User document found by email:', user.email, '(document ID:', userDoc.id, ')');
+      console.log('✅ User document found by email:', userEmail, '(document ID:', userDoc.id, ')');
     }
     
     // Set auth token for API client
