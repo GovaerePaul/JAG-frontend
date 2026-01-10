@@ -36,7 +36,7 @@ export interface UserProfile {
   location?: UserLocation;
   birthDate?: Timestamp;
   preferences?: UserPreferences;
-  secondaryProviderUIDs?: string[]; // UIDs from linked OAuth providers (Google, Facebook, etc.)
+  secondaryProviderUIDs?: string[]; // UIDs from linked OAuth providers (Google, etc.)
 }
 
 export const useAuth = () => {
@@ -65,15 +65,10 @@ export const useAuth = () => {
     }
 
     let isMounted = true;
-    let emailFallbackDone = false;
-    let emailUnsubscribe: (() => void) | null = null;
     let timeoutId: NodeJS.Timeout | null = null;
-    let loadingSet = false; // Track if we've set loading to false
+    let loadingSet = false;
 
-    // Get email from providerData (Facebook puts it there, not in user.email)
-    const userEmail = user.providerData?.[0]?.email || user.email;
-
-    // Try to find document by UID first (normal case)
+    // Find document by UID only
     const usersRef = collection(db, 'users');
     const qByUid = query(usersRef, where('uid', '==', user.uid), limit(1));
     
@@ -83,78 +78,17 @@ export const useAuth = () => {
         if (!isMounted) return;
         
         if (!querySnapshot.empty) {
-          // Found by UID - normal case
           const profileData = querySnapshot.docs[0].data() as UserProfile;
           console.log('📊 UserProfile loaded from Firestore:', profileData);
-          // Create a new object to ensure React detects the change
           setUserProfile({ ...profileData });
           if (!loadingSet) {
             setLoading(false);
             loadingSet = true;
           }
-          emailFallbackDone = true; // Prevent email fallback
-          // Clean up email listener if it exists
-          if (emailUnsubscribe) {
-            emailUnsubscribe();
-            emailUnsubscribe = null;
-          }
-          // Clear timeout if document found
           if (timeoutId) {
             clearTimeout(timeoutId);
             timeoutId = null;
           }
-        } else if (userEmail && !emailFallbackDone) {
-          // Not found by UID - try by email (Facebook OAuth case) - only once
-          emailFallbackDone = true;
-          console.log('⚠️ Document not found by UID, searching by email:', userEmail);
-          
-          // Use onSnapshot for email query too (so it updates if document changes)
-          const qByEmail = query(usersRef, where('email', '==', userEmail), limit(1));
-          emailUnsubscribe = onSnapshot(
-            qByEmail,
-            (emailSnapshot) => {
-              if (!isMounted) return;
-              
-              if (!emailSnapshot.empty) {
-                const profileData = emailSnapshot.docs[0].data() as UserProfile;
-                console.log('📊 UserProfile loaded from Firestore (by email):', profileData);
-                // Create a new object to ensure React detects the change
-                setUserProfile({ ...profileData });
-                console.log('✅ Found document by email:', emailSnapshot.docs[0].id);
-                if (!loadingSet) {
-                  setLoading(false);
-                  loadingSet = true;
-                }
-                // Clear timeout if document found
-                if (timeoutId) {
-                  clearTimeout(timeoutId);
-                  timeoutId = null;
-                }
-              } else {
-                // Wait a bit more for backend trigger (max 3 seconds)
-                if (!timeoutId) {
-                  timeoutId = setTimeout(() => {
-                    if (!isMounted || loadingSet) return;
-                    console.error('❌ No document found for email after timeout:', userEmail);
-                    setUserProfile(null);
-                    setLoading(false);
-                    loadingSet = true;
-                  }, 3000);
-                }
-              }
-            },
-            (error) => {
-              if (!isMounted || loadingSet) return;
-              console.error('Error searching by email:', error);
-              setUserProfile(null);
-              setLoading(false);
-              loadingSet = true;
-              if (timeoutId) {
-                clearTimeout(timeoutId);
-                timeoutId = null;
-              }
-            }
-          );
         } else {
           // Wait a bit for backend trigger to create document (max 3 seconds)
           if (!timeoutId) {
@@ -183,9 +117,6 @@ export const useAuth = () => {
     return () => {
       isMounted = false;
       unsubscribe();
-      if (emailUnsubscribe) {
-        emailUnsubscribe();
-      }
       if (timeoutId) {
         clearTimeout(timeoutId);
       }

@@ -1,14 +1,12 @@
 import {
   GoogleAuthProvider,
-  FacebookAuthProvider,
   signInWithPopup,
   UserCredential,
   AuthError
 } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import authApiClient from './api-client';
-import { getUserEmail } from './userUtils';
 
 /**
  * Sign in with Google OAuth provider
@@ -29,73 +27,27 @@ export const signInWithGoogle = async () => {
 };
 
 /**
- * Sign in with Facebook OAuth provider
- */
-export const signInWithFacebook = async () => {
-  try {
-    const provider = new FacebookAuthProvider();
-    provider.addScope('email');
-    provider.addScope('public_profile');
-    
-    const result = await signInWithPopup(auth, provider);
-    await handleOAuthSignIn(result);
-    
-    return { user: result.user, error: null };
-  } catch (error) {
-    return handleOAuthError(error);
-  }
-};
-
-/**
  * Handle OAuth sign-in success
- * Creates or updates Firestore document based on email
+ * Backend trigger creates Firestore document based on UID
  */
 const handleOAuthSignIn = async (result: UserCredential) => {
   const user = result.user;
   
-  // Debug: Log all available data
-  console.log('🔍 UserCredential result:', {
-    'user.uid': user.uid,
-    'user.email': user.providerData[0]?.email,
-    'user.displayName': user.displayName,
-    'user.photoURL': user.photoURL,
-    'providerData': user.providerData?.map(p => ({
-      providerId: p.providerId,
-      email: p.email,
-      displayName: p.displayName,
-      photoURL: p.photoURL
-    }))
-  });
-  
-  // Get email from providerData (Facebook puts it there, not in user.email)
-  const userEmail = getUserEmail(user);
-  
-  if (!userEmail) {
-    console.error('❌ No email found in UserCredential');
-    throw new Error('No email provided by OAuth provider');
-  }
-  
-  console.log('✅ OAuth sign-in with email:', userEmail);
-  
   try {
-    // Backend trigger handles document creation intelligently:
-    // - If no document exists with this email → creates new document
-    // - If document already exists with this email → does nothing (no duplicate)
-    
+    // Backend trigger creates document with user.uid
     // Wait a bit for backend trigger to complete (it's async)
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Check if document exists (either newly created or existing)
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('email', '==', userEmail));
-    const snapshot = await getDocs(q);
+    // Verify document exists by UID
+    const userRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userRef);
     
-    if (snapshot.empty) {
-      console.error('❌ No document found for email:', userEmail);
+    if (!userDoc.exists()) {
+      console.error('❌ No document found for UID:', user.uid);
       throw new Error('User document not found after sign-in');
     }
     
-    console.log('✅ User document found:', snapshot.docs[0].id);
+    console.log('✅ User document found for UID:', user.uid);
     
     // Set auth token for API client
     const token = await user.getIdToken();

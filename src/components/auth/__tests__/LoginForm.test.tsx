@@ -17,7 +17,6 @@ jest.mock('@/lib/auth', () => ({
 // Mock OAuth functions
 jest.mock('@/lib/oauth', () => ({
   signInWithGoogle: jest.fn(),
-  signInWithFacebook: jest.fn(),
 }))
 
 // Mock Firebase

@@ -25,7 +25,7 @@ export interface SignInData {
 
 export const signUp = async ({ email, password, displayName, role }: SignUpData) => {
   try {
-    // Check if email already exists with any provider (email/password, Google, Facebook)
+    // Check if email already exists with any provider (email/password, Google)
     const signInMethods = await fetchSignInMethodsForEmail(auth, email);
     
     if (signInMethods.length > 0) {
