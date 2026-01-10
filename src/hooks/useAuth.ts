@@ -88,6 +88,7 @@ export const useAuth = () => {
     
     const usersRef = collection(db, 'users');
     let q;
+    const searchedByEmail = !!userEmail; // Track if we searched by email
     
     if (userEmail) {
       // Prioritize search by email
@@ -117,7 +118,7 @@ export const useAuth = () => {
           }
         } else {
           // If not found by email, try by UID (for existing users with old structure)
-          if (userEmail && q.query.find(f => f.field === 'email')) {
+          if (searchedByEmail) {
             // Current query was by email, try UID as fallback
             const qByUid = query(usersRef, where('uid', '==', user.uid), limit(1));
             getDocs(qByUid).then(uidQuerySnapshot => {
