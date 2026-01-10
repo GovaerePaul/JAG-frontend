@@ -71,14 +71,35 @@ export const useAuth = () => {
     let loadingSet = false;
 
     // Find document by email (since document might have different UID if user logged in with different provider)
+    // Get email from user.email or providerData
+    let userEmail = user.email || '';
+    
+    // If email is not in user.email, try to get it from providerData
+    if (!userEmail && user.providerData && user.providerData.length > 0) {
+      // Check all providerData entries for email
+      for (const provider of user.providerData) {
+        if (provider.email) {
+          userEmail = provider.email;
+          console.log(`📧 useAuth: Email found in providerData: ${provider.providerId} -> ${userEmail}`);
+          break;
+        }
+      }
+    }
+    
     const usersRef = collection(db, 'users');
-    const userEmail = user.email;
-    const qByEmail = userEmail 
-      ? query(usersRef, where('email', '==', userEmail), limit(1))
-      : query(usersRef, where('uid', '==', user.uid), limit(1)); // Fallback to UID if no email
+    let q;
+    
+    if (userEmail) {
+      // Prioritize search by email
+      q = query(usersRef, where('email', '==', userEmail), limit(1));
+    } else {
+      // Fallback to UID if email is not available (should not happen with current scopes)
+      console.warn('⚠️ useAuth: No email available, falling back to UID search');
+      q = query(usersRef, where('uid', '==', user.uid), limit(1));
+    }
     
     const unsubscribe = onSnapshot(
-      qByEmail,
+      q,
       (querySnapshot) => {
         if (!isMounted) return;
         
@@ -95,14 +116,60 @@ export const useAuth = () => {
             timeoutId = null;
           }
         } else {
-          // Wait a bit for backend trigger to create document (max 3 seconds)
-          if (!timeoutId) {
-            timeoutId = setTimeout(() => {
+          // If not found by email, try by UID (for existing users with old structure)
+          if (userEmail && q.query.find(f => f.field === 'email')) {
+            // Current query was by email, try UID as fallback
+            const qByUid = query(usersRef, where('uid', '==', user.uid), limit(1));
+            getDocs(qByUid).then(uidQuerySnapshot => {
+              if (!isMounted) return;
+              if (!uidQuerySnapshot.empty) {
+                const profileData = uidQuerySnapshot.docs[0].data() as UserProfile;
+                console.log('📊 UserProfile loaded from Firestore (by UID fallback):', profileData);
+                setUserProfile({ ...profileData });
+                if (!loadingSet) {
+                  setLoading(false);
+                  loadingSet = true;
+                }
+                if (timeoutId) {
+                  clearTimeout(timeoutId);
+                  timeoutId = null;
+                }
+              } else {
+                // Wait a bit for backend trigger to create document (max 5 seconds)
+                if (!timeoutId) {
+                  timeoutId = setTimeout(() => {
+                    if (!isMounted || loadingSet) return;
+                    console.warn('⚠️ useAuth: Timeout waiting for user profile');
+                    setUserProfile(null);
+                    setLoading(false);
+                    loadingSet = true;
+                  }, 5000);
+                }
+              }
+            }).catch(error => {
               if (!isMounted || loadingSet) return;
-              setUserProfile(null);
-              setLoading(false);
-              loadingSet = true;
-            }, 3000);
+              console.error('Error loading profile by UID:', error);
+              // Wait a bit for backend trigger to create document (max 5 seconds)
+              if (!timeoutId) {
+                timeoutId = setTimeout(() => {
+                  if (!isMounted || loadingSet) return;
+                  setUserProfile(null);
+                  setLoading(false);
+                  loadingSet = true;
+                }, 5000);
+              }
+            });
+          } else {
+            // Wait a bit for backend trigger to create document (max 5 seconds)
+            if (!timeoutId) {
+              timeoutId = setTimeout(() => {
+                if (!isMounted || loadingSet) return;
+                console.warn('⚠️ useAuth: Timeout waiting for user profile');
+                setUserProfile(null);
+                setLoading(false);
+                loadingSet = true;
+              }, 5000);
+            }
           }
         }
       },
@@ -126,7 +193,7 @@ export const useAuth = () => {
         clearTimeout(timeoutId);
       }
     };
-  }, [user?.uid]);
+  }, [user?.uid, user?.email]);
 
   const canSend = userProfile?.role === 'sender' || userProfile?.role === 'both';
   const canReceive = userProfile?.role === 'receiver' || userProfile?.role === 'both';
