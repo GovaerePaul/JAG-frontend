@@ -223,7 +223,7 @@ export function useDiscoverUsers(
       setCurrentDistance(searchDistance);
       setOffset(0);
       attemptCountRef.current = 0;
-      hasSearchedRef.current = true; // Mark as searched when manually triggered
+      hasSearchedRef.current = true;
       await performSearch(
         {
           filters: params.filters,
