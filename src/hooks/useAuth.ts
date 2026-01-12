@@ -59,7 +59,7 @@ export const useAuth = () => {
 
   // Listen to user profile changes in Firestore
   // Document ID might be different from UID if user was created manually
-  // We need to find the document by UID or by userProviderIds
+  // Need to find the document by UID or by userProviderIds
   useEffect(() => {
     if (!user) {
       setUserProfile(null);
