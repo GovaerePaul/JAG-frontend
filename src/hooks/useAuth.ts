@@ -57,7 +57,7 @@ export const useAuth = () => {
   }, []);
 
   // Listen to user profile changes in Firestore
-  // Use direct document snapshot (document ID = UID) for real-time updates
+  // Document ID = UID (simplified, no Facebook complexity)
   useEffect(() => {
     if (!user) {
       setUserProfile(null);
@@ -66,10 +66,8 @@ export const useAuth = () => {
     }
 
     let isMounted = true;
-    let timeoutId: NodeJS.Timeout | null = null;
-    let loadingSet = false;
 
-    // Listen directly to document by UID (document ID = UID in backend)
+    // Listen directly to document by UID
     const userDocRef = doc(db, 'users', user.uid);
     
     const unsubscribe = onSnapshot(
@@ -79,48 +77,24 @@ export const useAuth = () => {
         
         if (docSnapshot.exists()) {
           const profileData = docSnapshot.data() as UserProfile;
-          console.log('📊 UserProfile loaded from Firestore:', profileData);
           setUserProfile({ ...profileData });
-          if (!loadingSet) {
-            setLoading(false);
-            loadingSet = true;
-          }
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-            timeoutId = null;
-          }
+          setLoading(false);
         } else {
-          // Document doesn't exist yet, wait for backend trigger (max 5 seconds)
-          if (!timeoutId) {
-            timeoutId = setTimeout(() => {
-              if (!isMounted || loadingSet) return;
-              console.warn('⚠️ useAuth: Timeout waiting for user profile');
-              setUserProfile(null);
-              setLoading(false);
-              loadingSet = true;
-            }, 5000);
-          }
+          setUserProfile(null);
+          setLoading(false);
         }
       },
       (error) => {
-        if (!isMounted || loadingSet) return;
+        if (!isMounted) return;
         console.error('Error loading profile:', error);
         setUserProfile(null);
         setLoading(false);
-        loadingSet = true;
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
       }
     );
 
     return () => {
       isMounted = false;
       unsubscribe();
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
     };
   }, [user?.uid]);
 
