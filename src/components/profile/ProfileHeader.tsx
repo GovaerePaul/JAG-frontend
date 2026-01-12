@@ -5,7 +5,7 @@ import { Edit, CameraAlt, Verified } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
 import { User } from 'firebase/auth';
 import { UserProfile } from '@/hooks/useAuth';
-import { EventType } from '@/lib/users-api';
+import { EventType } from '@/lib/events-api';
 import { getUserEmail } from '@/lib/userUtils';
 import GradientTypography from '@/components/ui/GradientTypography';
 

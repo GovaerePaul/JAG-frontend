@@ -5,7 +5,7 @@ import { Add, Favorite, FavoriteBorder } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
 import { UserProfile } from '@/hooks/useAuth';
 import { UserPreferences } from '@/hooks/useAuth';
-import { EventType } from '@/lib/users-api';
+import { EventType } from '@/lib/events-api';
 import GradientTypography from '@/components/ui/GradientTypography';
 
 interface EventPreferencesSectionProps {

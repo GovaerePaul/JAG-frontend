@@ -1,7 +1,7 @@
 'use client';
 
+import { EventType } from '@/lib/events-api';
 import { Box, Typography } from '@mui/material';
-import { EventType } from '@/lib/users-api';
 
 interface EventTypeDisplayProps {
   eventTypeId: string;

@@ -3,7 +3,7 @@
 import { Card, CardContent, Box, Typography, Chip } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import { MessageSummary } from '@/lib/messages-api';
-import { EventType } from '@/lib/users-api';
+import { EventType } from '@/lib/events-api';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
 import EventTypeDisplay from './EventTypeDisplay';
