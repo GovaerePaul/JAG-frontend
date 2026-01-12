@@ -38,8 +38,8 @@ export default function GamificationCard({
   };
 
   return (
-    <StyledPaper sx={{ p: 4, mb: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, position: 'relative', zIndex: 1 }}>
+    <StyledPaper sx={{ p: 4, mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 2, position: 'relative', zIndex: 1 }}>
         <Box
           sx={{
             display: 'inline-flex',
@@ -53,7 +53,7 @@ export default function GamificationCard({
         >
           <LevelIcon level={level} size={56} />
         </Box>
-        <Box sx={{ flexGrow: 1 }}>
+        <Box>
           <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
             {tGamification('level')} {level}
           </Typography>

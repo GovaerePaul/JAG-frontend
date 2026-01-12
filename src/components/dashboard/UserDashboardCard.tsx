@@ -52,7 +52,7 @@ export default function UserDashboardCard({
   };
 
   return (
-    <StyledPaper sx={{ p: 4, textAlign: 'center' }}>
+    <StyledPaper sx={{ p: 4, textAlign: 'center', mb: 3 }}>
       {showTitle && (
         <GradientTypography variant="h6" gutterBottom sx={{ mb: 3 }}>
           {tHome('userDashboard.title')}
