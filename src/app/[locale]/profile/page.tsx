@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { User } from 'firebase/auth';
-import { UserProfile, UserPreferences } from '@/hooks/useAuth';
 import {
   Container,
   Paper,
@@ -56,32 +54,15 @@ import { CameraAlt, Delete } from '@mui/icons-material';
 import { reload } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { getUserEmail } from '@/lib/userUtils';
-import { EventType } from '@/lib/events-api';
+import { UserPreferences } from '@/hooks/useAuth';
+import { useAppData } from '@/contexts/AppDataContext';
+import { useEventTypesContext } from '@/contexts/EventTypesContext';
 
-interface MessageCounts {
-  messagesSentCount: number;
-  messagesReceivedCount: number;
-}
-
-interface ProfilePageProps {
-  user?: User | null;
-  userProfile?: UserProfile | null;
-  canSend?: boolean;
-  canReceive?: boolean;
-  unreadCount?: number;
-  messageCounts?: MessageCounts;
-  eventTypes?: EventType[];
-}
-
-export default function ProfilePage({
-  user = null,
-  userProfile = null,
-  canSend = false,
-  canReceive = false,
-  unreadCount = 0,
-  messageCounts = { messagesSentCount: 0, messagesReceivedCount: 0 },
-  eventTypes = [],
-}: ProfilePageProps) {
+export default function ProfilePage() {
+  // Use Context to get data (same pattern as other pages)
+  const { user, userProfile, canSend, canReceive, unreadCount, messageCounts, refetchUserStats } = useAppData();
+  const { eventTypes, loading } = useEventTypesContext();
+  
   const t = useTranslations('profile');
   const tGamification = useTranslations('gamification');
   const tHome = useTranslations('home');
@@ -112,6 +93,13 @@ export default function ProfilePage({
       setCurrentPhotoURL(null);
     }
   }, [user?.photoURL]);
+  
+  useEffect(() => {
+    if (user?.displayName) {
+      setEditedName(user.displayName);
+    }
+  }, [user?.displayName]);
+  
   const gamification = {
     points: userProfile?.points ?? 0,
     level: userProfile?.level ?? 1,
@@ -1143,7 +1131,7 @@ export default function ProfilePage({
                       </Box>
                     )}
                   </>
-                )}
+                ) : null}
               </CardContent>
             </Card>
           </Box>
