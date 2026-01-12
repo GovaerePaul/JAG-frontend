@@ -10,19 +10,22 @@ import {
 } from '@mui/material';
 import { Inbox, Explore, EmojiEvents } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { User } from 'firebase/auth';
 import UserDropdown from './UserDropdown';
 import LanguageSwitcher from './LanguageSwitcher';
-import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import NotificationBadge from '@/components/NotificationBadge';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { getLogoPath } from '@/utils/level-icons';
 
-export default function Navbar() {
+interface NavbarProps {
+  user: User | null;
+  canReceive: boolean;
+  unreadCount: number;
+}
+
+export default function Navbar({ user, canReceive, unreadCount }: NavbarProps) {
   const router = useRouter();
-  const { user, canReceive } = useAuth();
-  const { unreadCount } = useUnreadMessages();
   const t = useTranslations('discover');
 
   const handleLogoClick = () => {

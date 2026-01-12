@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { DiscoveredUser } from '@/lib/users-api';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { useEventTypes } from '@/hooks/useEventTypes';
+import { useEventTypesContext } from '@/contexts/EventTypesContext';
 
 interface UserCardProps {
   user: DiscoveredUser;
@@ -17,7 +17,7 @@ export default function UserCard({ user, onSendMessage }: UserCardProps) {
   const t = useTranslations('discover');
   const router = useRouter();
   const locale = useLocale();
-  const { eventTypes } = useEventTypes();
+  const { eventTypes } = useEventTypesContext();
   const isNew = false;
 
   // Get favorite event types for this user

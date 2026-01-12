@@ -17,7 +17,7 @@ interface UseUserStatsReturn {
 }
 
 export function useUserStats(): UseUserStatsReturn {
-  const { user } = useAuth();
+  const { user, isReady } = useAuth();
   const [messageCounts, setMessageCounts] = useState<MessageCounts>({
     messagesSentCount: 0,
     messagesReceivedCount: 0,
@@ -29,7 +29,8 @@ export function useUserStats(): UseUserStatsReturn {
   const userId = useMemo(() => user?.uid || null, [user?.uid]);
 
   useEffect(() => {
-    if (!userId) {
+    // Don't make API calls until user is authenticated and ready
+    if (!isReady || !userId) {
       setMessageCounts({ messagesSentCount: 0, messagesReceivedCount: 0 });
       setLoading(false);
       lastFetchedUidRef.current = null;
@@ -69,10 +70,10 @@ export function useUserStats(): UseUserStatsReturn {
     };
 
     fetchStats();
-  }, [userId]);
+  }, [userId, isReady]);
 
   const refetch = useCallback(async () => {
-    if (!user) return;
+    if (!user || !isReady) return;
 
     // Reset the ref to allow fetching again
     lastFetchedUidRef.current = null;
@@ -98,7 +99,7 @@ export function useUserStats(): UseUserStatsReturn {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, isReady]);
   
   return { messageCounts, loading, refetch };
 }

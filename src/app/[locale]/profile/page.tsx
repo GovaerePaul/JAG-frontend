@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useAuth, UserPreferences } from '@/hooks/useAuth';
+import { User } from 'firebase/auth';
+import { UserProfile, UserPreferences } from '@/hooks/useAuth';
 import {
   Container,
   Paper,
@@ -44,11 +45,7 @@ import {
 } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 import { useRouter } from '@/i18n/navigation';
-import { useUnreadMessages } from '@/hooks/useUnreadMessages';
-import { useUserStats } from '@/hooks/useUserStats';
-import { useEventTypes } from '@/hooks/useEventTypes';
 import { updateUserPreferences, updateUserLocationByCity } from '@/lib/users-api';
-import { useQuests } from '@/hooks/useQuests';
 import NotificationBadge from '@/components/NotificationBadge';
 import CityAutocomplete from '@/components/discover/CityAutocomplete';
 import { Alert } from '@mui/material';
@@ -59,17 +56,36 @@ import { CameraAlt, Delete } from '@mui/icons-material';
 import { reload } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { getUserEmail } from '@/lib/userUtils';
+import { EventType } from '@/lib/events-api';
 
-export default function ProfilePage() {
+interface MessageCounts {
+  messagesSentCount: number;
+  messagesReceivedCount: number;
+}
+
+interface ProfilePageProps {
+  user?: User | null;
+  userProfile?: UserProfile | null;
+  canSend?: boolean;
+  canReceive?: boolean;
+  unreadCount?: number;
+  messageCounts?: MessageCounts;
+  eventTypes?: EventType[];
+}
+
+export default function ProfilePage({
+  user = null,
+  userProfile = null,
+  canSend = false,
+  canReceive = false,
+  unreadCount = 0,
+  messageCounts = { messagesSentCount: 0, messagesReceivedCount: 0 },
+  eventTypes = [],
+}: ProfilePageProps) {
   const t = useTranslations('profile');
   const tGamification = useTranslations('gamification');
   const tHome = useTranslations('home');
-  const { user, userProfile, loading, canSend, canReceive } = useAuth();
   const router = useRouter();
-  const { unreadCount } = useUnreadMessages();
-  const { messageCounts, loading: loadingCounts } = useUserStats();
-  const { eventTypes, loading: loadingEventTypes } = useEventTypes();
-  const { refetch: refetchQuests } = useQuests();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
   const [savingPreferences, setSavingPreferences] = useState(false);
@@ -838,13 +854,9 @@ export default function ProfilePage() {
                       <NotificationBadge count={unreadCount} pulse={unreadCount > 0}>
                         <Inbox sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
                       </NotificationBadge>
-                      {loadingCounts ? (
-                        <CircularProgress size={24} sx={{ my: 1 }} />
-                      ) : (
-                        <Typography variant="h4" color="primary">
-                          {messageCounts.messagesReceivedCount}
-                        </Typography>
-                      )}
+                      <Typography variant="h4" color="primary">
+                        {messageCounts.messagesReceivedCount}
+                      </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {tHome('userDashboard.messagesReceived')}
                       </Typography>
@@ -880,13 +892,9 @@ export default function ProfilePage() {
                       onClick={() => router.push('/messages/sent')}
                     >
                       <Outbox sx={{ fontSize: 32, color: 'secondary.main', mb: 1 }} />
-                      {loadingCounts ? (
-                        <CircularProgress size={24} sx={{ my: 1 }} />
-                      ) : (
-                        <Typography variant="h4" color="secondary">
-                          {messageCounts.messagesSentCount}
-                        </Typography>
-                      )}
+                      <Typography variant="h4" color="secondary">
+                        {messageCounts.messagesSentCount}
+                      </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {tHome('userDashboard.messagesSent')}
                       </Typography>
@@ -929,9 +937,7 @@ export default function ProfilePage() {
                   {t('eventPreferencesDescription')}
                 </Typography>
 
-                {loadingEventTypes ? (
-                  <CircularProgress />
-                ) : (
+                {eventTypes.length > 0 ? (
                   <>
                     {canReceive && (
                       <Box sx={{ mb: 4 }}>

@@ -12,7 +12,7 @@ interface UseQuestsReturn {
 }
 
 export function useQuests(): UseQuestsReturn {
-  const { user } = useAuth();
+  const { user, isReady } = useAuth();
   const [quests, setQuests] = useState<UserQuestStatus[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +22,8 @@ export function useQuests(): UseQuestsReturn {
   const userId = useMemo(() => user?.uid || null, [user?.uid]);
 
   useEffect(() => {
-    if (!userId) {
+    // Don't make API calls until user is authenticated and ready
+    if (!isReady || !userId) {
       setQuests([]);
       setLoading(false);
       lastFetchedUidRef.current = null;
@@ -55,10 +56,10 @@ export function useQuests(): UseQuestsReturn {
     };
 
     fetchQuests();
-  }, [userId]);
+  }, [userId, isReady]);
 
   const refetch = useCallback(async () => {
-    if (!user) return;
+    if (!user || !isReady) return;
 
     // Reset the ref to allow fetching again
     lastFetchedUidRef.current = null;
@@ -78,7 +79,7 @@ export function useQuests(): UseQuestsReturn {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, isReady]);
 
   return { quests, loading, error, refetch };
 }

@@ -5,6 +5,7 @@ import { useReceivedMessages } from './useReceivedMessages';
 
 interface UseUnreadMessagesReturn {
   unreadCount: number;
+  messages: ReturnType<typeof useReceivedMessages>['messages'];
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -25,6 +26,7 @@ export function useUnreadMessages(): UseUnreadMessagesReturn {
 
   return {
     unreadCount,
+    messages,
     loading,
     error,
     refetch,

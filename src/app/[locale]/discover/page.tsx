@@ -13,7 +13,7 @@ import {
 import { FilterList } from '@mui/icons-material';
 import { Explore } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
-import { useAuth } from '@/hooks/useAuth';
+import { UserProfile } from '@/hooks/useAuth';
 import { useDiscoverUsers } from '@/hooks/useDiscoverUsers';
 import { DiscoverUsersFilters } from '@/lib/users-api';
 import UserCard from '@/components/discover/UserCard';
@@ -21,9 +21,12 @@ import DiscoverFilters from '@/components/discover/DiscoverFilters';
 import LocationPermission from '@/components/discover/LocationPermission';
 import SendMessageForm from '@/components/messages/SendMessageForm';
 
-export default function DiscoverPage() {
+interface DiscoverPageProps {
+  userProfile?: UserProfile | null;
+}
+
+export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) {
   const t = useTranslations('discover');
-  const { userProfile } = useAuth();
   const { users, loading, error, currentDistance, isExpanding, search, loadMore, reset } =
     useDiscoverUsers({
       initialDistance: 50,

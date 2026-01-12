@@ -12,11 +12,10 @@ import {
 } from '@mui/material';
 import { Send, Inbox, Outbox, EmojiEvents, Explore } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { User } from 'firebase/auth';
+import { UserProfile } from '@/hooks/useAuth';
 import { useTranslations } from 'next-intl';
 import SendMessageForm from '@/components/messages/SendMessageForm';
-import { useUnreadMessages } from '@/hooks/useUnreadMessages';
-import { useUserStats } from '@/hooks/useUserStats';
 import NotificationBadge from '@/components/NotificationBadge';
 import LevelIcon from '@/components/LevelIcon';
 import { getUserEmail } from '@/lib/userUtils';
@@ -27,23 +26,58 @@ interface GamificationData {
   totalPointsEarned: number;
 }
 
-export default function HomePage() {
-  const { user, userProfile, canSend, canReceive } = useAuth();
+interface MessageCounts {
+  messagesSentCount: number;
+  messagesReceivedCount: number;
+}
+
+interface HomePageProps {
+  user: User | null;
+  userProfile: UserProfile | null;
+  canSend: boolean;
+  canReceive: boolean;
+  unreadCount: number;
+  messageCounts: MessageCounts;
+}
+
+export default function HomePage({
+  user,
+  userProfile,
+  canSend,
+  canReceive,
+  unreadCount,
+  messageCounts,
+}: HomePageProps) {
   const router = useRouter();
   const t = useTranslations('home');
   const tCommon = useTranslations('common');
   const tGamification = useTranslations('gamification');
-  const { unreadCount } = useUnreadMessages();
-  const { messageCounts, loading: loadingCounts, refetch: refetchStats } = useUserStats();
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
 
   // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
   // Memoize to ensure React detects changes when userProfile updates
+  // IMPORTANT: All hooks must be called before any conditional returns
   const gamification: GamificationData = useMemo(() => ({
     points: userProfile?.points ?? 0,
     level: userProfile?.level ?? 1,
     totalPointsEarned: userProfile?.totalPointsEarned ?? 0,
   }), [userProfile?.points, userProfile?.level, userProfile?.totalPointsEarned]);
+
+  // Show loading if no user (AuthGuard will redirect to /auth)
+  if (!user) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+        }}
+      >
+        <CircularProgress size={40} />
+      </Box>
+    );
+  }
 
   const receivedCount = messageCounts.messagesReceivedCount;
   const sentCount = messageCounts.messagesSentCount;
@@ -94,41 +128,11 @@ export default function HomePage() {
             color="text.secondary"
             sx={{ mb: 4, fontSize: { xs: '1.2rem', md: '1.5rem' } }}
           >
-            {user
-              ? t('welcomeUser', { name: user.displayName || getUserEmail(user) || tCommon('user') })
-              : t('subtitle')
-            }
+            {t('welcomeUser', { name: user.displayName || getUserEmail(user) || tCommon('user') })}
           </Typography>
-          {!user && (
-            <Button
-              variant="contained"
-              size="large"
-              sx={{
-                borderRadius: 3,
-                px: 4,
-                py: 1.5,
-                background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-                boxShadow: '0 4px 15px rgba(254, 107, 139, 0.3)',
-                textTransform: 'none',
-                fontSize: '1rem',
-                fontWeight: 600,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #FE6B8B 40%, #FF8E53 100%)',
-                  boxShadow: '0 6px 20px rgba(254, 107, 139, 0.4)',
-                  transform: 'translateY(-2px)',
-                },
-              }}
-              onClick={() => router.push('/auth')}
-            >
-              {t('getStarted')}
-            </Button>
-          )}
         </Box>
 
-        {user && (
-          <>
-            <Paper
+        <Paper
               elevation={12}
               sx={{
                 p: 4,
@@ -290,22 +294,18 @@ export default function HomePage() {
                         }}
                       />
                     </NotificationBadge>
-                    {loadingCounts ? (
-                      <CircularProgress size={24} sx={{ my: 1 }} />
-                    ) : (
-                      <Typography
-                        variant="h3"
-                        sx={{
-                          fontWeight: 'bold',
-                          background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-                          backgroundClip: 'text',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                        }}
-                      >
-                        {receivedCount}
-                      </Typography>
-                    )}
+                    <Typography
+                      variant="h3"
+                      sx={{
+                        fontWeight: 'bold',
+                        background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      {receivedCount}
+                    </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontWeight: 500 }}>
                       {t('userDashboard.messagesReceived')}
                     </Typography>
@@ -354,22 +354,18 @@ export default function HomePage() {
                         WebkitTextFillColor: 'transparent',
                       }}
                     />
-                    {loadingCounts ? (
-                      <CircularProgress size={24} sx={{ my: 1 }} />
-                    ) : (
-                      <Typography
-                        variant="h3"
-                        sx={{
-                          fontWeight: 'bold',
-                          background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
-                          backgroundClip: 'text',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                        }}
-                      >
-                        {sentCount}
-                      </Typography>
-                    )}
+                    <Typography
+                      variant="h3"
+                      sx={{
+                        fontWeight: 'bold',
+                        background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      {sentCount}
+                    </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontWeight: 500 }}>
                       {t('userDashboard.messagesSent')}
                     </Typography>
@@ -433,16 +429,14 @@ export default function HomePage() {
                 {t('discoverUsers.button')}
               </Button>
             </Paper>
-          </>
-        )}
 
         {/* Send Message Dialog */}
         <SendMessageForm
           open={sendMessageOpen}
           onClose={() => setSendMessageOpen(false)}
           onSuccess={() => {
-            // Refresh counts after sending a message
-            refetchStats();
+            // Message sent successfully
+            setSendMessageOpen(false);
           }}
         />
       </Container>

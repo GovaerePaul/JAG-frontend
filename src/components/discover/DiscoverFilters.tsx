@@ -20,7 +20,7 @@ import {
 import { FilterList, Close } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
 import { DiscoverUsersFilters } from '@/lib/users-api';
-import { useEventTypes } from '@/hooks/useEventTypes';
+import { useEventTypesContext } from '@/contexts/EventTypesContext';
 import { useAuth } from '@/hooks/useAuth';
 
 interface DiscoverFiltersProps {
@@ -38,7 +38,7 @@ export default function DiscoverFilters({
 }: DiscoverFiltersProps) {
   const t = useTranslations('discover.filterOptions');
   const tCommon = useTranslations('common');
-  const { eventTypes } = useEventTypes();
+  const { eventTypes } = useEventTypesContext();
   const { userProfile } = useAuth();
 
   const [maxDistance, setMaxDistance] = useState(initialFilters?.maxDistance || 50);

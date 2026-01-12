@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { CircularProgress } from '@mui/material';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { useEffect, useRef } from 'react';
-import Navbar from '../Navbar';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -51,16 +50,5 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     return null;
   }
 
-  if (isAuthPage) {
-    return <>{children}</>;
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Navbar />
-      <main style={{ flexGrow: 1 }}>
-        {children}
-      </main>
-    </div>
-  );
+  return <>{children}</>;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -21,18 +21,18 @@ import { ArrowBack, Flag } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { getMessage, markMessageAsRead, reportMessage, Message } from '@/lib/messages-api';
-import { useEventTypes } from '@/hooks/useEventTypes';
+import { markMessageAsRead, reportMessage } from '@/lib/messages-api';
+import { useAppData } from '@/contexts/AppDataContext';
+import { useEventTypesContext } from '@/contexts/EventTypesContext';
+import { useMessage } from '@/hooks/useMessage';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
-import { getCachedUserDisplayName } from '@/lib/user-cache';
-import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 export default function MessageDetailPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const messageId = searchParams?.get('id') || '';
+  const messageId = searchParams?.get('id') || null;
   const t = useTranslations('messages');
   const tCommon = useTranslations('common');
   
@@ -40,18 +40,17 @@ export default function MessageDetailPage() {
   const isSentMessage = pathname?.includes('/messages/sent');
   const isReceivedMessage = pathname?.includes('/messages/received');
   
-  const [message, setMessage] = useState<Message | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [senderName, setSenderName] = useState<string>('');
-  const [receiverName, setReceiverName] = useState<string>('');
+  // Use the hook to load message
+  const { message, senderName, receiverName, loading, error: messageError, refetch: refetchMessage } = useMessage(messageId);
+  
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reporting, setReporting] = useState(false);
   const [markingAsRead, setMarkingAsRead] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const { eventTypes } = useEventTypes();
-  const { refetch: refetchUnread } = useUnreadMessages();
+  const { refetchUnreadMessages } = useAppData();
+  const { eventTypes } = useEventTypesContext();
 
   const getEventType = (eventTypeId: string) => {
     return eventTypes.find((et) => et.id === eventTypeId);
@@ -62,71 +61,28 @@ export default function MessageDetailPage() {
     return eventType?.name || eventTypeId;
   };
 
-  const loadMessage = useCallback(async () => {
-    if (!messageId) {
-      setError(t('error.messageIdRequired'));
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await getMessage(messageId);
-      if (response.success && response.data) {
-        const msg = response.data;
-        setMessage(msg);
-
-        // Load sender name if not anonymous (for received messages)
-        if (msg.senderId && !msg.isAnonymous) {
-          const name = await getCachedUserDisplayName(msg.senderId);
-          setSenderName(name);
-        } else {
-          setSenderName(t('anonymousSender'));
-        }
-
-        // Load receiver name (for sent messages)
-        if (msg.receiverId) {
-          const name = await getCachedUserDisplayName(msg.receiverId);
-          setReceiverName(name);
-        }
-
-               // Mark as read if not already read (only for received messages)
-               if (isReceivedMessage && msg.status !== 'read' && msg.receiverId) {
-                 setMarkingAsRead(true);
-                 try {
-                   await markMessageAsRead(messageId);
-                   // Update local state
-                   setMessage({ ...msg, status: 'read' as const });
-                   // Refresh unread count
-                   refetchUnread();
-                 } catch (err) {
-                   // Silent fail
-                 } finally {
-                   setMarkingAsRead(false);
-                 }
-               }
-      } else {
-        setError(response.error || t('error.loading'));
-      }
-    } catch (err) {
-      setError(t('error.failedToLoad'));
-    } finally {
-      setLoading(false);
-    }
-  }, [messageId, t, isReceivedMessage]);
-
+  // Mark message as read when viewing a received message
   useEffect(() => {
-    loadMessage();
-  }, [loadMessage]);
+    if (message && isReceivedMessage && message.status !== 'read' && message.receiverId && messageId) {
+      setMarkingAsRead(true);
+      markMessageAsRead(messageId)
+        .then(() => {
+          // Refresh message to get updated status
+          refetchMessage();
+          // Refresh unread count
+          refetchUnreadMessages();
+        })
+        .catch(() => {
+          // Silent fail
+        })
+        .finally(() => {
+          setMarkingAsRead(false);
+        });
+    }
+  }, [message, isReceivedMessage, messageId, refetchMessage, refetchUnreadMessages]);
 
   const handleReport = async () => {
-    if (!reportReason.trim()) {
-      return;
-    }
-
-    if (!messageId) {
+    if (!reportReason.trim() || !messageId) {
       return;
     }
 
@@ -137,7 +93,7 @@ export default function MessageDetailPage() {
         setReportDialogOpen(false);
         setReportReason('');
         // Reload message to get updated status
-        await loadMessage();
+        await refetchMessage();
       } else {
         setError(response.error || t('error.failedToReport'));
       }
@@ -163,11 +119,13 @@ export default function MessageDetailPage() {
     return '/messages/received';
   };
 
-  if (error && !message) {
+  const displayError = error || messageError;
+  
+  if (displayError && !message) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
+          {displayError}
         </Alert>
         <Button startIcon={<ArrowBack />} onClick={() => router.push(getBackPath())}>
           {t('back')}
@@ -204,9 +162,9 @@ export default function MessageDetailPage() {
         </Typography>
       </Box>
 
-      {error && (
+      {displayError && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
+          {displayError}
         </Alert>
       )}
 
@@ -235,7 +193,7 @@ export default function MessageDetailPage() {
                     {message.isAnonymous ? t('anonymous') : t('from')}
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'medium' }}>
-                    {senderName || tCommon('unknown')}
+                    {message.isAnonymous ? t('anonymousSender') : (senderName || tCommon('unknown'))}
                   </Typography>
                 </>
               )}

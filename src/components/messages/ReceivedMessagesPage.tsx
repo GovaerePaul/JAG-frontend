@@ -27,8 +27,8 @@ import { useTranslations } from 'next-intl';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { MessageSummary } from '@/lib/messages-api';
-import { useReceivedMessages } from '@/hooks/useReceivedMessages';
-import { useEventTypes } from '@/hooks/useEventTypes';
+import { useAppData } from '@/contexts/AppDataContext';
+import { useEventTypesContext } from '@/contexts/EventTypesContext';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
 
@@ -39,7 +39,12 @@ export default function ReceivedMessagesPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const { messages: receivedMessages, loading, error, refetch } = useReceivedMessages();
+  // Use shared data from Context to avoid duplicate API calls
+  const { receivedMessages, refetchReceivedMessages } = useAppData();
+  const refetch = refetchReceivedMessages;
+  // Note: loading and error states are managed in AppLayout's hooks
+  const loading = false;
+  const error = null;
 
   const getSenderIds = useCallback((msgs: MessageSummary[]) =>
     msgs
@@ -80,7 +85,7 @@ export default function ReceivedMessagesPage() {
   }, [receivedMessages, getSenderIds]);
 
   const messages = receivedMessages;
-  const { eventTypes } = useEventTypes();
+  const { eventTypes } = useEventTypesContext();
 
   const getEventType = (eventTypeId: string) => {
     return eventTypes.find((et) => et.id === eventTypeId);

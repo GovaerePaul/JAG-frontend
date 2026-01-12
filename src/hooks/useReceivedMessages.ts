@@ -12,7 +12,7 @@ interface UseReceivedMessagesReturn {
 }
 
 export function useReceivedMessages(): UseReceivedMessagesReturn {
-  const { user } = useAuth();
+  const { user, isReady } = useAuth();
   const [messages, setMessages] = useState<MessageSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +22,8 @@ export function useReceivedMessages(): UseReceivedMessagesReturn {
   const userId = useMemo(() => user?.uid || null, [user?.uid]);
 
   useEffect(() => {
-    if (!userId) {
+    // Don't make API calls until user is authenticated and ready
+    if (!isReady || !userId) {
       setMessages([]);
       setLoading(false);
       lastFetchedUidRef.current = null;
@@ -55,10 +56,10 @@ export function useReceivedMessages(): UseReceivedMessagesReturn {
     };
 
     fetchMessages();
-  }, [userId]);
+  }, [userId, isReady]);
 
   const refetch = useCallback(async () => {
-    if (!user) return;
+    if (!user || !isReady) return;
 
     // Reset the ref to allow fetching again
     lastFetchedUidRef.current = null;
@@ -78,7 +79,7 @@ export function useReceivedMessages(): UseReceivedMessagesReturn {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, isReady]);
 
   return { messages, loading, error, refetch };
 }

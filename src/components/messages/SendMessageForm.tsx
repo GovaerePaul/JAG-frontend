@@ -25,12 +25,11 @@ import {
 } from '@mui/material';
 import { Send, Close, Person, Explore } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
-import { useEventTypes } from '@/hooks/useEventTypes';
+import { useAppData } from '@/contexts/AppDataContext';
+import { useEventTypesContext } from '@/contexts/EventTypesContext';
 import { sendMessage, SendMessageData } from '@/lib/messages-api';
 import { useReceivableUsers } from '@/hooks/useReceivableUsers';
-import { useReceivedMessages } from '@/hooks/useReceivedMessages';
 import { useSentMessages } from '@/hooks/useSentMessages';
-import { useUserStats } from '@/hooks/useUserStats';
 
 interface SendMessageFormProps {
   open: boolean;
@@ -47,11 +46,10 @@ export default function SendMessageForm({
   receiverName = '',
   onSuccess,
 }: SendMessageFormProps) {
-  const { eventTypes, loading: eventsLoading } = useEventTypes();
+  const { refetchReceivedMessages, refetchUserStats } = useAppData();
+  const { eventTypes, loading: eventsLoading } = useEventTypesContext();
   const { users: receivableUsers, loading: usersLoading } = useReceivableUsers();
-  const { refetch: refetchReceivedMessages } = useReceivedMessages();
   const { refetch: refetchSentMessages } = useSentMessages();
-  const { refetch: refetchUserStats } = useUserStats();
   const t = useTranslations('messages.send');
   const tCommon = useTranslations('common');
   const [formData, setFormData] = useState<SendMessageData>({

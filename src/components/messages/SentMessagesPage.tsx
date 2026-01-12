@@ -28,7 +28,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { MessageSummary } from '@/lib/messages-api';
 import { useSentMessages } from '@/hooks/useSentMessages';
-import { useEventTypes } from '@/hooks/useEventTypes';
+import { useAppData } from '@/contexts/AppDataContext';
+import { useEventTypesContext } from '@/contexts/EventTypesContext';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
 
@@ -79,7 +80,7 @@ export default function SentMessagesPage() {
 
   const messages = sentMessages;
 
-  const { eventTypes } = useEventTypes();
+  const { eventTypes } = useEventTypesContext();
 
   const getEventType = (eventTypeId: string) => {
     return eventTypes.find((et) => et.id === eventTypeId);
