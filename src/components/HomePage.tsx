@@ -48,15 +48,6 @@ export default function HomePage() {
   const receivedCount = messageCounts.messagesReceivedCount;
   const sentCount = messageCounts.messagesSentCount;
   
-  // Debug logs
-  console.log('🏠 HomePage render - messageCounts:', messageCounts);
-  console.log('🏠 HomePage render - receivedCount:', receivedCount, 'sentCount:', sentCount);
-  console.log('🏠 HomePage render - loadingCounts:', loadingCounts);
-  console.log('🏠 HomePage render - should show numbers?', !loadingCounts);
-  console.log('🏠 HomePage render - canReceive:', canReceive, 'canSend:', canSend);
-  console.log('🏠 HomePage render - userProfile:', userProfile);
-  console.log('🏠 HomePage render - gamification:', gamification);
-  
   const currentLevelPoints = (gamification.level - 1) * 100;
   const nextLevelPoints = gamification.level * 100;
   const pointsInCurrentLevel = gamification.points - currentLevelPoints;

@@ -62,7 +62,7 @@ export function useUserStats(): UseUserStatsReturn {
           });
         }
       } catch (error) {
-        console.error('❌ Error fetching user stats:', error);
+        console.error('Error fetching user stats:', error);
       } finally {
         setLoading(false);
       }

@@ -128,7 +128,7 @@ export async function deleteProfilePicture(photoURL: string): Promise<void> {
     const storageRef = ref(storage, decodedPath);
     await deleteObject(storageRef);
   } catch (error) {
-    console.warn('Error deleting old photo:', error);
+    // Ignore error when deleting old photo
   }
 }
 

@@ -230,7 +230,7 @@ export default function ProfilePage() {
         try {
           await deleteProfilePicture(user.photoURL);
         } catch (error) {
-          console.warn('Error deleting old photo:', error);
+          // Ignore error when deleting old photo
         }
       }
 
@@ -242,7 +242,7 @@ export default function ProfilePage() {
           try {
             await reload(user);
           } catch (error) {
-            console.warn('Error reloading user:', error);
+            // Ignore error when reloading user
           }
         }
         
@@ -278,7 +278,7 @@ export default function ProfilePage() {
           try {
             await reload(user);
           } catch (error) {
-            console.warn('Error reloading user:', error);
+            // Ignore error when reloading user
           }
         }
         

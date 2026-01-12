@@ -41,31 +41,20 @@ const handleOAuthSignIn = async (result: UserCredential) => {
     // Verify document exists (document ID = UID)
     // Google OAuth always provides user.email
     if (!user.email) {
-      console.error('❌ No email available from user:', {
-        uid: user.uid,
-        email: user.email,
-      });
       throw new Error('User email not available');
     }
     
-    // Check if document exists (document ID = UID)
     const userRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userRef);
     
     if (!userDoc.exists()) {
-      console.error('❌ No document found for UID:', user.uid);
       throw new Error('User document not found after sign-in');
     }
     
-    console.log('✅ User document found:', user.uid);
-    
-    // Set auth token for API client
     const token = await user.getIdToken();
     authApiClient.setAuthToken(token);
-    
-    console.log('✅ OAuth sign-in complete');
   } catch (error) {
-    console.error('❌ Error in handleOAuthSignIn:', error);
+    console.error('Error in handleOAuthSignIn:', error);
     throw error;
   }
 };

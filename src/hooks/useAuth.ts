@@ -101,7 +101,6 @@ export const useAuth = () => {
         }
 
         // Document not found at all
-        console.warn('⚠️ User document not found for UID:', user.uid);
         if (isMounted) {
           setUserProfile(null);
           setLoading(false);
