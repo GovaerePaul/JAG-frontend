@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, CircularProgress } from '@mui/material';
+import { Button, CircularProgress, Typography } from '@mui/material';
 import { useTranslations } from 'next-intl';
 import BaseDialog from './BaseDialog';
 
