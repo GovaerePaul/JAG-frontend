@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
+import { doc, onSnapshot, Timestamp, collection, query, getDocs, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 export type UserRole = 'sender' | 'receiver' | 'both';
@@ -24,7 +24,8 @@ export interface UserPreferences {
 export interface UserProfile {
   uid: string;
   email: string;
-  provider?: "google" | "password"; // Single provider (no longer an array)
+  availableProviders?: string[]; // ["google", "password"]
+  userProviderIds?: Record<string, string>; // { "google": "uid_google", "password": "uid_password" }
   displayName?: string;
   photoURL?: string;
   createdAt: string | Timestamp;
@@ -57,7 +58,8 @@ export const useAuth = () => {
   }, []);
 
   // Listen to user profile changes in Firestore
-  // Document ID = UID (simplified, no Facebook complexity)
+  // Document ID might be different from UID if user was created manually
+  // We need to find the document by UID or by userProviderIds
   useEffect(() => {
     if (!user) {
       setUserProfile(null);
@@ -67,34 +69,119 @@ export const useAuth = () => {
 
     let isMounted = true;
 
-    // Listen directly to document by UID
-    const userDocRef = doc(db, 'users', user.uid);
-    
-    const unsubscribe = onSnapshot(
-      userDocRef,
-      (docSnapshot) => {
-        if (!isMounted) return;
+    // First, try to find document by UID (document ID)
+    const findUserDocument = async () => {
+      try {
+        // Try direct lookup by UID (document ID)
+        const userDocRef = doc(db, 'users', user.uid);
+        const directDoc = await getDoc(userDocRef);
         
-        if (docSnapshot.exists()) {
-          const profileData = docSnapshot.data() as UserProfile;
-          setUserProfile({ ...profileData });
-          setLoading(false);
-        } else {
+        if (directDoc.exists()) {
+          // Document found with this UID
+          const unsubscribe = onSnapshot(
+            userDocRef,
+            (docSnapshot) => {
+              if (!isMounted) return;
+              
+              if (docSnapshot.exists()) {
+                const profileData = docSnapshot.data() as UserProfile;
+                setUserProfile({ ...profileData });
+                setLoading(false);
+              } else {
+                setUserProfile(null);
+                setLoading(false);
+              }
+            },
+            (error) => {
+              if (!isMounted) return;
+              console.error('Error loading profile:', error);
+              setUserProfile(null);
+              setLoading(false);
+            }
+          );
+          
+          return unsubscribe;
+        }
+
+        // Document not found by UID, search in userProviderIds
+        console.log('🔍 Document not found by UID, searching in userProviderIds...');
+        const usersQuery = query(collection(db, 'users'));
+        const usersSnapshot = await getDocs(usersQuery);
+        
+        let foundDocId: string | null = null;
+        
+        for (const userDoc of usersSnapshot.docs) {
+          const userData = userDoc.data() as UserProfile;
+          const userProviderIds = userData?.userProviderIds || {};
+          
+          // Check if any provider has this UID
+          for (const providerUid of Object.values(userProviderIds)) {
+            if (providerUid === user.uid) {
+              foundDocId = userDoc.id;
+              break;
+            }
+          }
+          if (foundDocId) break;
+        }
+
+        if (foundDocId) {
+          // Found document via userProviderIds
+          console.log('✅ Found document via userProviderIds:', foundDocId);
+          const foundDocRef = doc(db, 'users', foundDocId);
+          
+          const unsubscribe = onSnapshot(
+            foundDocRef,
+            (docSnapshot) => {
+              if (!isMounted) return;
+              
+              if (docSnapshot.exists()) {
+                const profileData = docSnapshot.data() as UserProfile;
+                setUserProfile({ ...profileData });
+                setLoading(false);
+              } else {
+                setUserProfile(null);
+                setLoading(false);
+              }
+            },
+            (error) => {
+              if (!isMounted) return;
+              console.error('Error loading profile:', error);
+              setUserProfile(null);
+              setLoading(false);
+            }
+          );
+          
+          return unsubscribe;
+        }
+
+        // Document not found at all
+        console.warn('⚠️ User document not found for UID:', user.uid);
+        if (isMounted) {
           setUserProfile(null);
           setLoading(false);
         }
-      },
-      (error) => {
-        if (!isMounted) return;
-        console.error('Error loading profile:', error);
-        setUserProfile(null);
-        setLoading(false);
+        return () => {};
+      } catch (error) {
+        console.error('Error finding user document:', error);
+        if (isMounted) {
+          setUserProfile(null);
+          setLoading(false);
+        }
+        return () => {};
       }
-    );
+    };
+
+    let unsubscribe: (() => void) | null = null;
+    
+    findUserDocument().then((unsub) => {
+      unsubscribe = unsub;
+    });
 
     return () => {
       isMounted = false;
-      unsubscribe();
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, [user?.uid]);
 
