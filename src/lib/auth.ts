@@ -29,7 +29,16 @@ export const signUp = async ({ email, password, displayName, role }: SignUpData)
     const signInMethods = await fetchSignInMethodsForEmail(auth, email);
     
     if (signInMethods.length > 0) {
-      // Email already exists - return error
+      // Check if Google is one of the sign-in methods
+      const hasGoogle = signInMethods.includes('google.com');
+      if (hasGoogle) {
+        // Google account exists - tell user to sign in with Google
+        return { 
+          user: null, 
+          error: 'auth/account-exists-with-different-credential' 
+        };
+      }
+      // Email already exists with password - return error
       return { 
         user: null, 
         error: 'auth/email-already-in-use' 

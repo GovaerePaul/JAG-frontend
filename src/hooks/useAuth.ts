@@ -24,8 +24,6 @@ export interface UserPreferences {
 export interface UserProfile {
   uid: string;
   email: string;
-  availableProviders?: string[]; // ["google", "password"]
-  userProviderIds?: Record<string, string>; // { "google": "uid_google", "password": "uid_password" }
   displayName?: string;
   photoURL?: string;
   createdAt: string | Timestamp;
@@ -58,8 +56,7 @@ export const useAuth = () => {
   }, []);
 
   // Listen to user profile changes in Firestore
-  // Document ID might be different from UID if user was created manually
-  // Need to find the document by UID or by userProviderIds
+  // Document ID = UID (Firebase Auth UID)
   useEffect(() => {
     if (!user) {
       setUserProfile(null);
@@ -80,57 +77,6 @@ export const useAuth = () => {
           // Document found with this UID
           const unsubscribe = onSnapshot(
             userDocRef,
-            (docSnapshot) => {
-              if (!isMounted) return;
-              
-              if (docSnapshot.exists()) {
-                const profileData = docSnapshot.data() as UserProfile;
-                setUserProfile({ ...profileData });
-                setLoading(false);
-              } else {
-                setUserProfile(null);
-                setLoading(false);
-              }
-            },
-            (error) => {
-              if (!isMounted) return;
-              console.error('Error loading profile:', error);
-              setUserProfile(null);
-              setLoading(false);
-            }
-          );
-          
-          return unsubscribe;
-        }
-
-        // Document not found by UID, search in userProviderIds
-        console.log('🔍 Document not found by UID, searching in userProviderIds...');
-        const usersQuery = query(collection(db, 'users'));
-        const usersSnapshot = await getDocs(usersQuery);
-        
-        let foundDocId: string | null = null;
-        
-        for (const userDoc of usersSnapshot.docs) {
-          const userData = userDoc.data() as UserProfile;
-          const userProviderIds = userData?.userProviderIds || {};
-          
-          // Check if any provider has this UID
-          for (const providerUid of Object.values(userProviderIds)) {
-            if (providerUid === user.uid) {
-              foundDocId = userDoc.id;
-              break;
-            }
-          }
-          if (foundDocId) break;
-        }
-
-        if (foundDocId) {
-          // Found document via userProviderIds
-          console.log('✅ Found document via userProviderIds:', foundDocId);
-          const foundDocRef = doc(db, 'users', foundDocId);
-          
-          const unsubscribe = onSnapshot(
-            foundDocRef,
             (docSnapshot) => {
               if (!isMounted) return;
               
