@@ -27,6 +27,7 @@ import { useEventTypesContext } from '@/contexts/EventTypesContext';
 import { useMessage } from '@/hooks/useMessage';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
+import EventTypeDisplay from './EventTypeDisplay';
 
 export default function MessageDetailPage() {
   const router = useRouter();
@@ -216,16 +217,12 @@ export default function MessageDetailPage() {
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
               {t('table.eventType')}
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {getEventType(message.eventTypeId)?.icon && (
-                <Typography variant="body1" component="span" sx={{ fontSize: '1.5rem' }}>
-                  {getEventType(message.eventTypeId)?.icon}
-                </Typography>
-              )}
-              <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
-                {getEventTypeName(message.eventTypeId)}
-              </Typography>
-            </Box>
+            <EventTypeDisplay
+              eventTypeId={message.eventTypeId}
+              eventTypes={eventTypes}
+              variant="body1"
+              iconSize="1.5rem"
+            />
           </Box>
 
           <Box sx={{ mb: 2 }}>

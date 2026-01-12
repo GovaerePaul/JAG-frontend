@@ -5,18 +5,16 @@ import {
   Container,
   Typography,
   Box,
-  Paper,
+  CircularProgress,
+  Alert,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  CircularProgress,
-  Alert,
+  Paper,
   Chip,
-  Card,
-  CardContent,
   useTheme,
   useMediaQuery,
   Button,
@@ -28,10 +26,12 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { MessageSummary } from '@/lib/messages-api';
 import { useSentMessages } from '@/hooks/useSentMessages';
-import { useAppData } from '@/contexts/AppDataContext';
 import { useEventTypesContext } from '@/contexts/EventTypesContext';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
+import MessageCard from './MessageCard';
+import EmptyState from './EmptyState';
+import EventTypeDisplay from './EventTypeDisplay';
 
 export default function SentMessagesPage() {
   const router = useRouter();
@@ -42,13 +42,13 @@ export default function SentMessagesPage() {
 
   const { messages: sentMessages, loading, error } = useSentMessages();
 
-  const getReceiverIds = useCallback((msgs: MessageSummary[]) =>
-    msgs.map((msg) => msg.receiverId).filter((id) => id),
-  []);
+  const getReceiverIds = useCallback(
+    (msgs: MessageSummary[]) => msgs.map((msg) => msg.receiverId).filter((id) => id),
+    []
+  );
 
-  // Load user names for messages
   const [userNames, setUserNames] = useState<Record<string, string>>({});
-  
+
   useEffect(() => {
     const loadUserNames = async () => {
       const uniqueUserIds = [...new Set(getReceiverIds(sentMessages))];
@@ -79,17 +79,7 @@ export default function SentMessagesPage() {
   }, [sentMessages, getReceiverIds]);
 
   const messages = sentMessages;
-
   const { eventTypes } = useEventTypesContext();
-
-  const getEventType = (eventTypeId: string) => {
-    return eventTypes.find((et) => et.id === eventTypeId);
-  };
-
-  const getEventTypeName = (eventTypeId: string) => {
-    const eventType = getEventType(eventTypeId);
-    return eventType?.name || eventTypeId;
-  };
 
   if (loading) {
     return (
@@ -104,11 +94,7 @@ export default function SentMessagesPage() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Button
-          startIcon={<ArrowBack />}
-          onClick={() => router.push('/')}
-          sx={{ minWidth: 'auto' }}
-        >
+        <Button startIcon={<ArrowBack />} onClick={() => router.push('/')} sx={{ minWidth: 'auto' }}>
           {t('back')}
         </Button>
         <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
@@ -124,12 +110,7 @@ export default function SentMessagesPage() {
       )}
 
       {messages.length === 0 && !loading && (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Outbox sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">
-            {t('sent.empty')}
-          </Typography>
-        </Paper>
+        <EmptyState icon={<Outbox />} title={t('sent.empty')} />
       )}
 
       {messages.length > 0 && (
@@ -137,70 +118,14 @@ export default function SentMessagesPage() {
           {isMobile ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {messages.map((message) => (
-                <Card 
-                  key={message.id} 
-                  elevation={2}
-                  sx={{ 
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    '&:hover': {
-                      elevation: 4,
-                      transform: 'translateY(-2px)',
-                    }
-                  }}
+                <MessageCard
+                  key={message.id}
+                  message={message}
+                  receiverName={message.receiverId ? userNames[message.receiverId] : undefined}
                   onClick={() => router.push(`/messages/sent?id=${message.id}`)}
-                >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
-                      <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          {t('to')}
-                        </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                          {message.receiverId ? (userNames[message.receiverId] || message.receiverId) : tCommon('unknown')}
-                        </Typography>
-                      </Box>
-                      <Chip
-                        label={getStatusLabel(message.status, t)}
-                        color={getStatusColor(message.status)}
-                        size="small"
-                      />
-                    </Box>
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                        {t('table.eventType')}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {getEventType(message.eventTypeId)?.icon && (
-                          <Typography variant="body2" component="span" sx={{ fontSize: '1.2rem' }}>
-                            {getEventType(message.eventTypeId)?.icon}
-                          </Typography>
-                        )}
-                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                          {getEventTypeName(message.eventTypeId)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    
-                    {message.isAnonymous && (
-                      <Chip
-                        label={t('anonymous')}
-                        size="small"
-                        sx={{ mb: 2 }}
-                      />
-                    )}
-                    
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatDate(message.createdAt) || tCommon('unknown')}
-                      </Typography>
-                      {message.isReported && (
-                        <Chip label={t('reported')} color="error" size="small" />
-                      )}
-                    </Box>
-                  </CardContent>
-                </Card>
+                  eventTypes={eventTypes}
+                  isSent={true}
+                />
               ))}
             </Box>
           ) : (
@@ -216,21 +141,23 @@ export default function SentMessagesPage() {
                 </TableHead>
                 <TableBody>
                   {messages.map((message) => (
-                    <TableRow 
-                      key={message.id} 
+                    <TableRow
+                      key={message.id}
                       hover
-                      sx={{ 
+                      sx={{
                         cursor: 'pointer',
                         '&:hover': {
                           backgroundColor: 'action.hover',
-                        }
+                        },
                       }}
                       onClick={() => router.push(`/messages/sent?id=${message.id}`)}
                     >
                       <TableCell>
                         <Box>
                           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                            {message.receiverId ? (userNames[message.receiverId] || message.receiverId) : tCommon('unknown')}
+                            {message.receiverId
+                              ? userNames[message.receiverId] || message.receiverId
+                              : tCommon('unknown')}
                           </Typography>
                           {message.isAnonymous && (
                             <Chip label={t('anonymous')} size="small" sx={{ mt: 0.5 }} />
@@ -238,31 +165,22 @@ export default function SentMessagesPage() {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          {getEventType(message.eventTypeId)?.icon && (
-                            <Typography variant="body2" component="span" sx={{ fontSize: '1.2rem' }}>
-                              {getEventType(message.eventTypeId)?.icon}
-                            </Typography>
-                          )}
-                          <Typography variant="body2">
-                            {getEventTypeName(message.eventTypeId)}
-                          </Typography>
-                        </Box>
+                        <EventTypeDisplay
+                          eventTypeId={message.eventTypeId}
+                          eventTypes={eventTypes}
+                          variant="body2"
+                          iconSize="1.2rem"
+                        />
                       </TableCell>
                       <TableCell>
-                      <Chip
-                        label={getStatusLabel(message.status, t)}
-                        color={getStatusColor(message.status)}
-                        size="small"
-                      />
-                      {message.isReported && (
                         <Chip
-                          label={t('reported')}
-                          color="error"
+                          label={getStatusLabel(message.status, t)}
+                          color={getStatusColor(message.status)}
                           size="small"
-                          sx={{ ml: 1 }}
                         />
-                      )}
+                        {message.isReported && (
+                          <Chip label={t('reported')} color="error" size="small" sx={{ ml: 1 }} />
+                        )}
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
@@ -280,4 +198,3 @@ export default function SentMessagesPage() {
     </Container>
   );
 }
-
