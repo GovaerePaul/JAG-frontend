@@ -1,6 +1,5 @@
 import {
   GoogleAuthProvider,
-  FacebookAuthProvider,
   signInWithPopup,
   UserCredential,
   AuthError
@@ -28,24 +27,6 @@ export const signInWithGoogle = async () => {
 };
 
 /**
- * Sign in with Facebook OAuth provider
- */
-export const signInWithFacebook = async () => {
-  try {
-    const provider = new FacebookAuthProvider();
-    provider.addScope('email');
-    provider.addScope('public_profile');
-    
-    const result = await signInWithPopup(auth, provider);
-    await handleOAuthSignIn(result);
-    
-    return { user: result.user, error: null };
-  } catch (error) {
-    return handleOAuthError(error);
-  }
-};
-
-/**
  * Handle OAuth sign-in success
  * Backend trigger creates or updates Firestore document based on email
  */
@@ -58,26 +39,14 @@ const handleOAuthSignIn = async (result: UserCredential) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Verify document exists by email (since document ID might be different UID)
-    // Get email from user.email or providerData
-    let userEmail = user.email || '';
-    
-    // If email is not in user.email, try to get it from providerData
-    if (!userEmail && user.providerData && user.providerData.length > 0) {
-      // Check all providerData entries for email
-      for (const provider of user.providerData) {
-        if (provider.email) {
-          userEmail = provider.email;
-          console.log(`📧 Email found in providerData: ${provider.providerId} -> ${userEmail}`);
-          break;
-        }
-      }
-    }
+    // Google OAuth and email/password always provide user.email
+    const userEmail = user.email;
     
     if (!userEmail) {
-      console.error('❌ No email available from user or providerData:', {
+      console.error('❌ No email available from user:', {
         uid: user.uid,
         email: user.email,
-        providerData: user.providerData,
+        providerId: user.providerData?.[0]?.providerId,
       });
       throw new Error('User email not available');
     }

@@ -24,8 +24,7 @@ export interface UserPreferences {
 export interface UserProfile {
   uid: string;
   email: string;
-  availableProviders?: string[]; // ["google", "facebook", "password"]
-  userProviderIds?: Record<string, string>; // { "google": "uid_google", "facebook": "uid_facebook" }
+  provider?: "google" | "password"; // Single provider (no longer an array)
   displayName?: string;
   photoURL?: string;
   createdAt: string | Timestamp;
@@ -38,7 +37,6 @@ export interface UserProfile {
   location?: UserLocation;
   birthDate?: Timestamp;
   preferences?: UserPreferences;
-  secondaryProviderUIDs?: string[]; // Deprecated - use userProviderIds instead
 }
 
 export const useAuth = () => {
@@ -70,21 +68,8 @@ export const useAuth = () => {
     let timeoutId: NodeJS.Timeout | null = null;
     let loadingSet = false;
 
-    // Find document by email (since document might have different UID if user logged in with different provider)
-    // Get email from user.email or providerData
-    let userEmail = user.email || '';
-    
-    // If email is not in user.email, try to get it from providerData
-    if (!userEmail && user.providerData && user.providerData.length > 0) {
-      // Check all providerData entries for email
-      for (const provider of user.providerData) {
-        if (provider.email) {
-          userEmail = provider.email;
-          console.log(`📧 useAuth: Email found in providerData: ${provider.providerId} -> ${userEmail}`);
-          break;
-        }
-      }
-    }
+    // Find document by email (Google OAuth and email/password always provide user.email)
+    const userEmail = user.email;
     
     const usersRef = collection(db, 'users');
     let q;

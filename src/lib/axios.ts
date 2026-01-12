@@ -67,9 +67,9 @@ export const apiClient = createAxiosInstance();
 
 export const createServerAxios = (token?: string): AxiosInstance => {
   const instance = axios.create({
-    baseURL: process.env.NEXTAUTH_URL 
-      ? `${process.env.NEXTAUTH_URL}/api`
-      : 'http://localhost:3000/api',
+    baseURL: process.env.NODE_ENV === 'development'
+      ? 'http://localhost:3000/api'
+      : '/api',
     timeout: 30000,
     headers: {
       'Content-Type': 'application/json',
