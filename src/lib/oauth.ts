@@ -1,6 +1,8 @@
 import {
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   UserCredential,
   AuthError
 } from 'firebase/auth';
@@ -8,8 +10,13 @@ import { auth, db } from './firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import authApiClient from './api-client';
 
+// Detect if we're running on Capacitor (mobile)
+const isCapacitor = typeof window !== 'undefined' && (window as any).Capacitor !== undefined;
+
 /**
  * Sign in with Google OAuth provider
+ * Uses signInWithRedirect on Capacitor (mobile) to avoid sessionStorage issues
+ * Uses signInWithPopup on web for better UX
  */
 export const signInWithGoogle = async () => {
   try {
@@ -17,10 +24,36 @@ export const signInWithGoogle = async () => {
     provider.addScope('profile');
     provider.addScope('email');
     
-    const result = await signInWithPopup(auth, provider);
-    await handleOAuthSignIn(result);
-    
-    return { user: result.user, error: null };
+    if (isCapacitor) {
+      // On mobile (Capacitor), use redirect to avoid sessionStorage issues
+      // The redirect will happen and we'll handle the result on page load
+      await signInWithRedirect(auth, provider);
+      // Return immediately - the redirect will happen
+      // The app should check for redirect result on mount/load
+      return { user: null, error: null };
+    } else {
+      // On web, use popup for better UX
+      const result = await signInWithPopup(auth, provider);
+      await handleOAuthSignIn(result);
+      return { user: result.user, error: null };
+    }
+  } catch (error) {
+    return handleOAuthError(error);
+  }
+};
+
+/**
+ * Check for redirect result after Google OAuth redirect
+ * Should be called on app mount/load when using signInWithRedirect
+ */
+export const checkGoogleRedirectResult = async () => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result) {
+      await handleOAuthSignIn(result);
+      return { user: result.user, error: null };
+    }
+    return { user: null, error: null };
   } catch (error) {
     return handleOAuthError(error);
   }
