@@ -13,6 +13,7 @@ import { Favorite, AutoAwesome } from '@mui/icons-material';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { useAuth } from '@/hooks/useAuth';
+import { checkGoogleRedirectResult } from '@/lib/oauth';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -20,6 +21,24 @@ export default function AuthPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const hasRedirectedRef = useRef(false);
+  const hasCheckedRedirectRef = useRef(false);
+
+  // Check for Google OAuth redirect result on mount (for Capacitor/mobile)
+  useEffect(() => {
+    if (!hasCheckedRedirectRef.current && !loading) {
+      hasCheckedRedirectRef.current = true;
+      checkGoogleRedirectResult().then(({ user: redirectUser, error }) => {
+        if (redirectUser) {
+          // User successfully signed in via redirect
+          hasRedirectedRef.current = true;
+          router.push('/');
+        } else if (error && error !== 'auth/unknown-error') {
+          // Handle error if needed
+          console.error('Google redirect error:', error);
+        }
+      });
+    }
+  }, [loading, router]);
 
   useEffect(() => {
     // Only redirect once, and only if we're done loading and have a user
