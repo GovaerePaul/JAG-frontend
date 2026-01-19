@@ -125,14 +125,6 @@ export async function getMessageDirect(messageId: string, currentUserId: string)
   };
 }
 
-export async function markMessageAsDeliveredDirect(messageId: string): Promise<void> {
-  const docRef = doc(db, 'messages', messageId);
-  await updateDoc(docRef, {
-    status: 'delivered',
-    deliveredAt: serverTimestamp(),
-  });
-}
-
 export async function markMessageAsReadDirect(messageId: string): Promise<void> {
   const docRef = doc(db, 'messages', messageId);
   await updateDoc(docRef, {
@@ -241,7 +233,7 @@ export async function getEventTypesDirect(locale: string = 'en'): Promise<EventT
   });
 }
 
-export async function getAllQuestsDirect(): Promise<Quest[]> {
+async function getAllQuestsDirect(): Promise<Quest[]> {
   const q = query(
     collection(db, 'quests'),
     where('isActive', '==', true),

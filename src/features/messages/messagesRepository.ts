@@ -6,7 +6,6 @@ import {
   getSentMessagesDirect,
   getMessageDirect,
   markMessageAsReadDirect,
-  markMessageAsDeliveredDirect,
 } from '@/lib/firestore-client';
 import {
   sendMessage as sendMessageApi,
@@ -84,18 +83,6 @@ export class MessagesRepository {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to mark message as read',
-      };
-    }
-  }
-
-  async markMessageAsDelivered(messageId: string): Promise<ApiResponse<{ success: boolean }>> {
-    try {
-      await markMessageAsDeliveredDirect(messageId);
-      return { success: true, data: { success: true } };
-    } catch (error: unknown) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to mark message as delivered',
       };
     }
   }

@@ -1,9 +1,9 @@
 'use client';
 
 import { auth } from '@/lib/firebase';
-import { getAllQuestsDirect, getUserQuestsDirect } from '@/lib/firestore-client';
+import { getUserQuestsDirect } from '@/lib/firestore-client';
 import type { ApiResponse } from '@/types/common';
-import type { Quest, UserQuestStatus } from '@/types/quests';
+import type { UserQuestStatus } from '@/types/quests';
 
 export class QuestsRepository {
   async getUserQuests(): Promise<ApiResponse<UserQuestStatus[]>> {
@@ -19,18 +19,6 @@ export class QuestsRepository {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to get user quests',
-      };
-    }
-  }
-
-  async getAllQuests(): Promise<ApiResponse<Quest[]>> {
-    try {
-      const quests = await getAllQuestsDirect();
-      return { success: true, data: quests as Quest[] };
-    } catch (error: unknown) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to get all quests',
       };
     }
   }

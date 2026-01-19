@@ -114,21 +114,8 @@ export const logout = async () => {
   }
 };
 
-export const getUserProfileFromBackend = async () => {
-  const result = await authApiClient.getUserProfile();
-  if (result.success) {
-    return { profile: result.data, error: null };
-  }
-  return { profile: null, error: result.error };
-};
-
 export const updateUserProfileOnBackend = async (data: { displayName?: string; photoURL?: string }) => {
   const result = await authApiClient.updateUserProfile(data);
-  return { success: result.success, error: result.error };
-};
-
-export const deleteUserAccountOnBackend = async () => {
-  const result = await authApiClient.deleteUserAccount();
   return { success: result.success, error: result.error };
 };
 

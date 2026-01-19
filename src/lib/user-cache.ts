@@ -65,14 +65,3 @@ export async function getCachedUserDisplayNames(userIds: string[]): Promise<Reco
 
   return namesMap;
 }
-
-export function invalidateUserDisplayNameCache(userId?: string) {
-  if (userId) {
-    delete userDisplayNamesCache[userId];
-  } else {
-    Object.keys(userDisplayNamesCache).forEach((key) => {
-      delete userDisplayNamesCache[key];
-    });
-  }
-}
-

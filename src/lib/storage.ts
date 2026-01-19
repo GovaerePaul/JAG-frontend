@@ -129,20 +129,3 @@ export async function deleteProfilePicture(photoURL: string): Promise<void> {
     await deleteObject(storageRef);
   } catch (_error) {}
 }
-
-export function extractStoragePathFromURL(photoURL: string): string | null {
-  try {
-    const url = new URL(photoURL);
-    const pathMatch = url.pathname.match(/\/o\/(.+)\?/);
-    
-    if (!pathMatch) {
-      return null;
-    }
-
-    const encodedPath = pathMatch[1];
-    return decodeURIComponent(encodedPath);
-  } catch {
-    return null;
-  }
-}
-

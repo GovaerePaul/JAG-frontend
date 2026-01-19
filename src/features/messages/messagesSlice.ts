@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { messagesRepository } from './messagesRepository';
 import type { Message, MessageSummary, SendMessageData } from '@/types/messages';
 
@@ -93,17 +93,6 @@ export const markMessageAsRead = createAsyncThunk(
   }
 );
 
-export const markMessageAsDelivered = createAsyncThunk(
-  'messages/markMessageAsDelivered',
-  async (messageId: string, { rejectWithValue }) => {
-    const response = await messagesRepository.markMessageAsDelivered(messageId);
-    if (!response.success) {
-      return rejectWithValue(response.error || 'Failed to mark message as delivered');
-    }
-    return { messageId, ...response.data };
-  }
-);
-
 export const reportMessage = createAsyncThunk(
   'messages/reportMessage',
   async ({ messageId, reason }: { messageId: string; reason: string }, { rejectWithValue }) => {
@@ -131,23 +120,6 @@ const messagesSlice = createSlice({
   name: 'messages',
   initialState,
   reducers: {
-    updateMessageInStore: (state, action: PayloadAction<Message>) => {
-      state.messagesById[action.payload.id] = action.payload;
-      const receivedIndex = state.receivedMessages.findIndex((m) => m.id === action.payload.id);
-      if (receivedIndex !== -1) {
-        state.receivedMessages[receivedIndex] = {
-          ...state.receivedMessages[receivedIndex],
-          ...action.payload,
-        };
-      }
-      const sentIndex = state.sentMessages.findIndex((m) => m.id === action.payload.id);
-      if (sentIndex !== -1) {
-        state.sentMessages[sentIndex] = {
-          ...state.sentMessages[sentIndex],
-          ...action.payload,
-        };
-      }
-    },
     clearMessages: (state) => {
       state.receivedMessages = [];
       state.sentMessages = [];
@@ -230,26 +202,6 @@ const messagesSlice = createSlice({
         state.loading.action = false;
         state.error = action.payload as string;
       })
-      .addCase(markMessageAsDelivered.pending, (state) => {
-        state.loading.action = true;
-        state.error = null;
-      })
-      .addCase(markMessageAsDelivered.fulfilled, (state, action) => {
-        state.loading.action = false;
-        const messageId = action.payload.messageId;
-        const message = state.receivedMessages.find((m) => m.id === messageId);
-        if (message && message.status === 'pending') {
-          message.status = 'delivered';
-        }
-        if (state.messagesById[messageId]) {
-          state.messagesById[messageId].status = 'delivered';
-        }
-        state.error = null;
-      })
-      .addCase(markMessageAsDelivered.rejected, (state, action) => {
-        state.loading.action = false;
-        state.error = action.payload as string;
-      })
       .addCase(reportMessage.pending, (state) => {
         state.loading.action = true;
         state.error = null;
@@ -288,5 +240,5 @@ const messagesSlice = createSlice({
   },
 });
 
-export const { updateMessageInStore, clearMessages } = messagesSlice.actions;
+export const { clearMessages } = messagesSlice.actions;
 export default messagesSlice.reducer;

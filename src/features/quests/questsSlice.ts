@@ -1,10 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { questsRepository } from './questsRepository';
-import type { Quest, UserQuestStatus } from '@/types/quests';
+import type { UserQuestStatus } from '@/types/quests';
 
 interface QuestsState {
   userQuests: UserQuestStatus[];
-  allQuests: Quest[];
   loading: boolean;
   error: string | null;
   lastFetched: number | null;
@@ -12,7 +11,6 @@ interface QuestsState {
 
 const initialState: QuestsState = {
   userQuests: [],
-  allQuests: [],
   loading: false,
   error: null,
   lastFetched: null,
@@ -29,24 +27,12 @@ export const fetchUserQuests = createAsyncThunk(
   }
 );
 
-export const fetchAllQuests = createAsyncThunk(
-  'quests/fetchAllQuests',
-  async (_, { rejectWithValue }) => {
-    const response = await questsRepository.getAllQuests();
-    if (!response.success || !response.data) {
-      return rejectWithValue(response.error || 'Failed to fetch all quests');
-    }
-    return response.data;
-  }
-);
-
 const questsSlice = createSlice({
   name: 'quests',
   initialState,
   reducers: {
     clearQuests: (state) => {
       state.userQuests = [];
-      state.allQuests = [];
       state.lastFetched = null;
     },
   },
@@ -63,19 +49,6 @@ const questsSlice = createSlice({
         state.lastFetched = Date.now();
       })
       .addCase(fetchUserQuests.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(fetchAllQuests.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchAllQuests.fulfilled, (state, action) => {
-        state.loading = false;
-        state.allQuests = action.payload;
-        state.error = null;
-      })
-      .addCase(fetchAllQuests.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

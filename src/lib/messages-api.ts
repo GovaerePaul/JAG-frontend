@@ -9,7 +9,6 @@ import {
   getSentMessagesDirect,
   getMessageDirect,
   markMessageAsReadDirect,
-  markMessageAsDeliveredDirect,
 } from './firestore-client';
 import { auth } from './firebase';
 
@@ -116,18 +115,6 @@ export async function markMessageAsRead(messageId: string): Promise<ApiResponse<
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to mark message as read'
-    };
-  }
-}
-
-export async function markMessageAsDelivered(messageId: string): Promise<ApiResponse<{ success: boolean }>> {
-  try {
-    await markMessageAsDeliveredDirect(messageId);
-    return { success: true, data: { success: true } };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to mark message as delivered'
     };
   }
 }

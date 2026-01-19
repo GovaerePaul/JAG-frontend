@@ -6,7 +6,6 @@ import { ApiResponse } from '@/types/common';
 import type { UserPreferences } from '@/types/auth';
 import type {
   ReceivableUser,
-  Coordinates,
   UserLocation,
   SearchCitiesResponse,
   DiscoverUsersParams,
@@ -26,25 +25,6 @@ export async function getReceivableUsers(): Promise<ApiResponse<ReceivableUser[]
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to get receivable users'
-    };
-  }
-}
-
-export async function updateUserLocation(coordinates: Coordinates): Promise<ApiResponse<UserLocation>> {
-  try {
-    const fn = httpsCallable<{ coordinates: Coordinates }, { success: boolean; location: UserLocation }>(
-      functions,
-      'updateUserLocationFunction'
-    );
-    const result = await fn({ coordinates });
-    if (result.data.success) {
-      return { success: true, data: result.data.location };
-    }
-    return { success: false, error: 'Failed to update location' };
-  } catch (error: unknown) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to update location'
     };
   }
 }
