@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { discoverUsers as discoverUsersAction } from './userSlice';
 import {
-  selectDiscoveredUsers,
   selectDiscoverUsersLoading,
   selectUserError,
   selectDiscoveredUsersList,
@@ -69,7 +68,7 @@ const getCityCoordinates = async (cityName: string): Promise<{ lat: number; lng:
       
       return coordinates;
     }
-  } catch (err) {
+  } catch (_err) {
     // Silent fail
   }
   
@@ -92,7 +91,6 @@ export function useDiscoverUsers(
     autoExpand = true,
   } = options;
 
-  const discoveredUsers = useAppSelector(selectDiscoveredUsers);
   const loading = useAppSelector(selectDiscoverUsersLoading);
   const error = useAppSelector(selectUserError);
   const usersFromStore = useAppSelector(selectDiscoveredUsersList);
@@ -206,7 +204,7 @@ export function useDiscoverUsers(
         } else {
           setIsExpanding(false);
         }
-      } catch (err) {
+      } catch (_err) {
         setIsExpanding(false);
       }
     },

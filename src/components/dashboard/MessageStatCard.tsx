@@ -21,7 +21,6 @@ export default function MessageStatCard({
   label,
   unreadCount = 0,
   onClick,
-  color = 'primary',
   sx,
 }: MessageStatCardProps) {
   const tHome = useTranslations('home');

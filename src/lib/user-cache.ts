@@ -38,7 +38,7 @@ export async function getCachedUserDisplayName(userId: string): Promise<string> 
       
       return displayName;
     }
-  } catch (err) {
+  } catch (_err) {
     // Silent fail
   }
   

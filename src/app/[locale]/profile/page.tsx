@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { Container, Box, Divider, TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Container, Box, Divider, TextField, Button } from '@mui/material';
 import { Edit, Save, Cancel, LocationOn } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { updateUserPreferences } from '@/lib/users-api';
@@ -25,15 +25,12 @@ import InfoCard from '@/components/ui/InfoCard';
 import BaseDialog from '@/components/dialogs/BaseDialog';
 
 export default function ProfilePage() {
-  const { user, userProfile, canSend, canReceive } = useAuth();
+  const { user, userProfile, canReceive } = useAuth();
   const { unreadCount } = useUnreadMessages();
-  const { messageCounts, refetch: refetchUserStats } = useUserStats();
+  const { messageCounts } = useUserStats();
   const { eventTypes, loading } = useEventTypes();
 
   const t = useTranslations('profile');
-  const tGamification = useTranslations('gamification');
-  const tHome = useTranslations('home');
-  const router = useRouter();
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
@@ -88,7 +85,7 @@ export default function ProfilePage() {
       if (!response.success) {
         // Silent fail
       }
-    } catch (error) {
+    } catch (_error) {
       // Silent fail
     } finally {
       setSavingPreferences(false);

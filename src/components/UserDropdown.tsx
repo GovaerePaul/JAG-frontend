@@ -45,7 +45,7 @@ export default function UserDropdown() {
     try {
       await logout();
       // Redirect will be handled by AuthGuard
-    } catch (error) {
+    } catch (_error) {
       // Silent fail
     }
   };

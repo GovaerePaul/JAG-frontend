@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { messagesRepository } from './messagesRepository';
 import type { Message, MessageSummary, SendMessageData } from '@/types/messages';
-import type { ApiResponse } from '@/types/common';
 
 interface MessagesState {
   receivedMessages: MessageSummary[];

@@ -13,10 +13,10 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { MessageStatus, MessageSummary, Message } from '@/types/messages';
+import type { MessageSummary, Message } from '@/types/messages';
 import type { UserRole, ReceivableUser } from '@/types/users';
 import type { EventCategory, EventType } from '@/types/events';
-import type { QuestCategory, QuestActionType, Quest, UserQuestStatus } from '@/types/quests';
+import type { Quest, UserQuestStatus } from '@/types/quests';
 import type { UserProfile } from '@/types/auth';
 import type { UserStats } from '@/types/common';
 

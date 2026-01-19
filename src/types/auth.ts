@@ -1,4 +1,3 @@
-import { Timestamp } from 'firebase/firestore';
 import type { UserRole } from './users';
 
 // Re-export UserRole for convenience

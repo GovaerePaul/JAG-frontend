@@ -9,7 +9,6 @@ import { clearUser } from '@/features/user/userSlice';
 import { clearMessages } from '@/features/messages/messagesSlice';
 import { clearQuests } from '@/features/quests/questsSlice';
 import { selectUserProfile, selectAuthLoading } from './authSelectors';
-import type { UserProfile } from '@/types/auth';
 
 // Re-export the type for compatibility
 export type { UserProfile } from '@/types/auth';

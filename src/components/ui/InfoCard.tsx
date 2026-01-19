@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, Typography, Box, Button, ButtonProps } from '@mui/material';
+import { Card, CardContent, Box, Button } from '@mui/material';
 import { SxProps, Theme } from '@mui/material/styles';
 import GradientTypography from './GradientTypography';
 
@@ -19,7 +19,6 @@ interface InfoCardProps {
 export default function InfoCard({
   title,
   children,
-  icon,
   actionButton,
   sx,
 }: InfoCardProps) {

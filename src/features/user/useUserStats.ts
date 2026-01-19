@@ -6,7 +6,6 @@ import { fetchUserStats } from './userSlice';
 import {
   selectUserStats,
   selectUserStatsLoading,
-  selectUserError,
 } from './userSelectors';
 import { useAuth } from '@/features/auth/useAuth';
 
@@ -26,7 +25,6 @@ export function useUserStats(): UseUserStatsReturn {
   const { user, isReady } = useAuth();
   const stats = useAppSelector(selectUserStats);
   const loading = useAppSelector(selectUserStatsLoading);
-  const error = useAppSelector(selectUserError);
 
   const userId = useMemo(() => user?.uid || null, [user?.uid]);
 

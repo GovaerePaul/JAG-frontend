@@ -57,11 +57,6 @@ export default function MessageDetailPage() {
     return eventTypes.find((et) => et.id === eventTypeId);
   };
 
-  const getEventTypeName = (eventTypeId: string) => {
-    const eventType = getEventType(eventTypeId);
-    return eventType?.name || eventTypeId;
-  };
-
   // Mark message as read when viewing a received message
   useEffect(() => {
     if (message && isReceivedMessage && message.status !== 'read' && message.receiverId && messageId) {

@@ -55,7 +55,7 @@ export default function CityAutocomplete({
         } else {
           setOptions([]);
         }
-      } catch (err) {
+      } catch (_err) {
         setOptions([]);
       } finally {
         setLoading(false);

@@ -1,9 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
 import { useAppSelector } from '@/store/hooks';
 import {
-  selectUnreadMessages,
   selectUnreadCount,
   selectReceivedMessagesLoading,
   selectMessagesError,
@@ -20,7 +18,6 @@ interface UseUnreadMessagesReturn {
 
 export function useUnreadMessages(): UseUnreadMessagesReturn {
   const unreadCount = useAppSelector(selectUnreadCount);
-  const unreadMessages = useAppSelector(selectUnreadMessages);
   const loading = useAppSelector(selectReceivedMessagesLoading);
   const error = useAppSelector(selectMessagesError);
   const { refetch } = useReceivedMessages();

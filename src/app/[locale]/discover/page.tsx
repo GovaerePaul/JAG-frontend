@@ -28,7 +28,7 @@ interface DiscoverPageProps {
 
 export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) {
   const t = useTranslations('discover');
-  const { users, loading, error, currentDistance, isExpanding, search, loadMore, reset } =
+  const { users, loading, error, currentDistance, isExpanding, search, loadMore } =
     useDiscoverUsers({
       initialDistance: 50,
       maxDistance: 500,

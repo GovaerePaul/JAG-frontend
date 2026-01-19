@@ -12,14 +12,12 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
-  const { user, userProfile, canSend, canReceive, isReady, authLoading } = useAuth();
+  const { user, canReceive, authLoading } = useAuth();
   const pathname = usePathname();
   const isAuthPage = pathname.includes('/auth');
   
   // useUnreadMessages already calls useReceivedMessages internally, so we get both
-  const { unreadCount, messages: receivedMessages, refetch: refetchUnreadMessages } = useUnreadMessages();
-  // refetchReceivedMessages is the same as refetchUnreadMessages since they share the same hook
-  const refetchReceivedMessages = refetchUnreadMessages;
+  const { unreadCount } = useUnreadMessages();
 
   // Auth page should always be accessible, render it directly without layout
   if (isAuthPage) {

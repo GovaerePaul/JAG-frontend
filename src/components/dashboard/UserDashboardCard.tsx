@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { Inbox, Outbox } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';

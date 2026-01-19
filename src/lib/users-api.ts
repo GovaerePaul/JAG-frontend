@@ -5,15 +5,11 @@ import { functions } from './firebase-functions';
 import { ApiResponse } from '@/types/common';
 import type { UserPreferences } from '@/types/auth';
 import type {
-  UserRole,
   ReceivableUser,
   Coordinates,
   UserLocation,
-  CitySuggestion,
   SearchCitiesResponse,
-  DiscoverUsersFilters,
   DiscoverUsersParams,
-  DiscoveredUser,
   DiscoverUsersResponse,
 } from '@/types/users';
 import { auth } from './firebase';
