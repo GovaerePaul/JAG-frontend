@@ -29,10 +29,11 @@ export function useUserStats(): UseUserStatsReturn {
   const userId = useMemo(() => user?.uid || null, [user?.uid]);
 
   useEffect(() => {
+    if (loading) return;
     if (!user || !isReady || !userId) return;
-    if (stats && !loading) return;
+    if (stats) return;
     dispatch(fetchUserStats());
-  }, [user, userId, isReady, stats, dispatch]);
+  }, [user, userId, isReady, stats, loading, dispatch]);
 
   const refetch = useCallback(async () => {
     if (!user || !isReady) return;

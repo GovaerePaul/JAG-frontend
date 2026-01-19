@@ -9,6 +9,7 @@ import {
   selectEventsLoading,
   selectEventsError,
   selectEventsLocale,
+  selectEventsLastFetched,
 } from './eventsSelectors';
 
 interface UseEventTypesReturn {
@@ -25,11 +26,13 @@ export function useEventTypes(): UseEventTypesReturn {
   const loading = useAppSelector(selectEventsLoading);
   const error = useAppSelector(selectEventsError);
   const storedLocale = useAppSelector(selectEventsLocale);
+  const lastFetched = useAppSelector(selectEventsLastFetched);
 
   useEffect(() => {
-    if (eventTypes.length > 0 && storedLocale === locale && !loading) return;
+    if (loading) return;
+    if (lastFetched && storedLocale === locale) return;
     dispatch(fetchEventTypes(locale));
-  }, [locale, eventTypes.length, storedLocale, dispatch]);
+  }, [locale, storedLocale, lastFetched, loading, dispatch]);
 
   const refetch = useCallback(async () => {
     await dispatch(fetchEventTypes(locale));

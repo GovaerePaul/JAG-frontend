@@ -7,6 +7,7 @@ import {
   selectReceivedMessages,
   selectReceivedMessagesLoading,
   selectMessagesError,
+  selectReceivedMessagesLastFetched,
 } from './messagesSelectors';
 import { useAuth } from '@/features/auth/useAuth';
 
@@ -23,14 +24,16 @@ export function useReceivedMessages(): UseReceivedMessagesReturn {
   const messages = useAppSelector(selectReceivedMessages);
   const loading = useAppSelector(selectReceivedMessagesLoading);
   const error = useAppSelector(selectMessagesError);
+  const lastFetched = useAppSelector(selectReceivedMessagesLastFetched);
 
   const userId = useMemo(() => user?.uid || null, [user?.uid]);
 
   useEffect(() => {
+    if (loading) return;
     if (!user || !isReady || !userId) return;
-    if (messages.length > 0 && !loading) return;
+    if (lastFetched) return;
     dispatch(fetchReceivedMessages());
-  }, [user, userId, isReady, messages.length, dispatch]);
+  }, [user, userId, isReady, lastFetched, loading, dispatch]);
 
   const refetch = useCallback(async () => {
     if (!user || !isReady) return;

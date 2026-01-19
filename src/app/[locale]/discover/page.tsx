@@ -251,6 +251,7 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
           onSuccess={() => {
             setSendMessageOpen(false);
           }}
+          eventTypes={eventTypes}
         />
       )}
       </Container>

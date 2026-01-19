@@ -59,8 +59,9 @@ export const useAuth = () => {
   const isReady = useMemo(() => !!(user && !authLoading), [user, authLoading]);
 
   useEffect(() => {
+    if (profileLoadingFromRedux) return;
     if (!user || !isReady) return;
-    if (userProfileFromRedux && !profileLoadingFromRedux) return;
+    if (userProfileFromRedux) return;
     dispatch(fetchUserProfile());
   }, [dispatch, user, isReady, userProfileFromRedux, profileLoadingFromRedux]);
 
