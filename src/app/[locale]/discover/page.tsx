@@ -43,10 +43,8 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
   const [selectedReceiverId, setSelectedReceiverId] = useState<string>();
   const [selectedReceiverName, setSelectedReceiverName] = useState<string>();
 
-  // Check if location permission is needed
   useEffect(() => {
     if (userProfile && userProfile.preferences?.shareLocation !== true) {
-      // Show location permission dialog on first visit
       const hasSeenPrompt = localStorage.getItem('discover_location_prompt_seen');
       if (!hasSeenPrompt) {
         setLocationPermissionOpen(true);
@@ -54,7 +52,6 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
       }
     }
   }, [userProfile]);
-
 
   const handleFiltersApply = (newFilters: DiscoverUsersFilters) => {
     setFilters(newFilters);
@@ -68,7 +65,6 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
   };
 
   const handleLocationEnabled = () => {
-    // Reload search after location is enabled
     search({ filters });
   };
 
@@ -111,7 +107,6 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
           </Typography>
         </Box>
 
-        {/* Filters */}
         <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-end' }}>
           <Button
             variant="outlined"
@@ -132,7 +127,6 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
           </Button>
         </Box>
 
-      {/* Distance indicator */}
       {(isExpanding || currentDistance > 50) && (
         <Alert severity="info" sx={{ mb: 3 }}>
           {isExpanding
@@ -141,14 +135,12 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
         </Alert>
       )}
 
-      {/* Error */}
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => {}}>
           {error}
         </Alert>
       )}
 
-      {/* Results */}
       {loading && users.length === 0 ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
@@ -231,7 +223,6 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
             ))}
           </Box>
 
-          {/* Load More */}
           {users.length > 0 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
               {loading ? (
@@ -265,7 +256,6 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
         </>
       )}
 
-      {/* Dialogs - Rendered conditionally to avoid mounting when closed */}
       {filtersOpen && (
         <DiscoverFilters
           open={filtersOpen}

@@ -29,13 +29,12 @@ interface UseDiscoverUsersReturn {
   reset: () => void;
 }
 
-// Global cache for city coordinates
 const cityCoordinatesCache: Record<string, {
   coordinates: { lat: number; lng: number } | null;
   timestamp: number;
 }> = {};
 
-const COORDINATES_CACHE_DURATION = 86400000; // 24 hours
+const COORDINATES_CACHE_DURATION = 86400000;
 
 const getCityCoordinates = async (cityName: string): Promise<{ lat: number; lng: number } | null> => {
   const cached = cityCoordinatesCache[cityName];
@@ -68,9 +67,7 @@ const getCityCoordinates = async (cityName: string): Promise<{ lat: number; lng:
       
       return coordinates;
     }
-  } catch (_err) {
-    // Silent fail
-  }
+  } catch (_err) {}
   
   cityCoordinatesCache[cityName] = {
     coordinates: null,
@@ -108,7 +105,6 @@ export function useDiscoverUsers(
   const attemptCountRef = useRef(0);
   const hasSearchedRef = useRef(false);
 
-  // Get user location on mount
   useEffect(() => {
     if (userProfile?.location?.city && userProfile.preferences?.shareLocation) {
       getCityCoordinates(userProfile.location.city).then((coords) => {
@@ -122,7 +118,6 @@ export function useDiscoverUsers(
     }
   }, [userProfile]);
 
-  // Sync users from store
   useEffect(() => {
     if (usersFromStore.length > 0) {
       setUsers(usersFromStore);
@@ -174,7 +169,6 @@ export function useDiscoverUsers(
             setOffset((prev) => prev + data.users.length);
           }
 
-          // Auto-expand if no users found and autoExpand is enabled
           if (
             autoExpand &&
             data.users.length === 0 &&
@@ -253,7 +247,6 @@ export function useDiscoverUsers(
     hasSearchedRef.current = false;
   }, [initialDistance]);
 
-  // Trigger initial search when location becomes available
   const performSearchRef = useRef(performSearch);
   performSearchRef.current = performSearch;
 

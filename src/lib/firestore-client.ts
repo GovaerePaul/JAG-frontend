@@ -34,7 +34,6 @@ interface EventTypeDoc {
   createdAt: Timestamp;
 }
 
-// Helpers
 function timestampToISO(timestamp: Timestamp | Date | undefined | null): string | undefined {
   if (!timestamp) return undefined;
   if (timestamp instanceof Date) return timestamp.toISOString();
@@ -48,7 +47,6 @@ function timestampToISORequired(timestamp: Timestamp | Date | undefined | null):
   return result;
 }
 
-// Messages
 export async function getReceivedMessagesDirect(userId: string): Promise<MessageSummary[]> {
   const q = query(
     collection(db, 'messages'),
@@ -144,7 +142,6 @@ export async function markMessageAsReadDirect(messageId: string): Promise<void> 
   });
 }
 
-// Users
 export async function getReceivableUsersDirect(currentUserId: string): Promise<ReceivableUser[]> {
   const q = query(collection(db, 'users'), where('isActive', '==', true));
   const snapshot = await getDocs(q);
@@ -174,7 +171,6 @@ export async function getUserProfileDirect(userId: string): Promise<UserProfile 
 
   const data = docSnap.data();
   
-  // Map location if it exists, converting Timestamp to string
   const location = data.location ? {
     city: data.location.city,
     region: data.location.region,
@@ -225,7 +221,6 @@ export async function getUserStatsDirect(userId: string): Promise<UserStats | nu
   };
 }
 
-// Event Types
 export async function getEventTypesDirect(locale: string = 'en'): Promise<EventType[]> {
   const q = query(collection(db, 'eventTypes'), where('isActive', '==', true));
   const snapshot = await getDocs(q);
@@ -246,7 +241,6 @@ export async function getEventTypesDirect(locale: string = 'en'): Promise<EventT
   });
 }
 
-// Quests
 export async function getAllQuestsDirect(): Promise<Quest[]> {
   const q = query(
     collection(db, 'quests'),

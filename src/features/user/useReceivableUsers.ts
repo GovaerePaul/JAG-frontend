@@ -28,10 +28,7 @@ export function useReceivableUsers(): UseReceivableUsersReturn {
 
   useEffect(() => {
     if (!userId) return;
-
-    // If data already exists, don't fetch
     if (users.length > 0 && !loading) return;
-
     dispatch(fetchReceivableUsers());
   }, [userId, users.length, dispatch]);
 

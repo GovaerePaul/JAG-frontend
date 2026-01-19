@@ -28,10 +28,7 @@ export function useQuests(): UseQuestsReturn {
 
   useEffect(() => {
     if (!isReady || !userId) return;
-
-    // If data already exists, don't fetch
     if (quests.length > 0 && !loading) return;
-
     dispatch(fetchUserQuests());
   }, [userId, isReady, quests.length, dispatch]);
 

@@ -9,7 +9,6 @@ export const makeStore = (preloadedState?: Partial<RootState>) => {
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         serializableCheck: {
-          // Ignore these action types
           ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
         },
       }),

@@ -52,7 +52,6 @@ const questsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // fetchUserQuests
       .addCase(fetchUserQuests.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -67,7 +66,6 @@ const questsSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // fetchAllQuests
       .addCase(fetchAllQuests.pending, (state) => {
         state.loading = true;
         state.error = null;

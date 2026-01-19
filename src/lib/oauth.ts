@@ -10,14 +10,8 @@ import { auth, db } from './firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import authApiClient from './api-client';
 
-// Detect if we're running on Capacitor (mobile)
 const isCapacitor = typeof window !== 'undefined' && (window as any).Capacitor !== undefined;
 
-/**
- * Sign in with Google OAuth provider
- * Uses signInWithRedirect on Capacitor (mobile) to avoid sessionStorage issues
- * Uses signInWithPopup on web for better UX
- */
 export const signInWithGoogle = async () => {
   try {
     const provider = new GoogleAuthProvider();
@@ -25,14 +19,9 @@ export const signInWithGoogle = async () => {
     provider.addScope('email');
     
     if (isCapacitor) {
-      // On mobile (Capacitor), use redirect to avoid sessionStorage issues
-      // The redirect will happen and we'll handle the result on page load
       await signInWithRedirect(auth, provider);
-      // Return immediately - the redirect will happen
-      // The app should check for redirect result on mount/load
       return { user: null, error: null };
     } else {
-      // On web, use popup for better UX
       const result = await signInWithPopup(auth, provider);
       await handleOAuthSignIn(result);
       return { user: result.user, error: null };
@@ -42,10 +31,6 @@ export const signInWithGoogle = async () => {
   }
 };
 
-/**
- * Check for redirect result after Google OAuth redirect
- * Should be called on app mount/load when using signInWithRedirect
- */
 export const checkGoogleRedirectResult = async () => {
   try {
     const result = await getRedirectResult(auth);
@@ -59,20 +44,12 @@ export const checkGoogleRedirectResult = async () => {
   }
 };
 
-/**
- * Handle OAuth sign-in success
- * Backend trigger creates or updates Firestore document based on email
- */
 const handleOAuthSignIn = async (result: UserCredential) => {
   const user = result.user;
   
   try {
-    // Backend trigger creates or updates document based on email
-    // Wait a bit for backend trigger to complete (it's async)
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Verify document exists (document ID = UID)
-    // Google OAuth always provides user.email
     if (!user.email) {
       throw new Error('User email not available');
     }
@@ -92,9 +69,6 @@ const handleOAuthSignIn = async (result: UserCredential) => {
   }
 };
 
-/**
- * Handle OAuth errors and return user-friendly error messages
- */
 const handleOAuthError = (error: unknown): { user: null; error: string } => {
   if (!error || typeof error !== 'object') {
     return { user: null, error: 'auth/unknown-error' };
@@ -103,7 +77,6 @@ const handleOAuthError = (error: unknown): { user: null; error: string } => {
   const authError = error as AuthError;
   const errorCode = authError.code;
   
-  // Map Firebase Auth error codes to our error keys
   switch (errorCode) {
     case 'auth/popup-closed-by-user':
       return { user: null, error: 'auth/popup-closed' };

@@ -13,7 +13,6 @@ import {
 } from './firestore-client';
 import { auth } from './firebase';
 
-// Cloud Functions
 export async function sendMessage(data: SendMessageData): Promise<ApiResponse<{ messageId: string }>> {
   try {
     const fn = httpsCallable<SendMessageData, { success: boolean; messageId: string }>(
@@ -62,7 +61,6 @@ export async function deleteMessage(messageId: string): Promise<ApiResponse<{ su
   }
 }
 
-// Firestore Direct
 export async function getReceivedMessages(): Promise<ApiResponse<MessageSummary[]>> {
   try {
     const user = auth.currentUser;

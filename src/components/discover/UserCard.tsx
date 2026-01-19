@@ -20,12 +20,10 @@ export default function UserCard({ user, eventTypes, onSendMessage }: UserCardPr
   const locale = useLocale();
   const isNew = false;
 
-  // Get favorite event types for this user
   const favoriteEventTypes = user.favoriteEventTypeIds
     ? eventTypes.filter((et) => user.favoriteEventTypeIds?.includes(et.id))
     : [];
 
-  // Limit display to 3 chips, show "+X" for remaining
   const MAX_VISIBLE_CHIPS = 3;
   const visibleChips = favoriteEventTypes.slice(0, MAX_VISIBLE_CHIPS);
   const remainingCount = favoriteEventTypes.length - MAX_VISIBLE_CHIPS;
@@ -84,7 +82,6 @@ export default function UserCard({ user, eventTypes, onSendMessage }: UserCardPr
           </Typography>
         )}
 
-        {/* Favorite Event Types */}
         {favoriteEventTypes.length > 0 && (
           <Box
             sx={{

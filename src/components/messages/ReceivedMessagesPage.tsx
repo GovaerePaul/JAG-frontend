@@ -40,8 +40,7 @@ export default function ReceivedMessagesPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const { messages: receivedMessages, loading, error, refetch: refetchReceivedMessages } = useReceivedMessages();
-  const refetch = refetchReceivedMessages;
+  const { messages: receivedMessages, loading, error } = useReceivedMessages();
 
   const getSenderIds = useCallback(
     (msgs: MessageSummary[]) =>
@@ -66,7 +65,7 @@ export default function ReceivedMessagesPage() {
             } else {
               namesMap[userId] = userId;
             }
-          } catch (err) {
+          } catch (_err) {
             namesMap[userId] = userId;
           }
         })

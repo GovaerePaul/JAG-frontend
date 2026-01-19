@@ -28,10 +28,7 @@ export function useSentMessages(): UseSentMessagesReturn {
 
   useEffect(() => {
     if (!userId) return;
-
-    // If data already exists, don't fetch
     if (messages.length > 0 && !loading) return;
-
     dispatch(fetchSentMessages());
   }, [userId, messages.length, dispatch]);
 

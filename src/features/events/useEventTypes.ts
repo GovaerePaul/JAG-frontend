@@ -27,9 +27,7 @@ export function useEventTypes(): UseEventTypesReturn {
   const storedLocale = useAppSelector(selectEventsLocale);
 
   useEffect(() => {
-    // If data already exists for this locale, don't fetch
     if (eventTypes.length > 0 && storedLocale === locale && !loading) return;
-
     dispatch(fetchEventTypes(locale));
   }, [locale, eventTypes.length, storedLocale, dispatch]);
 

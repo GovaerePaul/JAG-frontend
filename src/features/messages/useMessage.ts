@@ -30,14 +30,10 @@ export function useMessage(messageId: string | null): UseMessageReturn {
 
   useEffect(() => {
     if (!isReady || !user || !stableMessageId) return;
-
-    // If message already exists in store, don't fetch
     if (message && !loading) return;
-
     dispatch(fetchMessage(stableMessageId));
   }, [stableMessageId, isReady, user, message, dispatch]);
 
-  // Load sender and receiver names when message is available
   useEffect(() => {
     if (!message) {
       setSenderName('');
@@ -46,7 +42,6 @@ export function useMessage(messageId: string | null): UseMessageReturn {
     }
 
     const loadNames = async () => {
-      // Load sender name if not anonymous
       if (message.senderId && !message.isAnonymous) {
         const name = await getCachedUserDisplayName(message.senderId);
         setSenderName(name);
@@ -54,7 +49,6 @@ export function useMessage(messageId: string | null): UseMessageReturn {
         setSenderName('');
       }
 
-      // Load receiver name
       if (message.receiverId) {
         const name = await getCachedUserDisplayName(message.receiverId);
         setReceiverName(name);

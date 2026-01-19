@@ -27,12 +27,8 @@ export function useReceivedMessages(): UseReceivedMessagesReturn {
   const userId = useMemo(() => user?.uid || null, [user?.uid]);
 
   useEffect(() => {
-    // Don't fetch if user is null or not ready
     if (!user || !isReady || !userId) return;
-
-    // If data already exists, don't fetch
     if (messages.length > 0 && !loading) return;
-
     dispatch(fetchReceivedMessages());
   }, [user, userId, isReady, messages.length, dispatch]);
 

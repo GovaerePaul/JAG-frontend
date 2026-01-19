@@ -180,7 +180,6 @@ export default function EventPreferencesSection({
               }}
             >
               {eventTypes.map((eventType) => {
-                // By default, all are enabled. If favoriteEventTypeIdsForSending exists, use it, otherwise all are enabled
                 const isEnabled =
                   userProfile?.preferences?.favoriteEventTypeIdsForSending === undefined
                     ? true
@@ -214,7 +213,6 @@ export default function EventPreferencesSection({
                         size="small"
                         startIcon={<Favorite />}
                         onClick={() => {
-                          // Remove from favorites for sending
                           const currentFavorites =
                             userProfile?.preferences?.favoriteEventTypeIdsForSending ||
                             eventTypes.map((et) => et.id);
@@ -234,7 +232,6 @@ export default function EventPreferencesSection({
                         size="small"
                         startIcon={<FavoriteBorder />}
                         onClick={() => {
-                          // Add back to favorites for sending
                           const currentFavorites =
                             userProfile?.preferences?.favoriteEventTypeIdsForSending || [];
                           const newFavorites = [...currentFavorites, eventType.id];

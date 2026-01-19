@@ -3,7 +3,6 @@ import { getAuth, connectAuthEmulator, Auth } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, Firestore } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator, FirebaseStorage } from 'firebase/storage';
 
-// Detect if we're running on Capacitor (mobile)
 const isCapacitor = typeof window !== 'undefined' && (window as any).Capacitor !== undefined;
 
 export const firebaseConfig = {
@@ -24,16 +23,12 @@ export const storage: FirebaseStorage = getStorage(
   firebaseConfig.storageBucket ? `gs://${firebaseConfig.storageBucket}` : undefined
 );
 
-// Only connect to emulator on web in development, not on mobile (Capacitor)
-// On mobile, use production Firebase or configure emulator with correct IP (10.0.2.2 for Android emulator)
 if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && !isCapacitor) {
   try {
     connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
     connectFirestoreEmulator(db, '127.0.0.1', 8080);
     connectStorageEmulator(storage, '127.0.0.1', 9199);
-  } catch {
-    // Already connected
-  }
+  } catch {}
 }
 
 export default app;

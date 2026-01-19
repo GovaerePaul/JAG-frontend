@@ -37,11 +37,9 @@ export default function MessageDetailPage() {
   const t = useTranslations('messages');
   const tCommon = useTranslations('common');
   
-  // Detect if we're viewing a sent or received message
   const isSentMessage = pathname?.includes('/messages/sent');
   const isReceivedMessage = pathname?.includes('/messages/received');
   
-  // Use the hook to load message
   const { message, senderName, receiverName, loading, error: messageError, refetch: refetchMessage } = useMessage(messageId);
   
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -53,24 +51,15 @@ export default function MessageDetailPage() {
   const { refetch: refetchUnreadMessages } = useUnreadMessages();
   const { eventTypes } = useEventTypes();
 
-  const getEventType = (eventTypeId: string) => {
-    return eventTypes.find((et) => et.id === eventTypeId);
-  };
-
-  // Mark message as read when viewing a received message
   useEffect(() => {
     if (message && isReceivedMessage && message.status !== 'read' && message.receiverId && messageId) {
       setMarkingAsRead(true);
       markMessageAsRead(messageId)
         .then(() => {
-          // Refresh message to get updated status
           refetchMessage();
-          // Refresh unread count
           refetchUnreadMessages();
         })
-        .catch(() => {
-          // Silent fail
-        })
+        .catch(() => {})
         .finally(() => {
           setMarkingAsRead(false);
         });
@@ -88,12 +77,11 @@ export default function MessageDetailPage() {
       if (response.success) {
         setReportDialogOpen(false);
         setReportReason('');
-        // Reload message to get updated status
         await refetchMessage();
       } else {
         setError(response.error || t('error.failedToReport'));
       }
-    } catch (err) {
+    } catch (_err) {
       setError(t('error.failedToReport'));
     } finally {
       setReporting(false);

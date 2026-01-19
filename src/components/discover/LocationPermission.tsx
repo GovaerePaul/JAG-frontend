@@ -91,7 +91,6 @@ export default function LocationPermission({
             onChange={(value) => setCity(value || '')}
             onSelect={(cityData) => {
               setSelectedCity(cityData);
-              // Build display name from city data
               const parts = [cityData.city];
               if (cityData.region) parts.push(cityData.region);
               if (cityData.country) parts.push(cityData.country);

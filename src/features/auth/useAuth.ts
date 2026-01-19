@@ -10,7 +10,6 @@ import { clearMessages } from '@/features/messages/messagesSlice';
 import { clearQuests } from '@/features/quests/questsSlice';
 import { selectUserProfile, selectAuthLoading } from './authSelectors';
 
-// Re-export the type for compatibility
 export type { UserProfile } from '@/types/auth';
 
 export const useAuth = () => {
@@ -31,37 +30,28 @@ export const useAuth = () => {
     return () => unsubscribe();
   }, []);
 
-  // Clean all slices when user logs out (only once per logout)
   useEffect(() => {
     if (!user && !authLoading && !hasClearedRef.current) {
       hasClearedRef.current = true;
-      // Dispatch all clear actions to reset Redux state
       dispatch(clearAuth());
       dispatch(clearUser());
       dispatch(clearMessages());
       dispatch(clearQuests());
     }
     
-    // Reset flag when user logs back in
     if (user) {
       hasClearedRef.current = false;
     }
   }, [user, authLoading, dispatch]);
 
-  // Calculate isReady early for use in effects
   const isReady = useMemo(() => !!(user && !authLoading), [user, authLoading]);
 
-  // Fetch user profile to Redux once when user is available
   useEffect(() => {
     if (!user || !isReady) return;
-
-    // If data already exists, don't fetch
     if (userProfileFromRedux && !profileLoadingFromRedux) return;
-
     dispatch(fetchUserProfile());
   }, [dispatch, user, isReady, userProfileFromRedux, profileLoadingFromRedux]);
 
-  // Memoize derived values to avoid unnecessary re-renders
   const canSend = useMemo(
     () => userProfileFromRedux?.role === 'sender' || userProfileFromRedux?.role === 'both',
     [userProfileFromRedux?.role]

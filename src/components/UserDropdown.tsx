@@ -41,13 +41,10 @@ export default function UserDropdown() {
   };
 
   const handleSignOut = async () => {
-    handleClose(); // Close menu first
+    handleClose();
     try {
       await logout();
-      // Redirect will be handled by AuthGuard
-    } catch (_error) {
-      // Silent fail
-    }
+    } catch (_error) {}
   };
 
   const handleSignIn = () => {

@@ -25,7 +25,6 @@ class AuthApiClient {
     }
   }
 
-  // Firestore Direct
   public async getUserProfile(): Promise<ApiResponse> {
     try {
       const user = auth.currentUser;
@@ -60,7 +59,6 @@ class AuthApiClient {
     }
   }
 
-  // Cloud Functions
   public async updateUserProfile(data: UpdateProfileRequest): Promise<ApiResponse> {
     try {
       const fn = httpsCallable(functions, 'updateUserProfileFunction');

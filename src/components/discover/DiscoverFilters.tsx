@@ -103,7 +103,6 @@ export default function DiscoverFilters({
 
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, mt: 1 }}>
-          {/* Distance Filter */}
           <Box>
             <Typography gutterBottom>{t('distance')}</Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -124,7 +123,6 @@ export default function DiscoverFilters({
             />
           </Box>
 
-          {/* Age Filter */}
           <Box>
             <Typography gutterBottom>{t('age')}</Typography>
             <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
@@ -182,7 +180,6 @@ export default function DiscoverFilters({
             </Select>
           </FormControl>
 
-          {/* Use My Preferences */}
           {userProfile?.preferences?.favoriteEventTypeIdsForReceiving &&
             userProfile.preferences.favoriteEventTypeIdsForReceiving.length > 0 && (
               <FormControlLabel
@@ -202,7 +199,6 @@ export default function DiscoverFilters({
               />
             )}
 
-          {/* New Users Only */}
           <FormControlLabel
             control={
               <Checkbox

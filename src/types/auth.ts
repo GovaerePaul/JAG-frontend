@@ -1,6 +1,5 @@
 import type { UserRole } from './users';
 
-// Re-export UserRole for convenience
 export type { UserRole };
 
 export interface UserLocation {

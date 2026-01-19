@@ -23,17 +23,14 @@ export default function AuthPage() {
   const hasRedirectedRef = useRef(false);
   const hasCheckedRedirectRef = useRef(false);
 
-  // Check for Google OAuth redirect result on mount (for Capacitor/mobile)
   useEffect(() => {
     if (!hasCheckedRedirectRef.current && !loading) {
       hasCheckedRedirectRef.current = true;
       checkGoogleRedirectResult().then(({ user: redirectUser, error }) => {
         if (redirectUser) {
-          // User successfully signed in via redirect
           hasRedirectedRef.current = true;
           router.push('/');
         } else if (error && error !== 'auth/unknown-error') {
-          // Handle error if needed
           console.error('Google redirect error:', error);
         }
       });
@@ -41,16 +38,13 @@ export default function AuthPage() {
   }, [loading, router]);
 
   useEffect(() => {
-    // Only redirect once, and only if we're done loading and have a user
     if (!loading && user && !hasRedirectedRef.current) {
       hasRedirectedRef.current = true;
-      // Use requestAnimationFrame to ensure DOM is ready
       requestAnimationFrame(() => {
         router.push('/');
       });
     }
     
-    // Reset redirect flag if user disappears
     if (!user && hasRedirectedRef.current) {
       hasRedirectedRef.current = false;
     }
@@ -68,12 +62,9 @@ export default function AuthPage() {
   };
 
   const handleAuthSuccess = () => {
-    // Prevent multiple redirects - let the useEffect handle the redirect
-    // This prevents double redirects
     hasRedirectedRef.current = true;
   };
 
-  // Don't render if user is authenticated (redirect will happen)
   if (user && !loading) {
     return null;
   }

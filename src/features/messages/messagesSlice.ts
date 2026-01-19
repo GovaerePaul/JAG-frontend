@@ -36,7 +36,6 @@ const initialState: MessagesState = {
   },
 };
 
-// Async thunks
 export const fetchReceivedMessages = createAsyncThunk(
   'messages/fetchReceivedMessages',
   async (_, { rejectWithValue }) => {
@@ -77,7 +76,6 @@ export const sendMessage = createAsyncThunk(
     if (!response.success || !response.data) {
       return rejectWithValue(response.error || 'Failed to send message');
     }
-    // Refetch sent messages after sending
     await dispatch(fetchSentMessages());
     return response.data;
   }
@@ -90,7 +88,6 @@ export const markMessageAsRead = createAsyncThunk(
     if (!response.success) {
       return rejectWithValue(response.error || 'Failed to mark message as read');
     }
-    // Refetch received messages to update status
     await dispatch(fetchReceivedMessages());
     return { messageId, ...response.data };
   }
@@ -125,7 +122,6 @@ export const deleteMessage = createAsyncThunk(
     if (!response.success) {
       return rejectWithValue(response.error || 'Failed to delete message');
     }
-    // Refetch sent messages after deletion
     await dispatch(fetchSentMessages());
     return { messageId, ...response.data };
   }
@@ -137,7 +133,6 @@ const messagesSlice = createSlice({
   reducers: {
     updateMessageInStore: (state, action: PayloadAction<Message>) => {
       state.messagesById[action.payload.id] = action.payload;
-      // Update in received messages if exists
       const receivedIndex = state.receivedMessages.findIndex((m) => m.id === action.payload.id);
       if (receivedIndex !== -1) {
         state.receivedMessages[receivedIndex] = {
@@ -145,7 +140,6 @@ const messagesSlice = createSlice({
           ...action.payload,
         };
       }
-      // Update in sent messages if exists
       const sentIndex = state.sentMessages.findIndex((m) => m.id === action.payload.id);
       if (sentIndex !== -1) {
         state.sentMessages[sentIndex] = {
@@ -163,7 +157,6 @@ const messagesSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // fetchReceivedMessages
       .addCase(fetchReceivedMessages.pending, (state) => {
         state.loading.received = true;
         state.error = null;
@@ -178,7 +171,6 @@ const messagesSlice = createSlice({
         state.loading.received = false;
         state.error = action.payload as string;
       })
-      // fetchSentMessages
       .addCase(fetchSentMessages.pending, (state) => {
         state.loading.sent = true;
         state.error = null;
@@ -193,7 +185,6 @@ const messagesSlice = createSlice({
         state.loading.sent = false;
         state.error = action.payload as string;
       })
-      // fetchMessage
       .addCase(fetchMessage.pending, (state) => {
         state.loading.message = true;
         state.error = null;
@@ -207,7 +198,6 @@ const messagesSlice = createSlice({
         state.loading.message = false;
         state.error = action.payload as string;
       })
-      // sendMessage
       .addCase(sendMessage.pending, (state) => {
         state.loading.action = true;
         state.error = null;
@@ -220,7 +210,6 @@ const messagesSlice = createSlice({
         state.loading.action = false;
         state.error = action.payload as string;
       })
-      // markMessageAsRead
       .addCase(markMessageAsRead.pending, (state) => {
         state.loading.action = true;
         state.error = null;
@@ -228,12 +217,10 @@ const messagesSlice = createSlice({
       .addCase(markMessageAsRead.fulfilled, (state, action) => {
         state.loading.action = false;
         const messageId = action.payload.messageId;
-        // Update message status in received messages
         const message = state.receivedMessages.find((m) => m.id === messageId);
         if (message) {
           message.status = 'read';
         }
-        // Update in messagesById if exists
         if (state.messagesById[messageId]) {
           state.messagesById[messageId].status = 'read';
         }
@@ -243,7 +230,6 @@ const messagesSlice = createSlice({
         state.loading.action = false;
         state.error = action.payload as string;
       })
-      // markMessageAsDelivered
       .addCase(markMessageAsDelivered.pending, (state) => {
         state.loading.action = true;
         state.error = null;
@@ -251,7 +237,6 @@ const messagesSlice = createSlice({
       .addCase(markMessageAsDelivered.fulfilled, (state, action) => {
         state.loading.action = false;
         const messageId = action.payload.messageId;
-        // Update message status
         const message = state.receivedMessages.find((m) => m.id === messageId);
         if (message && message.status === 'pending') {
           message.status = 'delivered';
@@ -265,7 +250,6 @@ const messagesSlice = createSlice({
         state.loading.action = false;
         state.error = action.payload as string;
       })
-      // reportMessage
       .addCase(reportMessage.pending, (state) => {
         state.loading.action = true;
         state.error = null;
@@ -273,7 +257,6 @@ const messagesSlice = createSlice({
       .addCase(reportMessage.fulfilled, (state, action) => {
         state.loading.action = false;
         const messageId = action.payload.messageId;
-        // Mark message as reported
         const message = state.receivedMessages.find((m) => m.id === messageId);
         if (message) {
           message.isReported = true;
@@ -287,7 +270,6 @@ const messagesSlice = createSlice({
         state.loading.action = false;
         state.error = action.payload as string;
       })
-      // deleteMessage
       .addCase(deleteMessage.pending, (state) => {
         state.loading.action = true;
         state.error = null;
@@ -295,9 +277,7 @@ const messagesSlice = createSlice({
       .addCase(deleteMessage.fulfilled, (state, action) => {
         state.loading.action = false;
         const messageId = action.payload.messageId;
-        // Remove from sent messages
         state.sentMessages = state.sentMessages.filter((m) => m.id !== messageId);
-        // Remove from messagesById
         delete state.messagesById[messageId];
         state.error = null;
       })

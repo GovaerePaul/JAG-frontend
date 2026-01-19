@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Container, Box, Divider, TextField, Button } from '@mui/material';
 import { Edit, Save, Cancel, LocationOn } from '@mui/icons-material';
-import { useRouter } from '@/i18n/navigation';
 import { updateUserPreferences } from '@/lib/users-api';
 import { useAuth } from '@/features/auth/useAuth';
 import { useUnreadMessages } from '@/features/messages/useUnreadMessages';
@@ -70,7 +69,6 @@ export default function ProfilePage() {
 
   const handleSaveProfile = () => {
     setEditDialogOpen(false);
-    // TODO: Implement save profile name
   };
 
   const handleCancelEdit = () => {
@@ -81,13 +79,9 @@ export default function ProfilePage() {
   const handleUpdatePreferences = async (preferences: Partial<UserPreferences>) => {
     setSavingPreferences(true);
     try {
-      const response = await updateUserPreferences(preferences);
-      if (!response.success) {
-        // Silent fail
-      }
-    } catch (_error) {
-      // Silent fail
-    } finally {
+      await updateUserPreferences(preferences);
+    } catch (_error) {}
+    finally {
       setSavingPreferences(false);
     }
   };
@@ -248,9 +242,7 @@ export default function ProfilePage() {
           open={locationDialogOpen}
           onClose={() => setLocationDialogOpen(false)}
           currentLocation={getLocationDisplay()}
-          onLocationUpdated={() => {
-            // Location will update when profile is refetched
-          }}
+          onLocationUpdated={() => {}}
         />
       </Container>
     </Box>

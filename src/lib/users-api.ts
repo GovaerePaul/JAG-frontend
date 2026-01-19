@@ -15,7 +15,6 @@ import type {
 import { auth } from './firebase';
 import { getReceivableUsersDirect } from './firestore-client';
 
-// Firestore Direct
 export async function getReceivableUsers(): Promise<ApiResponse<ReceivableUser[]>> {
   try {
     const user = auth.currentUser;
@@ -31,7 +30,6 @@ export async function getReceivableUsers(): Promise<ApiResponse<ReceivableUser[]
   }
 }
 
-// Cloud Functions
 export async function updateUserLocation(coordinates: Coordinates): Promise<ApiResponse<UserLocation>> {
   try {
     const fn = httpsCallable<{ coordinates: Coordinates }, { success: boolean; location: UserLocation }>(

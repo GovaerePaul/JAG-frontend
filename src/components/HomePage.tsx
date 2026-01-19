@@ -46,9 +46,6 @@ export default function HomePage({
   const t = useTranslations('home');
   const tCommon = useTranslations('common');
 
-  // Use userProfile from useAuth for gamification
-  // Memoize to ensure React detects changes when userProfile updates
-  // IMPORTANT: All hooks must be called before any conditional returns
   const gamification: GamificationData = useMemo(
     () => ({
       points: userProfile?.points ?? 0,
@@ -58,7 +55,6 @@ export default function HomePage({
     [userProfile?.points, userProfile?.level, userProfile?.totalPointsEarned]
   );
 
-  // Show loading if no user (AuthGuard will redirect to /auth)
   if (!user) {
     return (
       <Box
@@ -125,7 +121,6 @@ export default function HomePage({
           messageCounts={messageCounts}
         />
 
-        {/* Discover Users Button */}
         <StyledPaper sx={{ p: 4, textAlign: 'center' }}>
           <GradientTypography variant="h6" gutterBottom sx={{ mb: 2 }}>
             {t('discoverUsers.title')}

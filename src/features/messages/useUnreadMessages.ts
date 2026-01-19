@@ -21,8 +21,6 @@ export function useUnreadMessages(): UseUnreadMessagesReturn {
   const loading = useAppSelector(selectReceivedMessagesLoading);
   const error = useAppSelector(selectMessagesError);
   const { refetch } = useReceivedMessages();
-
-  // Use received messages for compatibility
   const messages = useAppSelector((state) => state.messages.receivedMessages);
 
   return {

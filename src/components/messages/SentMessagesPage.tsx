@@ -64,7 +64,7 @@ export default function SentMessagesPage() {
             } else {
               namesMap[userId] = userId;
             }
-          } catch (err) {
+          } catch (_err) {
             namesMap[userId] = userId;
           }
         })

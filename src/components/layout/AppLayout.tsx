@@ -16,16 +16,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
   const isAuthPage = pathname.includes('/auth');
   
-  // useUnreadMessages already calls useReceivedMessages internally, so we get both
   const { unreadCount } = useUnreadMessages();
 
-  // Auth page should always be accessible, render it directly without layout
   if (isAuthPage) {
     return <>{children}</>;
   }
 
-  // Show loading state only while auth is loading
-  // If auth is done and no user, AuthGuard will handle the redirect
   if (authLoading) {
     return (
       <Box
@@ -41,12 +37,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
     );
   }
 
-  // If auth is done but no user, return null (AuthGuard will redirect)
   if (!user) {
     return null;
   }
 
-  // Show loading state until user profile is ready (but user is authenticated)
   if (!isReady) {
     return (
       <Box
@@ -62,7 +56,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
     );
   }
 
-  // Redux handles all data now, no need for Context providers
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar user={user} canReceive={canReceive} unreadCount={unreadCount} />

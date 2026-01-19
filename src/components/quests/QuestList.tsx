@@ -37,7 +37,6 @@ export default function QuestList({ onQuestCompleted }: QuestListProps = {}) {
     return t(`categories.${category}`) || category;
   };
 
-  // Track newly completed quests for notifications
   useEffect(() => {
     const currentCompleted = new Set(
       quests.filter((q) => q.isCompleted).map((q) => q.quest.id)
@@ -47,7 +46,6 @@ export default function QuestList({ onQuestCompleted }: QuestListProps = {}) {
     );
 
     if (newlyCompleted.length > 0) {
-      // Quest was just completed - trigger notification
       newlyCompleted.forEach((questStatus) => {
         const questName = getQuestName(questStatus.quest);
         if (onQuestCompleted) {
@@ -89,7 +87,6 @@ export default function QuestList({ onQuestCompleted }: QuestListProps = {}) {
     );
   }
 
-  // Group quests by category
   const questsByCategory = quests.reduce((acc, questStatus) => {
     const category = questStatus.quest.category;
     if (!acc[category]) {

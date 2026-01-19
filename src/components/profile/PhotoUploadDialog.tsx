@@ -85,9 +85,7 @@ export default function PhotoUploadDialog({
       if (user.photoURL) {
         try {
           await deleteProfilePicture(user.photoURL);
-        } catch (error) {
-          // Ignore error when deleting old photo
-        }
+        } catch (_error) {}
       }
 
       const result = await updateUserProfileOnBackend({ photoURL: newPhotoURL });
@@ -97,9 +95,7 @@ export default function PhotoUploadDialog({
         if (user) {
           try {
             await reload(user);
-          } catch (error) {
-            // Ignore error when reloading user
-          }
+          } catch (_error) {}
         }
 
         onClose();
@@ -133,9 +129,7 @@ export default function PhotoUploadDialog({
         if (user) {
           try {
             await reload(user);
-          } catch (error) {
-            // Ignore error when reloading user
-          }
+          } catch (_error) {}
         }
 
         onClose();
@@ -144,7 +138,7 @@ export default function PhotoUploadDialog({
       } else {
         setPhotoError(result.error || t('photoError') || 'Error removing photo');
       }
-    } catch (error) {
+    } catch (_error) {
       setPhotoError(
         error instanceof Error ? error.message : t('photoError') || 'Error removing photo'
       );

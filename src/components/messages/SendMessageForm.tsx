@@ -65,14 +65,12 @@ export default function SendMessageForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Update formData.receiverId when receiverId prop changes
   useEffect(() => {
     if (receiverId) {
       setFormData((prev) => ({ ...prev, receiverId }));
     }
   }, [receiverId]);
 
-  // Reset form when dialog closes (but not on success, as that's handled separately)
   useEffect(() => {
     if (!open && !success) {
       setFormData({
@@ -108,7 +106,6 @@ export default function SendMessageForm({
     const response = await sendMessage(formData);
 
     if (response.success) {
-      // Refetch data after successful message send
       await Promise.all([
         refetchReceivedMessages(),
         refetchSentMessages(),
@@ -142,7 +139,6 @@ export default function SendMessageForm({
     }
   };
 
-  // Group events by category
   const joyfulEvents = eventTypes.filter((e) => e.category === 'joyful');
   const sadEvents = eventTypes.filter((e) => e.category === 'sad');
   const neutralEvents = eventTypes.filter((e) => e.category === 'neutral');
@@ -224,7 +220,6 @@ export default function SendMessageForm({
                   fullWidth
                   onClick={() => {
                     onClose();
-                    // Navigate to discover page
                     if (typeof window !== 'undefined') {
                       window.location.href = '/discover';
                     }

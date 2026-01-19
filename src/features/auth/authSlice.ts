@@ -34,7 +34,6 @@ export const updateProfile = createAsyncThunk(
     if (!response.success) {
       return rejectWithValue(response.error || 'Failed to update profile');
     }
-    // Refetch profile after update
     await dispatch(fetchUserProfile());
     return response.data;
   }
@@ -63,7 +62,6 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // fetchUserProfile
       .addCase(fetchUserProfile.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -78,7 +76,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // updateProfile
       .addCase(updateProfile.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -91,7 +88,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // deleteAccount
       .addCase(deleteAccount.pending, (state) => {
         state.loading = true;
         state.error = null;

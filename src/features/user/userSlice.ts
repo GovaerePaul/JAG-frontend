@@ -84,7 +84,6 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // fetchUserStats
       .addCase(fetchUserStats.pending, (state) => {
         state.loading.stats = true;
         state.error = null;
@@ -99,7 +98,6 @@ const userSlice = createSlice({
         state.loading.stats = false;
         state.error = action.payload as string;
       })
-      // fetchReceivableUsers
       .addCase(fetchReceivableUsers.pending, (state) => {
         state.loading.receivableUsers = true;
         state.error = null;
@@ -114,7 +112,6 @@ const userSlice = createSlice({
         state.loading.receivableUsers = false;
         state.error = action.payload as string;
       })
-      // discoverUsers
       .addCase(discoverUsers.pending, (state) => {
         state.loading.discoverUsers = true;
         state.error = null;

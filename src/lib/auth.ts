@@ -24,27 +24,22 @@ export interface SignInData {
 
 export const signUp = async ({ email, password, displayName, role }: SignUpData) => {
   try {
-    // Check if email already exists with any provider (email/password, Google)
     const signInMethods = await fetchSignInMethodsForEmail(auth, email);
     
     if (signInMethods.length > 0) {
-      // Check if Google is one of the sign-in methods
       const hasGoogle = signInMethods.includes('google.com');
       if (hasGoogle) {
-        // Google account exists - tell user to sign in with Google
         return { 
           user: null, 
           error: 'auth/account-exists-with-different-credential' 
         };
       }
-      // Email already exists with password - return error
       return { 
         user: null, 
         error: 'auth/email-already-in-use' 
       };
     }
     
-    // Email doesn't exist - proceed with account creation
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -52,8 +47,6 @@ export const signUp = async ({ email, password, displayName, role }: SignUpData)
 
     const userRef = doc(db, 'users', user.uid);
     
-    // Wait for the trigger to create the user profile in Firestore
-    // Poll until the document exists (max 10 attempts, 500ms between each)
     let attempts = 0;
     let docExists = false;
     
@@ -62,7 +55,6 @@ export const signUp = async ({ email, password, displayName, role }: SignUpData)
       const docSnapshot = await getDoc(userRef);
       if (docSnapshot.exists()) {
         docExists = true;
-        // Update only the role and displayName (trigger already set points, level, etc.)
         await updateDoc(userRef, {
           displayName,
           role,
@@ -73,8 +65,6 @@ export const signUp = async ({ email, password, displayName, role }: SignUpData)
       attempts++;
     }
 
-    // If document still doesn't exist after waiting (e.g., in emulator or trigger failed),
-    // create it manually with all required fields including points and level
     if (!docExists) {
       const now = new Date();
       const initialPoints = 50; // Same as POINTS.REGISTRATION in backend
@@ -162,7 +152,6 @@ export const getFirebaseErrorKey = (errorCode: string): string => {
       return 'auth.errors.invalidCredential';
     case 'auth/too-many-requests':
       return 'auth.errors.tooManyRequests';
-    // OAuth specific errors
     case 'auth/popup-closed':
       return 'auth.oauth.errors.popupClosed';
     case 'auth/popup-blocked':

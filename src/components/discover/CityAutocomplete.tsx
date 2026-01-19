@@ -34,7 +34,6 @@ export default function CityAutocomplete({
   const [loading, setLoading] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
 
-  // Debounce search
   const debouncedSearch = useCallback((searchQuery: string) => {
     if (debounceTimer) {
       clearTimeout(debounceTimer);
@@ -60,12 +59,11 @@ export default function CityAutocomplete({
       } finally {
         setLoading(false);
       }
-    }, 300); // 300ms debounce
+    }, 300);
 
     setDebounceTimer(timer);
   }, [debounceTimer]);
 
-  // Cleanup timer on unmount
   useEffect(() => {
     return () => {
       if (debounceTimer) {
@@ -74,7 +72,6 @@ export default function CityAutocomplete({
     };
   }, [debounceTimer]);
 
-  // Update input value when prop changes
   useEffect(() => {
     setInputValue(value);
   }, [value]);
@@ -90,10 +87,8 @@ export default function CityAutocomplete({
     newValue: string | CitySuggestion | null
   ) => {
     if (typeof newValue === 'string') {
-      // User typed a string manually
       onChange(newValue);
     } else if (newValue) {
-      // User selected a CitySuggestion
       onChange(newValue.displayName);
       onSelect({
         city: newValue.city,
@@ -101,7 +96,6 @@ export default function CityAutocomplete({
         country: newValue.country,
       });
     } else {
-      // Value cleared
       onChange(null);
     }
   };
@@ -121,7 +115,7 @@ export default function CityAutocomplete({
       onChange={handleChange}
       disabled={disabled}
       loading={loading}
-      filterOptions={(x) => x} // Disable default filtering, we do it server-side
+      filterOptions={(x) => x}
       renderInput={(params) => (
         <TextField
           {...params}
