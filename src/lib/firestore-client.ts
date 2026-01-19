@@ -191,16 +191,30 @@ export async function getUserProfileDirect(userId: string): Promise<UserProfile 
   if (!docSnap.exists()) return null;
 
   const data = docSnap.data();
+  
+  // Map location if it exists, converting Timestamp to string
+  const location = data.location ? {
+    city: data.location.city,
+    region: data.location.region,
+    country: data.location.country,
+    lastUpdated: data.location.lastUpdated ? timestampToISO(data.location.lastUpdated) : undefined,
+  } : undefined;
+
   return {
     uid: data.uid || docSnap.id,
     email: data.email,
     displayName: data.displayName,
     photoURL: data.photoURL,
+    createdAt: data.createdAt ? (timestampToISO(data.createdAt) || new Date().toISOString()) : new Date().toISOString(),
+    updatedAt: data.updatedAt ? (timestampToISO(data.updatedAt) || new Date().toISOString()) : new Date().toISOString(),
     isActive: data.isActive ?? true,
     role: data.role ?? 'both',
     points: data.points ?? 0,
     level: data.level ?? 1,
     totalPointsEarned: data.totalPointsEarned ?? 0,
+    location: location,
+    birthDate: data.birthDate ? timestampToISO(data.birthDate) : undefined,
+    preferences: data.preferences,
     completedQuests: data.completedQuests,
     questProgress: data.questProgress,
   };

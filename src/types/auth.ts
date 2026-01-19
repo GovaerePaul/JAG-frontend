@@ -8,7 +8,7 @@ export interface UserLocation {
   city?: string;
   region?: string;
   country?: string;
-  lastUpdated?: Timestamp;
+  lastUpdated?: string; // ISO string for Redux serialization
 }
 
 export interface UserPreferences {
@@ -23,14 +23,14 @@ export interface UserProfile {
   email: string;
   displayName?: string;
   photoURL?: string;
-  createdAt: string | Timestamp;
-  updatedAt: string | Timestamp;
+  createdAt: string; // ISO string for Redux serialization
+  updatedAt: string; // ISO string for Redux serialization
   isActive: boolean;
   role: UserRole;
   points?: number;
   level?: number;
   totalPointsEarned?: number;
   location?: UserLocation;
-  birthDate?: Timestamp;
+  birthDate?: string; // ISO string for Redux serialization
   preferences?: UserPreferences;
 }
