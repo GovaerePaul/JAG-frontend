@@ -1,7 +1,7 @@
 'use client';
 
 import apiClient from './axios';
-import { ApiResponse } from './types';
+import { ApiResponse } from '@/types/common';
 import { AxiosError } from 'axios';
 
 export interface CreateGiftData {

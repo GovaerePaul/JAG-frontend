@@ -3,8 +3,8 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase-functions';
 import { auth } from './firebase';
-import { ApiResponse } from './types';
 import { getUserProfileDirect, getUserStatsDirect } from './firestore-client';
+import { ApiResponse } from '@/types/common';
 
 export interface UpdateProfileRequest {
   displayName?: string;
