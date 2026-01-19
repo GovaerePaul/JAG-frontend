@@ -11,7 +11,7 @@ interface ReduxProviderProps {
 }
 
 export default function ReduxProvider({ children, preloadedState }: ReduxProviderProps) {
-  const store: AppStore = useMemo(() => makeStore(preloadedState), []);
+  const store: AppStore = useMemo(() => makeStore(preloadedState), [preloadedState]);
 
   return <Provider store={store}>{children}</Provider>;
 }

@@ -35,29 +35,34 @@ export function useMessage(messageId: string | null): UseMessageReturn {
   }, [stableMessageId, isReady, user, message, dispatch]);
 
   useEffect(() => {
-    if (!message) {
-      setSenderName('');
-      setReceiverName('');
-      return;
-    }
+    // Early return without setState - states are initialized to '' by default
+    if (!message) return;
+
+    let cancelled = false;
 
     const loadNames = async () => {
+      let newSenderName = '';
+      let newReceiverName = '';
+
       if (message.senderId && !message.isAnonymous) {
-        const name = await getCachedUserDisplayName(message.senderId);
-        setSenderName(name);
-      } else {
-        setSenderName('');
+        newSenderName = await getCachedUserDisplayName(message.senderId);
       }
 
       if (message.receiverId) {
-        const name = await getCachedUserDisplayName(message.receiverId);
-        setReceiverName(name);
-      } else {
-        setReceiverName('');
+        newReceiverName = await getCachedUserDisplayName(message.receiverId);
+      }
+
+      if (!cancelled) {
+        setSenderName(newSenderName);
+        setReceiverName(newReceiverName);
       }
     };
 
     loadNames();
+
+    return () => {
+      cancelled = true;
+    };
   }, [message]);
 
   const refetch = useCallback(async () => {

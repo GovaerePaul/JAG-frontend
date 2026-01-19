@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -51,18 +51,8 @@ export default function DiscoverFilters({
     initialFilters.preferredEventTypeIds.length > 0
   );
 
-  useEffect(() => {
-    if (initialFilters) {
-      setMaxDistance(initialFilters.maxDistance || 50);
-      setMinAge(initialFilters.minAge);
-      setMaxAge(initialFilters.maxAge);
-      setEventTypeId(initialFilters.eventTypeId || '');
-      setUseMyPreferences(
-        initialFilters.preferredEventTypeIds !== undefined &&
-        initialFilters.preferredEventTypeIds.length > 0
-      );
-    }
-  }, [initialFilters]);
+  // Note: The parent component should use a key prop (e.g., key={JSON.stringify(filters)})
+  // to remount this component when initialFilters changes, avoiding the need for useEffect sync
 
   const handleApply = () => {
     const filters: DiscoverUsersFilters = {

@@ -2,7 +2,7 @@
 
 import { IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { LanguageOutlined } from '@mui/icons-material';
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { locales, type Locale } from '@/i18n/request';
 
@@ -12,18 +12,15 @@ const localeNames: Record<Locale, string> = {
 };
 
 export default function LanguageSwitcher() {
-  const [currentLocale, setCurrentLocale] = useState<Locale>('fr');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const open = Boolean(anchorEl);
 
-  useEffect(() => {
+  const currentLocale = useMemo(() => {
     const pathSegments = pathname.split('/');
     const localeFromUrl = pathSegments[1];
-    if (locales.includes(localeFromUrl as Locale)) {
-      setCurrentLocale(localeFromUrl as Locale);
-    }
+    return locales.includes(localeFromUrl as Locale) ? (localeFromUrl as Locale) : 'fr';
   }, [pathname]);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {

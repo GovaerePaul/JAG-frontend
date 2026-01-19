@@ -93,7 +93,7 @@ export function useDiscoverUsers(
   const usersFromStore = useAppSelector(selectDiscoveredUsersList);
   const hasMore = useAppSelector(selectDiscoveredUsersHasMore);
 
-  const [users, setUsers] = useState<DiscoveredUser[]>([]);
+  const [users, setUsers] = useState<DiscoveredUser[]>(() => usersFromStore);
   const [currentDistance, setCurrentDistance] = useState(initialDistance);
   const [isExpanding, setIsExpanding] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<DiscoverUsersParams['filters']>();
@@ -104,6 +104,7 @@ export function useDiscoverUsers(
   } | null>(null);
   const attemptCountRef = useRef(0);
   const hasSearchedRef = useRef(false);
+  const performSearchRef = useRef<typeof performSearch | null>(null);
 
   useEffect(() => {
     if (userProfile?.location?.city && userProfile.preferences?.shareLocation) {
@@ -117,12 +118,6 @@ export function useDiscoverUsers(
       });
     }
   }, [userProfile]);
-
-  useEffect(() => {
-    if (usersFromStore.length > 0) {
-      setUsers(usersFromStore);
-    }
-  }, [usersFromStore]);
 
   const performSearch = useCallback(
     async (
@@ -181,7 +176,7 @@ export function useDiscoverUsers(
             if (nextDistance <= maxDistance) {
               attemptCountRef.current = nextAttempt;
               setTimeout(() => {
-                performSearch(
+                performSearchRef.current?.(
                   {
                     filters: searchParams.filters,
                     distance: nextDistance,
@@ -247,15 +242,17 @@ export function useDiscoverUsers(
     hasSearchedRef.current = false;
   }, [initialDistance]);
 
-  const performSearchRef = useRef(performSearch);
-  performSearchRef.current = performSearch;
+  // Update ref in an effect to avoid accessing ref during render
+  useEffect(() => {
+    performSearchRef.current = performSearch;
+  }, [performSearch]);
 
   useEffect(() => {
     if (userLocation && autoExpand && !hasSearchedRef.current) {
       hasSearchedRef.current = true;
       attemptCountRef.current = 0;
       setTimeout(() => {
-        performSearchRef.current(
+        performSearchRef.current?.(
           {
             filters: currentFilters,
             distance: initialDistance,

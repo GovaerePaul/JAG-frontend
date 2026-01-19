@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -65,23 +65,8 @@ export default function SendMessageForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    if (receiverId) {
-      setFormData((prev) => ({ ...prev, receiverId }));
-    }
-  }, [receiverId]);
-
-  useEffect(() => {
-    if (!open && !success) {
-      setFormData({
-        receiverId: receiverId || '',
-        eventTypeId: '',
-        content: '',
-        isAnonymous: false,
-      });
-      setError(null);
-    }
-  }, [open, success, receiverId]);
+  // Note: The parent component should use a key prop (e.g., key={`${open}-${receiverId}`})
+  // to remount this component when props change, avoiding the need for useEffect sync
 
   const selectedEvent = eventTypes.find((e) => e.id === formData.eventTypeId);
 
@@ -133,6 +118,13 @@ export default function SendMessageForm({
 
   const handleClose = () => {
     if (!sending) {
+      // Reset form state when closing
+      setFormData({
+        receiverId: receiverId || '',
+        eventTypeId: '',
+        content: '',
+        isAnonymous: false,
+      });
       setError(null);
       setSuccess(false);
       onClose();

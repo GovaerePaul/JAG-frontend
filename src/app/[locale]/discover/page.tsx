@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Container,
   Box,
@@ -38,20 +38,19 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<DiscoverUsersFilters>();
-  const [locationPermissionOpen, setLocationPermissionOpen] = useState(false);
+  const [locationPermissionOpen, setLocationPermissionOpen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    if (!userProfile || userProfile.preferences?.shareLocation === true) return false;
+    const hasSeenPrompt = localStorage.getItem('discover_location_prompt_seen');
+    if (!hasSeenPrompt) {
+      localStorage.setItem('discover_location_prompt_seen', 'true');
+      return true;
+    }
+    return false;
+  });
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
   const [selectedReceiverId, setSelectedReceiverId] = useState<string>();
   const [selectedReceiverName, setSelectedReceiverName] = useState<string>();
-
-  useEffect(() => {
-    if (userProfile && userProfile.preferences?.shareLocation !== true) {
-      const hasSeenPrompt = localStorage.getItem('discover_location_prompt_seen');
-      if (!hasSeenPrompt) {
-        setLocationPermissionOpen(true);
-        localStorage.setItem('discover_location_prompt_seen', 'true');
-      }
-    }
-  }, [userProfile]);
 
   const handleFiltersApply = (newFilters: DiscoverUsersFilters) => {
     setFilters(newFilters);
@@ -258,6 +257,7 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
 
       {filtersOpen && (
         <DiscoverFilters
+          key={JSON.stringify(filters)}
           open={filtersOpen}
           onClose={() => setFiltersOpen(false)}
           onApply={handleFiltersApply}
@@ -275,6 +275,7 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
 
       {sendMessageOpen && (
         <SendMessageForm
+          key={`${sendMessageOpen}-${selectedReceiverId}`}
           open={sendMessageOpen}
           onClose={() => {
             setSendMessageOpen(false);

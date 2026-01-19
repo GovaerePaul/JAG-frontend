@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { CacheProvider } from '@emotion/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -20,16 +20,17 @@ const theme = createTheme({
 
 const emotionCache = createEmotionCache();
 
+// useSyncExternalStore pattern for hydration-safe client detection
+const emptySubscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 interface ClientAppWrapperProps {
   children: React.ReactNode;
 }
 
 export default function ClientAppWrapper({ children }: ClientAppWrapperProps) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useSyncExternalStore(emptySubscribe, getClientSnapshot, getServerSnapshot);
 
   if (!isMounted) {
     return (
