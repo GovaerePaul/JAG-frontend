@@ -13,7 +13,7 @@ import {
 import { FilterList } from '@mui/icons-material';
 import { Explore } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
-import type { UserProfile } from '@/features/auth/useAuth';
+import type { UserProfile } from '@/types/auth';
 import { useDiscoverUsers } from '@/features/user/useDiscoverUsers';
 import { useEventTypes } from '@/features/events/useEventTypes';
 import type { DiscoverUsersFilters } from '@/types/users';

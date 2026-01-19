@@ -5,7 +5,7 @@ import { Container, Typography, Box, CircularProgress } from '@mui/material';
 import { Explore } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { User } from 'firebase/auth';
-import { UserProfile } from '@/features/auth/useAuth';
+import type { UserProfile } from '@/types/auth';
 import { useTranslations } from 'next-intl';
 import { getUserEmail } from '@/lib/userUtils';
 import GradientTypography from '@/components/ui/GradientTypography';

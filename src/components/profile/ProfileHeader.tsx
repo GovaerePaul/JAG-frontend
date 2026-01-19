@@ -4,7 +4,7 @@ import { Box, Typography, Avatar, Button, Chip, IconButton } from '@mui/material
 import { Edit, CameraAlt, Verified } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
 import { User } from 'firebase/auth';
-import { UserProfile } from '@/features/auth/useAuth';
+import type { UserProfile } from '@/types/auth';
 import type { EventType } from '@/types/events';
 import { getUserEmail } from '@/lib/userUtils';
 import GradientTypography from '@/components/ui/GradientTypography';

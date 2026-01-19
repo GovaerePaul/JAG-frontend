@@ -18,6 +18,7 @@ import type { UserRole, ReceivableUser } from '@/types/users';
 import type { EventCategory, EventType } from '@/types/events';
 import type { QuestCategory, QuestActionType, Quest, UserQuestStatus } from '@/types/quests';
 import type { UserProfile } from '@/types/auth';
+import type { UserStats } from '@/types/common';
 
 // Re-export types for backward compatibility
 export type { MessageStatus, MessageSummary, Message };
@@ -208,13 +209,7 @@ export async function getUserProfileDirect(userId: string): Promise<UserProfile 
   };
 }
 
-export async function getUserStatsDirect(userId: string): Promise<{
-  points: number;
-  level: number;
-  totalPointsEarned: number;
-  messagesSentCount: number;
-  messagesReceivedCount: number;
-} | null> {
+export async function getUserStatsDirect(userId: string): Promise<UserStats | null> {
   const profile = await getUserProfileDirect(userId);
   if (!profile) return null;
 
@@ -224,9 +219,14 @@ export async function getUserStatsDirect(userId: string): Promise<{
   ]);
 
   return {
-    points: profile.points,
-    level: profile.level,
-    totalPointsEarned: profile.totalPointsEarned,
+    uid: profile.uid,
+    email: profile.email,
+    displayName: profile.displayName,
+    createdAt: profile.createdAt,
+    isActive: profile.isActive,
+    points: profile.points ?? 0,
+    level: profile.level ?? 1,
+    totalPointsEarned: profile.totalPointsEarned ?? 0,
     messagesSentCount: sentSnapshot.size,
     messagesReceivedCount: receivedSnapshot.size,
   };

@@ -15,7 +15,8 @@ import {
   Divider
 } from '@mui/material';
 import { Visibility, VisibilityOff, Send, Inbox, SwapHoriz, Email, Lock } from '@mui/icons-material';
-import { signUp, getFirebaseErrorKey, UserRole } from '@/lib/auth';
+import { signUp, getFirebaseErrorKey } from '@/lib/auth';
+import type { UserRole } from '@/types/users';
 import { signInWithGoogle } from '@/lib/oauth';
 
 interface RegisterFormProps {

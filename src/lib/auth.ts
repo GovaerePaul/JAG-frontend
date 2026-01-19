@@ -8,8 +8,7 @@ import {
 import { auth, db } from './firebase';
 import { doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import authApiClient from './api-client';
-
-export type UserRole = 'sender' | 'receiver' | 'both';
+import type { UserRole } from '@/types/users';
 
 export interface SignUpData {
   email: string;

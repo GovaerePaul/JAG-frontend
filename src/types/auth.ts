@@ -33,4 +33,6 @@ export interface UserProfile {
   location?: UserLocation;
   birthDate?: string; // ISO string for Redux serialization
   preferences?: UserPreferences;
+  completedQuests?: string[];
+  questProgress?: Record<string, number>;
 }
