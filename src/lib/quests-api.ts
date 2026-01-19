@@ -1,8 +1,8 @@
 'use client';
 
-import { httpsCallable } from 'firebase/functions';
-import { functions } from './firebase-functions';
 import { ApiResponse } from './types';
+import { auth } from './firebase';
+import { getAllQuestsDirect, getUserQuestsDirect } from './firestore-client';
 
 export type QuestCategory = 'profile' | 'messages' | 'engagement';
 export type QuestActionType = 
@@ -14,8 +14,8 @@ export type QuestActionType =
 
 export interface Quest {
   id: string;
-  name: Record<string, string>; // Translations: { "en": "...", "fr": "..." }
-  description: Record<string, string>; // Translations
+  name: Record<string, string>;
+  description: Record<string, string>;
   category: QuestCategory;
   pointsReward: number;
   targetValue: number;
@@ -31,30 +31,13 @@ export interface UserQuestStatus {
   progressPercent: number;
 }
 
-export interface GetUserQuestsResponse {
-  success: boolean;
-  quests: UserQuestStatus[];
-}
-
-export interface GetAllQuestsResponse {
-  success: boolean;
-  quests: Quest[];
-}
-
 export async function getUserQuests(): Promise<ApiResponse<UserQuestStatus[]>> {
   try {
-    const fn = httpsCallable<void, GetUserQuestsResponse>(
-      functions,
-      'getUserQuestsFunction'
-    );
-    const result = await fn();
-    if (result.data.success) {
-      return { success: true, data: result.data.quests };
-    }
-    return {
-      success: false,
-      error: 'Failed to get user quests'
-    };
+    const user = auth.currentUser;
+    if (!user) return { success: false, error: 'User not authenticated' };
+    
+    const quests = await getUserQuestsDirect(user.uid);
+    return { success: true, data: quests as UserQuestStatus[] };
   } catch (error: unknown) {
     return {
       success: false,
@@ -65,18 +48,8 @@ export async function getUserQuests(): Promise<ApiResponse<UserQuestStatus[]>> {
 
 export async function getAllQuests(): Promise<ApiResponse<Quest[]>> {
   try {
-    const fn = httpsCallable<void, GetAllQuestsResponse>(
-      functions,
-      'getAllQuestsFunction'
-    );
-    const result = await fn();
-    if (result.data.success) {
-      return { success: true, data: result.data.quests };
-    }
-    return {
-      success: false,
-      error: 'Failed to get all quests'
-    };
+    const quests = await getAllQuestsDirect();
+    return { success: true, data: quests as Quest[] };
   } catch (error: unknown) {
     return {
       success: false,
@@ -84,4 +57,3 @@ export async function getAllQuests(): Promise<ApiResponse<Quest[]>> {
     };
   }
 }
-

@@ -1,8 +1,7 @@
 'use client';
 
-import { httpsCallable } from 'firebase/functions';
-import { functions } from './firebase-functions';
 import { ApiResponse } from './types';
+import { getEventTypesDirect } from './firestore-client';
 
 export type EventCategory = 'joyful' | 'sad' | 'neutral';
 
@@ -18,9 +17,8 @@ export interface EventType {
 
 export async function getEventTypes(locale: string = 'en'): Promise<ApiResponse<EventType[]>> {
   try {
-    const fn = httpsCallable<{locale: string}, EventType[]>(functions, 'getEventTypesFunction');
-    const result = await fn({locale});
-    return { success: true, data: result.data };
+    const eventTypes = await getEventTypesDirect(locale);
+    return { success: true, data: eventTypes as EventType[] };
   } catch (error: unknown) {
     return {
       success: false,

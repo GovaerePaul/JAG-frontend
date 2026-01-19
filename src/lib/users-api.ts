@@ -4,6 +4,8 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase-functions';
 import { ApiResponse } from './types';
 import { UserPreferences } from '@/hooks/useAuth';
+import { auth } from './firebase';
+import { getReceivableUsersDirect } from './firestore-client';
 
 export type UserRole = 'sender' | 'receiver' | 'both';
 
@@ -71,11 +73,14 @@ export interface DiscoverUsersResponse {
   hasMore: boolean;
 }
 
+// Firestore Direct
 export async function getReceivableUsers(): Promise<ApiResponse<ReceivableUser[]>> {
   try {
-    const fn = httpsCallable<void, ReceivableUser[]>(functions, 'getReceivableUsersFunction');
-    const result = await fn();
-    return { success: true, data: result.data };
+    const user = auth.currentUser;
+    if (!user) return { success: false, error: 'User not authenticated' };
+    
+    const users = await getReceivableUsersDirect(user.uid);
+    return { success: true, data: users as ReceivableUser[] };
   } catch (error: unknown) {
     return {
       success: false,
@@ -84,9 +89,8 @@ export async function getReceivableUsers(): Promise<ApiResponse<ReceivableUser[]
   }
 }
 
-export async function updateUserLocation(
-  coordinates: Coordinates
-): Promise<ApiResponse<UserLocation>> {
+// Cloud Functions
+export async function updateUserLocation(coordinates: Coordinates): Promise<ApiResponse<UserLocation>> {
   try {
     const fn = httpsCallable<{ coordinates: Coordinates }, { success: boolean; location: UserLocation }>(
       functions,
@@ -96,10 +100,7 @@ export async function updateUserLocation(
     if (result.data.success) {
       return { success: true, data: result.data.location };
     }
-    return {
-      success: false,
-      error: 'Failed to update location'
-    };
+    return { success: false, error: 'Failed to update location' };
   } catch (error: unknown) {
     return {
       success: false,
@@ -108,9 +109,7 @@ export async function updateUserLocation(
   }
 }
 
-export async function discoverUsers(
-  params: DiscoverUsersParams
-): Promise<ApiResponse<DiscoverUsersResponse>> {
+export async function discoverUsers(params: DiscoverUsersParams): Promise<ApiResponse<DiscoverUsersResponse>> {
   try {
     const fn = httpsCallable<DiscoverUsersParams, DiscoverUsersResponse>(
       functions,
@@ -126,10 +125,7 @@ export async function discoverUsers(
   }
 }
 
-export async function searchCities(
-  query: string,
-  limit?: number
-): Promise<ApiResponse<SearchCitiesResponse>> {
+export async function searchCities(query: string, limit?: number): Promise<ApiResponse<SearchCitiesResponse>> {
   try {
     const fn = httpsCallable<{ query: string; limit?: number }, SearchCitiesResponse>(
       functions,
@@ -145,9 +141,7 @@ export async function searchCities(
   }
 }
 
-export async function updateUserLocationByCity(
-  city: string
-): Promise<ApiResponse<UserLocation>> {
+export async function updateUserLocationByCity(city: string): Promise<ApiResponse<UserLocation>> {
   try {
     const fn = httpsCallable<{ city: string }, { success: boolean; location: UserLocation }>(
       functions,
@@ -157,10 +151,7 @@ export async function updateUserLocationByCity(
     if (result.data.success) {
       return { success: true, data: result.data.location };
     }
-    return {
-      success: false,
-      error: 'Failed to update location'
-    };
+    return { success: false, error: 'Failed to update location' };
   } catch (error: unknown) {
     return {
       success: false,
@@ -186,4 +177,3 @@ export async function updateUserPreferences(
     };
   }
 }
-
