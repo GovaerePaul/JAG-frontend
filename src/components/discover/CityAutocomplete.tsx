@@ -76,14 +76,14 @@ export default function CityAutocomplete({
     setInputValue(value);
   }, [value]);
 
-  const handleInputChange = (event: any, newInputValue: string) => {
+  const handleInputChange = (_event: React.SyntheticEvent, newInputValue: string) => {
     setInputValue(newInputValue);
     onChange(newInputValue);
     debouncedSearch(newInputValue);
   };
 
   const handleChange = (
-    event: any,
+    _event: React.SyntheticEvent,
     newValue: string | CitySuggestion | null
   ) => {
     if (typeof newValue === 'string') {

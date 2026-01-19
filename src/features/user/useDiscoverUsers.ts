@@ -265,7 +265,6 @@ export function useDiscoverUsers(
         );
       }, 0);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userLocation]);
 
   return {

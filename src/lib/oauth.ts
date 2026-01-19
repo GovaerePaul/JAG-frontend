@@ -10,7 +10,7 @@ import { auth, db } from './firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import authApiClient from './api-client';
 
-const isCapacitor = typeof window !== 'undefined' && (window as any).Capacitor !== undefined;
+const isCapacitor = typeof window !== 'undefined' && (window as { Capacitor?: unknown }).Capacitor !== undefined;
 
 export const signInWithGoogle = async () => {
   try {

@@ -48,7 +48,7 @@ export default function AuthPage() {
     if (!user && hasRedirectedRef.current) {
       hasRedirectedRef.current = false;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [user, loading]);
 
   const handleSwitchToRegister = () => {
