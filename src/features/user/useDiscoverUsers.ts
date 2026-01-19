@@ -11,7 +11,7 @@ import {
   selectDiscoveredUsersHasMore,
 } from './userSelectors';
 import { useAuth } from '@/features/auth/useAuth';
-import type { DiscoverUsersParams, DiscoveredUser } from '@/lib/users-api';
+import type { DiscoverUsersParams, DiscoveredUser } from '@/types/users';
 
 interface UseDiscoverUsersOptions {
   initialDistance?: number;

@@ -24,7 +24,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { MessageSummary } from '@/lib/messages-api';
+import type { MessageSummary } from '@/types/messages';
 import { useReceivedMessages } from '@/features/messages/useReceivedMessages';
 import { useEventTypes } from '@/features/events/useEventTypes';
 import { formatDate } from '@/utils/date';

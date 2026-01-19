@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '@/store/rootReducer';
-import type { EventCategory } from '@/lib/events-api';
+import type { EventCategory } from '@/types/events';
 
 const selectEventsState = (state: RootState) => state.events;
 

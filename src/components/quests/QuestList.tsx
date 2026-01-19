@@ -13,7 +13,7 @@ import {
 import { CheckCircle, RadioButtonUnchecked, EmojiEvents } from '@mui/icons-material';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQuests } from '@/features/quests/useQuests';
-import { UserQuestStatus } from '@/lib/quests-api';
+import type { UserQuestStatus } from '@/types/quests';
 
 interface QuestListProps {
   onQuestCompleted?: (questName: string, points: number) => void;

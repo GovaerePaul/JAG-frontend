@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { userRepository } from './userRepository';
-import type { ReceivableUser, DiscoverUsersParams, DiscoverUsersResponse } from '@/lib/users-api';
+import type { ReceivableUser, DiscoverUsersParams, DiscoverUsersResponse } from '@/types/users';
 import type { UserStats } from './userRepository';
 
 interface UserState {

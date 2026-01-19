@@ -1,19 +1,11 @@
 'use client';
 
-import { ApiResponse } from './types';
+import { ApiResponse } from '@/types/common';
+import type { EventType } from '@/types/events';
 import { getEventTypesDirect } from './firestore-client';
 
-export type EventCategory = 'joyful' | 'sad' | 'neutral';
-
-export interface EventType {
-  id: string;
-  name: string;
-  description: string;
-  category: EventCategory;
-  icon: string;
-  isActive: boolean;
-  createdAt: string;
-}
+// Re-export types for backward compatibility
+export type { EventCategory, EventType } from '@/types/events';
 
 export async function getEventTypes(locale: string = 'en'): Promise<ApiResponse<EventType[]>> {
   try {

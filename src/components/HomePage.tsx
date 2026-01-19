@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Container, Typography, Box, CircularProgress } from '@mui/material';
 import { Explore } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { User } from 'firebase/auth';
 import { UserProfile } from '@/features/auth/useAuth';
 import { useTranslations } from 'next-intl';
-import SendMessageForm from '@/components/messages/SendMessageForm';
 import { getUserEmail } from '@/lib/userUtils';
 import GradientTypography from '@/components/ui/GradientTypography';
 import StyledPaper from '@/components/ui/StyledPaper';
@@ -46,7 +45,6 @@ export default function HomePage({
   const router = useRouter();
   const t = useTranslations('home');
   const tCommon = useTranslations('common');
-  const [sendMessageOpen, setSendMessageOpen] = useState(false);
 
   // Use userProfile from useAuth for gamification
   // Memoize to ensure React detects changes when userProfile updates
@@ -149,16 +147,6 @@ export default function HomePage({
             {t('discoverUsers.button')}
           </GradientButton>
         </StyledPaper>
-
-        {/* Send Message Dialog */}
-        <SendMessageForm
-          open={sendMessageOpen}
-          onClose={() => setSendMessageOpen(false)}
-          onSuccess={() => {
-            // Message sent successfully
-            setSendMessageOpen(false);
-          }}
-        />
       </Container>
     </Box>
   );

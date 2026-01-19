@@ -1,8 +1,8 @@
 'use client';
 
 import { getEventTypesDirect } from '@/lib/firestore-client';
-import type { ApiResponse } from '@/lib/types';
-import type { EventType } from '@/lib/events-api';
+import type { ApiResponse } from '@/types/common';
+import type { EventType } from '@/types/events';
 
 export class EventsRepository {
   async getEventTypes(locale: string = 'en'): Promise<ApiResponse<EventType[]>> {

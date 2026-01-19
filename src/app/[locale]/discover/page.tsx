@@ -15,7 +15,8 @@ import { Explore } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
 import type { UserProfile } from '@/features/auth/useAuth';
 import { useDiscoverUsers } from '@/features/user/useDiscoverUsers';
-import { DiscoverUsersFilters } from '@/lib/users-api';
+import { useEventTypes } from '@/features/events/useEventTypes';
+import type { DiscoverUsersFilters } from '@/types/users';
 import UserCard from '@/components/discover/UserCard';
 import DiscoverFilters from '@/components/discover/DiscoverFilters';
 import LocationPermission from '@/components/discover/LocationPermission';
@@ -33,6 +34,7 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
       maxDistance: 500,
       autoExpand: true,
     });
+  const { eventTypes } = useEventTypes();
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<DiscoverUsersFilters>();
@@ -220,6 +222,7 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
               <Box key={discoveredUser.user.uid}>
                 <UserCard
                   user={discoveredUser}
+                  eventTypes={eventTypes}
                   onSendMessage={(userId) =>
                     handleSendMessage(userId, discoveredUser.user.displayName)
                   }
@@ -262,33 +265,39 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
         </>
       )}
 
-      {/* Dialogs */}
-      <DiscoverFilters
-        open={filtersOpen}
-        onClose={() => setFiltersOpen(false)}
-        onApply={handleFiltersApply}
-        initialFilters={filters}
-      />
+      {/* Dialogs - Rendered conditionally to avoid mounting when closed */}
+      {filtersOpen && (
+        <DiscoverFilters
+          open={filtersOpen}
+          onClose={() => setFiltersOpen(false)}
+          onApply={handleFiltersApply}
+          initialFilters={filters}
+        />
+      )}
 
-      <LocationPermission
-        open={locationPermissionOpen}
-        onClose={() => setLocationPermissionOpen(false)}
-        onLocationEnabled={handleLocationEnabled}
-      />
+      {locationPermissionOpen && (
+        <LocationPermission
+          open={locationPermissionOpen}
+          onClose={() => setLocationPermissionOpen(false)}
+          onLocationEnabled={handleLocationEnabled}
+        />
+      )}
 
-      <SendMessageForm
-        open={sendMessageOpen}
-        onClose={() => {
-          setSendMessageOpen(false);
-          setSelectedReceiverId(undefined);
-          setSelectedReceiverName(undefined);
-        }}
-        receiverId={selectedReceiverId}
-        receiverName={selectedReceiverName}
-        onSuccess={() => {
-          setSendMessageOpen(false);
-        }}
-      />
+      {sendMessageOpen && (
+        <SendMessageForm
+          open={sendMessageOpen}
+          onClose={() => {
+            setSendMessageOpen(false);
+            setSelectedReceiverId(undefined);
+            setSelectedReceiverName(undefined);
+          }}
+          receiverId={selectedReceiverId}
+          receiverName={selectedReceiverName}
+          onSuccess={() => {
+            setSendMessageOpen(false);
+          }}
+        />
+      )}
       </Container>
     </Box>
   );

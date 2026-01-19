@@ -1,35 +1,12 @@
 'use client';
 
-import { ApiResponse } from './types';
+import { ApiResponse } from '@/types/common';
+import type { Quest, UserQuestStatus } from '@/types/quests';
 import { auth } from './firebase';
 import { getAllQuestsDirect, getUserQuestsDirect } from './firestore-client';
 
-export type QuestCategory = 'profile' | 'messages' | 'engagement';
-export type QuestActionType = 
-  | 'update_favorites' 
-  | 'send_message' 
-  | 'receive_message' 
-  | 'update_location'
-  | 'update_photo';
-
-export interface Quest {
-  id: string;
-  name: Record<string, string>;
-  description: Record<string, string>;
-  category: QuestCategory;
-  pointsReward: number;
-  targetValue: number;
-  actionType: QuestActionType;
-  isActive: boolean;
-  order: number;
-}
-
-export interface UserQuestStatus {
-  quest: Quest;
-  isCompleted: boolean;
-  progress: number;
-  progressPercent: number;
-}
+// Re-export types for backward compatibility
+export type { QuestCategory, QuestActionType, Quest, UserQuestStatus } from '@/types/quests';
 
 export async function getUserQuests(): Promise<ApiResponse<UserQuestStatus[]>> {
   try {

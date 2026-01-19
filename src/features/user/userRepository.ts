@@ -3,16 +3,8 @@
 import { auth } from '@/lib/firebase';
 import { getUserStatsDirect, getReceivableUsersDirect } from '@/lib/firestore-client';
 import { discoverUsers } from '@/lib/users-api';
-import type { ApiResponse } from '@/lib/types';
-import type { ReceivableUser, DiscoverUsersParams, DiscoverUsersResponse } from '@/lib/users-api';
-
-export interface UserStats {
-  points: number;
-  level: number;
-  totalPointsEarned: number;
-  messagesSentCount: number;
-  messagesReceivedCount: number;
-}
+import type { ApiResponse, UserStats } from '@/types/common';
+import type { ReceivableUser, DiscoverUsersParams, DiscoverUsersResponse } from '@/types/users';
 
 export class UserRepository {
   async getUserStats(): Promise<ApiResponse<UserStats>> {

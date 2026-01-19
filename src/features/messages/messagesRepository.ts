@@ -13,8 +13,8 @@ import {
   reportMessage as reportMessageApi,
   deleteMessage as deleteMessageApi,
 } from '@/lib/messages-api';
-import type { ApiResponse } from '@/lib/types';
-import type { Message, MessageSummary, SendMessageData } from '@/lib/messages-api';
+import type { ApiResponse } from '@/types/common';
+import type { Message, MessageSummary, SendMessageData } from '@/types/messages';
 
 export class MessagesRepository {
   async getReceivedMessages(): Promise<ApiResponse<MessageSummary[]>> {

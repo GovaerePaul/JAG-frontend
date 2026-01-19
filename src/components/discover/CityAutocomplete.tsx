@@ -8,7 +8,8 @@ import {
   Box,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { searchCities, CitySuggestion } from '@/lib/users-api';
+import { searchCities } from '@/lib/users-api';
+import type { CitySuggestion } from '@/types/users';
 
 interface CityAutocompleteProps {
   value: string;

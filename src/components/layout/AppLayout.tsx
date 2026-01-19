@@ -4,7 +4,6 @@ import React from 'react';
 import { CircularProgress, Box } from '@mui/material';
 import { useAuth } from '@/features/auth/useAuth';
 import { useUnreadMessages } from '@/features/messages/useUnreadMessages';
-import { useUserStats } from '@/features/user/useUserStats';
 import { usePathname } from '@/i18n/navigation';
 import Navbar from '../Navbar';
 
@@ -19,7 +18,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
   
   // useUnreadMessages already calls useReceivedMessages internally, so we get both
   const { unreadCount, messages: receivedMessages, refetch: refetchUnreadMessages } = useUnreadMessages();
-  const { messageCounts, refetch: refetchUserStats } = useUserStats();
   // refetchReceivedMessages is the same as refetchUnreadMessages since they share the same hook
   const refetchReceivedMessages = refetchUnreadMessages;
 

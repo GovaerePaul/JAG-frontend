@@ -1,6 +1,6 @@
 'use client';
 
-import { EventType } from '@/lib/events-api';
+import type { EventType } from '@/types/events';
 import { Box, Typography } from '@mui/material';
 
 interface EventTypeDisplayProps {

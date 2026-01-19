@@ -3,7 +3,7 @@
 import { auth } from '@/lib/firebase';
 import { getUserProfileDirect } from '@/lib/firestore-client';
 import authApiClient from '@/lib/api-client';
-import type { ApiResponse } from '@/lib/types';
+import type { ApiResponse } from '@/types/common';
 import type { UserProfile } from '@/types/auth';
 
 export class AuthRepository {

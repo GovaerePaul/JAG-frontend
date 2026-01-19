@@ -3,21 +3,21 @@
 import { Card, CardContent, CardActions, Avatar, Typography, Button, Chip, Box } from '@mui/material';
 import { Person, Send } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
-import { DiscoveredUser } from '@/lib/users-api';
+import type { DiscoveredUser } from '@/types/users';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { useEventTypes } from '@/features/events/useEventTypes';
+import type { EventType } from '@/types/events';
 
 interface UserCardProps {
   user: DiscoveredUser;
+  eventTypes: EventType[];
   onSendMessage?: (userId: string, userName?: string) => void;
 }
 
-export default function UserCard({ user, onSendMessage }: UserCardProps) {
+export default function UserCard({ user, eventTypes, onSendMessage }: UserCardProps) {
   const t = useTranslations('discover');
   const router = useRouter();
   const locale = useLocale();
-  const { eventTypes } = useEventTypes();
   const isNew = false;
 
   // Get favorite event types for this user

@@ -2,7 +2,8 @@
 
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase-functions';
-import { ApiResponse } from './types';
+import { ApiResponse } from '@/types/common';
+import type { Message, MessageSummary, SendMessageData } from '@/types/messages';
 import {
   getReceivedMessagesDirect,
   getSentMessagesDirect,
@@ -12,42 +13,8 @@ import {
 } from './firestore-client';
 import { auth } from './firebase';
 
-export type MessageStatus = 'pending' | 'delivered' | 'read';
-
-export interface Message {
-  id: string;
-  senderId: string | null;
-  receiverId: string;
-  eventTypeId: string;
-  content: string;
-  isAnonymous: boolean;
-  status: MessageStatus;
-  isReported: boolean;
-  reportReason?: string;
-  replyToId?: string;
-  createdAt: string;
-  deliveredAt?: string;
-  readAt?: string;
-}
-
-export interface MessageSummary {
-  id: string;
-  senderId: string | null;
-  receiverId: string;
-  eventTypeId: string;
-  isAnonymous: boolean;
-  status: MessageStatus;
-  isReported: boolean;
-  createdAt: string;
-}
-
-export interface SendMessageData {
-  receiverId: string;
-  eventTypeId: string;
-  content: string;
-  isAnonymous: boolean;
-  replyToId?: string;
-}
+// Re-export types for backward compatibility
+export type { MessageStatus, Message, MessageSummary, SendMessageData } from '@/types/messages';
 
 // Cloud Functions
 export async function sendMessage(data: SendMessageData): Promise<ApiResponse<{ messageId: string }>> {

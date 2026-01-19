@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { questsRepository } from './questsRepository';
-import type { Quest, UserQuestStatus } from '@/lib/quests-api';
+import type { Quest, UserQuestStatus } from '@/types/quests';
 
 interface QuestsState {
   userQuests: UserQuestStatus[];

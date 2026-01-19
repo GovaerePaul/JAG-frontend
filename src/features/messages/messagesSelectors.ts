@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '@/store/rootReducer';
-import type { MessageSummary } from '@/lib/messages-api';
+import type { MessageSummary } from '@/types/messages';
 
 const selectMessagesState = (state: RootState) => state.messages;
 

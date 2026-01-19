@@ -6,7 +6,7 @@ import { fetchMessage } from './messagesSlice';
 import { selectMessageById, selectMessagesLoading } from './messagesSelectors';
 import { useAuth } from '@/features/auth/useAuth';
 import { getCachedUserDisplayName } from '@/lib/user-cache';
-import type { Message } from '@/lib/messages-api';
+import type { Message } from '@/types/messages';
 
 interface UseMessageReturn {
   message: Message | null;

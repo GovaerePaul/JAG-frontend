@@ -13,44 +13,16 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import type { MessageStatus, MessageSummary, Message } from '@/types/messages';
+import type { UserRole, ReceivableUser } from '@/types/users';
+import type { EventCategory, EventType } from '@/types/events';
+import type { QuestCategory, QuestActionType, Quest, UserQuestStatus } from '@/types/quests';
 
-// Types
-export type MessageStatus = 'pending' | 'delivered' | 'read';
-export type UserRole = 'sender' | 'receiver' | 'both';
-export type EventCategory = 'joyful' | 'sad' | 'neutral';
-export type QuestCategory = 'profile' | 'messages' | 'engagement';
-export type QuestActionType =
-  | 'update_favorites'
-  | 'send_message'
-  | 'receive_message'
-  | 'update_location'
-  | 'update_photo';
-
-export interface MessageSummary {
-  id: string;
-  senderId: string | null;
-  receiverId: string;
-  eventTypeId: string;
-  isAnonymous: boolean;
-  status: MessageStatus;
-  isReported: boolean;
-  createdAt: string;
-}
-
-export interface Message extends MessageSummary {
-  content: string;
-  reportReason?: string;
-  replyToId?: string;
-  deliveredAt?: string;
-  readAt?: string;
-}
-
-export interface ReceivableUser {
-  uid: string;
-  displayName: string;
-  photoURL: string;
-  role: UserRole;
-}
+// Re-export types for backward compatibility
+export type { MessageStatus, MessageSummary, Message };
+export type { UserRole, ReceivableUser };
+export type { EventCategory, EventType };
+export type { QuestCategory, QuestActionType, Quest, UserQuestStatus };
 
 export interface UserProfile {
   uid: string;
@@ -66,16 +38,6 @@ export interface UserProfile {
   questProgress?: Record<string, number>;
 }
 
-export interface EventType {
-  id: string;
-  name: string;
-  description: string;
-  category: EventCategory;
-  icon: string;
-  isActive: boolean;
-  createdAt: string;
-}
-
 interface EventTypeTranslation {
   name: string;
   description: string;
@@ -88,25 +50,6 @@ interface EventTypeDoc {
   icon: string;
   isActive: boolean;
   createdAt: Timestamp;
-}
-
-export interface Quest {
-  id: string;
-  name: Record<string, string>;
-  description: Record<string, string>;
-  category: QuestCategory;
-  pointsReward: number;
-  targetValue: number;
-  actionType: QuestActionType;
-  isActive: boolean;
-  order: number;
-}
-
-export interface UserQuestStatus {
-  quest: Quest;
-  isCompleted: boolean;
-  progress: number;
-  progressPercent: number;
 }
 
 // Helpers

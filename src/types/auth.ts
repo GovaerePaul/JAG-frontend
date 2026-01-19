@@ -1,6 +1,8 @@
 import { Timestamp } from 'firebase/firestore';
+import type { UserRole } from './users';
 
-export type UserRole = 'sender' | 'receiver' | 'both';
+// Re-export UserRole for convenience
+export type { UserRole };
 
 export interface UserLocation {
   city?: string;

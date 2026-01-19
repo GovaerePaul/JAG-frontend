@@ -1,4 +1,4 @@
-import { MessageStatus } from '@/lib/messages-api';
+import type { MessageStatus } from '@/types/messages';
 
 export function getStatusColor(status: MessageStatus): 'success' | 'info' | 'warning' | 'default' {
   switch (status) {

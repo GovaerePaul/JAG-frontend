@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { FilterList, Close } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
-import { DiscoverUsersFilters } from '@/lib/users-api';
+import type { DiscoverUsersFilters } from '@/types/users';
 import { useEventTypes } from '@/features/events/useEventTypes';
 import { useAuth } from '@/features/auth/useAuth';
 

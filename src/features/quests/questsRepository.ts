@@ -2,8 +2,8 @@
 
 import { auth } from '@/lib/firebase';
 import { getAllQuestsDirect, getUserQuestsDirect } from '@/lib/firestore-client';
-import type { ApiResponse } from '@/lib/types';
-import type { Quest, UserQuestStatus } from '@/lib/quests-api';
+import type { ApiResponse } from '@/types/common';
+import type { Quest, UserQuestStatus } from '@/types/quests';
 
 export class QuestsRepository {
   async getUserQuests(): Promise<ApiResponse<UserQuestStatus[]>> {
