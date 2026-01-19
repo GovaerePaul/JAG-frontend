@@ -23,6 +23,7 @@ export default function LocationDialog({
   onLocationUpdated,
 }: LocationDialogProps) {
   const t = useTranslations('profile');
+  const tCommon = useTranslations('common');
   const [locationCity, setLocationCity] = useState('');
   const [selectedLocationCity, setSelectedLocationCity] = useState<{
     city: string;
@@ -102,7 +103,7 @@ export default function LocationDialog({
             disabled={updatingLocation || !selectedLocationCity || !selectedLocationCity.city.trim()}
             startIcon={updatingLocation ? <CircularProgress size={20} /> : <Save />}
           >
-            {updatingLocation ? t('common.loading') || 'Chargement...' : t('save') || 'Enregistrer'}
+            {updatingLocation ? tCommon('loading') : t('save')}
           </GradientButton>
         </>
       }
