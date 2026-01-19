@@ -8,7 +8,6 @@ import {
   Button,
   CircularProgress,
   Alert,
-  Chip,
 } from '@mui/material';
 import { FilterList } from '@mui/icons-material';
 import { Explore } from '@mui/icons-material';
@@ -16,7 +15,6 @@ import { useTranslations } from 'next-intl';
 import type { UserProfile } from '@/types/auth';
 import { useDiscoverUsers } from '@/features/user/useDiscoverUsers';
 import { useEventTypes } from '@/features/events/useEventTypes';
-import type { DiscoverUsersFilters } from '@/types/users';
 import UserCard from '@/components/discover/UserCard';
 import DiscoverFilters from '@/components/discover/DiscoverFilters';
 import LocationPermission from '@/components/discover/LocationPermission';
@@ -35,7 +33,6 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
   const { eventTypes } = useEventTypes();
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState<DiscoverUsersFilters>();
   const [locationPermissionOpen, setLocationPermissionOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
     if (!userProfile || userProfile.preferences?.shareLocation === true) return false;
@@ -50,9 +47,8 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
   const [selectedReceiverId, setSelectedReceiverId] = useState<string>();
   const [selectedReceiverName, setSelectedReceiverName] = useState<string>();
 
-  const handleFiltersApply = (newFilters: DiscoverUsersFilters) => {
-    setFilters(newFilters);
-    search({ filters: newFilters });
+  const handleDistanceChange = (distance: number) => {
+    search({ filters: { maxDistance: distance } });
   };
 
   const handleSendMessage = (userId: string, userName?: string) => {
@@ -62,7 +58,7 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
   };
 
   const handleLocationEnabled = () => {
-    search({ filters });
+    search({ filters: { maxDistance: currentDistance } });
   };
 
   return (
@@ -164,33 +160,6 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
             <Typography variant="h6" gutterBottom>
               {t('nearYou')}
             </Typography>
-            {filters && (
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
-                {filters.maxDistance && (
-                  <Chip
-                    label={`${t('filterOptions.maxDistance', { distance: filters.maxDistance })}`}
-                    size="small"
-                    onDelete={() => {
-                      const newFilters = { ...filters };
-                      delete newFilters.maxDistance;
-                      handleFiltersApply(newFilters);
-                    }}
-                  />
-                )}
-                {(filters.minAge || filters.maxAge) && (
-                  <Chip
-                    label={`Age: ${filters.minAge || '18'}-${filters.maxAge || '100'}`}
-                    size="small"
-                    onDelete={() => {
-                      const newFilters = { ...filters };
-                      delete newFilters.minAge;
-                      delete newFilters.maxAge;
-                      handleFiltersApply(newFilters);
-                    }}
-                  />
-                )}
-              </Box>
-            )}
           </Box>
 
           <Box
@@ -253,11 +222,10 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
 
       {filtersOpen && (
         <DiscoverFilters
-          key={JSON.stringify(filters)}
           open={filtersOpen}
           onClose={() => setFiltersOpen(false)}
-          onApply={handleFiltersApply}
-          initialFilters={filters}
+          onDistanceChange={handleDistanceChange}
+          currentDistance={currentDistance}
         />
       )}
 
