@@ -138,7 +138,7 @@ export default function PhotoUploadDialog({
       } else {
         setPhotoError(result.error || t('photoError') || 'Error removing photo');
       }
-    } catch (_error) {
+    } catch (error) {
       setPhotoError(
         error instanceof Error ? error.message : t('photoError') || 'Error removing photo'
       );
