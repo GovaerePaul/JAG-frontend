@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -8,6 +9,7 @@ import {
   Button,
   Box,
   Typography,
+  Slider,
 } from '@mui/material';
 import { FilterList, Close } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
@@ -19,6 +21,13 @@ interface DiscoverFiltersProps {
   currentDistance: number;
 }
 
+const distanceMarks = [
+  { value: 10, label: '10km' },
+  { value: 100, label: '100km' },
+  { value: 250, label: '250km' },
+  { value: 500, label: '500km' },
+];
+
 export default function DiscoverFilters({
   open,
   onClose,
@@ -27,6 +36,12 @@ export default function DiscoverFilters({
 }: DiscoverFiltersProps) {
   const t = useTranslations('discover.filterOptions');
   const tCommon = useTranslations('common');
+  const [localDistance, setLocalDistance] = useState(currentDistance);
+
+  const handleApply = () => {
+    onDistanceChange(localDistance);
+    onClose();
+  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -44,31 +59,25 @@ export default function DiscoverFilters({
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, mt: 1 }}>
           <Box>
             <Typography gutterBottom>{t('distance')}</Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant={currentDistance === 50 ? 'contained' : 'outlined'}
-                disabled={currentDistance === 50}
-                onClick={() => onDistanceChange(50)}
-                sx={{ flex: 1 }}
-              >
-                50 km
-              </Button>
-              <Button
-                variant={currentDistance === 250 ? 'contained' : 'outlined'}
-                disabled={currentDistance === 250}
-                onClick={() => onDistanceChange(250)}
-                sx={{ flex: 1 }}
-              >
-                250 km
-              </Button>
-              <Button
-                variant={currentDistance === 500 ? 'contained' : 'outlined'}
-                disabled={currentDistance === 500}
-                onClick={() => onDistanceChange(500)}
-                sx={{ flex: 1 }}
-              >
-                500 km
-              </Button>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              {t('maxDistance', { distance: localDistance })}
+            </Typography>
+            <Box sx={{ px: 1 }}>
+              <Slider
+                value={localDistance}
+                onChange={(_, value) => setLocalDistance(value as number)}
+                min={10}
+                max={500}
+                step={10}
+                valueLabelDisplay="auto"
+                valueLabelFormat={(value) => `${value} km`}
+                marks={distanceMarks}
+                sx={{
+                  '& .MuiSlider-markLabel': {
+                    fontSize: '0.75rem',
+                  },
+                }}
+              />
             </Box>
           </Box>
         </Box>
@@ -76,6 +85,18 @@ export default function DiscoverFilters({
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose}>{tCommon('close')}</Button>
+        <Button 
+          variant="contained" 
+          onClick={handleApply}
+          sx={{
+            background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #FE6B8B 50%, #FF8E53 100%)',
+            },
+          }}
+        >
+          {t('apply')}
+        </Button>
       </DialogActions>
     </Dialog>
   );
