@@ -3,7 +3,7 @@
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase-functions';
 import { ApiResponse } from './types';
-import { UserPreferences } from '@/hooks/useAuth';
+import type { UserPreferences } from '@/types/auth';
 import { auth } from './firebase';
 import { getReceivableUsersDirect } from './firestore-client';
 

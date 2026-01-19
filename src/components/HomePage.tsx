@@ -5,7 +5,7 @@ import { Container, Typography, Box, CircularProgress } from '@mui/material';
 import { Explore } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { User } from 'firebase/auth';
-import { UserProfile } from '@/hooks/useAuth';
+import { UserProfile } from '@/features/auth/useAuth';
 import { useTranslations } from 'next-intl';
 import SendMessageForm from '@/components/messages/SendMessageForm';
 import { getUserEmail } from '@/lib/userUtils';
@@ -48,7 +48,7 @@ export default function HomePage({
   const tCommon = useTranslations('common');
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
 
-  // Use userProfile from useAuth for gamification (auto-updates via onSnapshot)
+  // Use userProfile from useAuth for gamification
   // Memoize to ensure React detects changes when userProfile updates
   // IMPORTANT: All hooks must be called before any conditional returns
   const gamification: GamificationData = useMemo(

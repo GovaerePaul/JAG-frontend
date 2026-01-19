@@ -25,8 +25,8 @@ import { useTranslations } from 'next-intl';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { MessageSummary } from '@/lib/messages-api';
-import { useSentMessages } from '@/hooks/useSentMessages';
-import { useEventTypesContext } from '@/contexts/EventTypesContext';
+import { useSentMessages } from '@/features/messages/useSentMessages';
+import { useEventTypes } from '@/features/events/useEventTypes';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
 import MessageCard from './MessageCard';
@@ -79,7 +79,7 @@ export default function SentMessagesPage() {
   }, [sentMessages, getReceiverIds]);
 
   const messages = sentMessages;
-  const { eventTypes } = useEventTypesContext();
+  const { eventTypes } = useEventTypes();
 
   if (loading) {
     return (

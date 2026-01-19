@@ -12,7 +12,7 @@ import {
 import { Favorite, AutoAwesome } from '@mui/icons-material';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/features/auth/useAuth';
 import { checkGoogleRedirectResult } from '@/lib/oauth';
 
 export default function AuthPage() {

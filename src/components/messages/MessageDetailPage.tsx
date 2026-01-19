@@ -22,9 +22,9 @@ import { useRouter } from '@/i18n/navigation';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { markMessageAsRead, reportMessage } from '@/lib/messages-api';
-import { useAppData } from '@/contexts/AppDataContext';
-import { useEventTypesContext } from '@/contexts/EventTypesContext';
-import { useMessage } from '@/hooks/useMessage';
+import { useUnreadMessages } from '@/features/messages/useUnreadMessages';
+import { useEventTypes } from '@/features/events/useEventTypes';
+import { useMessage } from '@/features/messages/useMessage';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
 import EventTypeDisplay from './EventTypeDisplay';
@@ -50,8 +50,8 @@ export default function MessageDetailPage() {
   const [markingAsRead, setMarkingAsRead] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { refetchUnreadMessages } = useAppData();
-  const { eventTypes } = useEventTypesContext();
+  const { refetch: refetchUnreadMessages } = useUnreadMessages();
+  const { eventTypes } = useEventTypes();
 
   const getEventType = (eventTypeId: string) => {
     return eventTypes.find((et) => et.id === eventTypeId);

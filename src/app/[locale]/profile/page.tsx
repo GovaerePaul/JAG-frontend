@@ -6,9 +6,11 @@ import { Container, Box, Divider, TextField, Button, Dialog, DialogTitle, Dialog
 import { Edit, Save, Cancel, LocationOn } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { updateUserPreferences } from '@/lib/users-api';
-import { useAppData } from '@/contexts/AppDataContext';
-import { useEventTypesContext } from '@/contexts/EventTypesContext';
-import { UserPreferences } from '@/hooks/useAuth';
+import { useAuth } from '@/features/auth/useAuth';
+import { useUnreadMessages } from '@/features/messages/useUnreadMessages';
+import { useUserStats } from '@/features/user/useUserStats';
+import { useEventTypes } from '@/features/events/useEventTypes';
+import type { UserPreferences } from '@/types/auth';
 import StyledPaper from '@/components/ui/StyledPaper';
 import GradientButton from '@/components/ui/GradientButton';
 import GamificationCard from '@/components/gamification/GamificationCard';
@@ -23,8 +25,10 @@ import InfoCard from '@/components/ui/InfoCard';
 import BaseDialog from '@/components/dialogs/BaseDialog';
 
 export default function ProfilePage() {
-  const { user, userProfile, canSend, canReceive, unreadCount, messageCounts, refetchUserStats } = useAppData();
-  const { eventTypes, loading } = useEventTypesContext();
+  const { user, userProfile, canSend, canReceive } = useAuth();
+  const { unreadCount } = useUnreadMessages();
+  const { messageCounts, refetch: refetchUserStats } = useUserStats();
+  const { eventTypes, loading } = useEventTypes();
 
   const t = useTranslations('profile');
   const tGamification = useTranslations('gamification');
@@ -248,7 +252,7 @@ export default function ProfilePage() {
           onClose={() => setLocationDialogOpen(false)}
           currentLocation={getLocationDisplay()}
           onLocationUpdated={() => {
-            // Location will update automatically via onSnapshot
+            // Location will update when profile is refetched
           }}
         />
       </Container>

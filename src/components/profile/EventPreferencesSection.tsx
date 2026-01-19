@@ -3,8 +3,8 @@
 import { Box, Typography, Button, Chip, Card, CardContent } from '@mui/material';
 import { Add, Favorite, FavoriteBorder } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
-import { UserProfile } from '@/hooks/useAuth';
-import { UserPreferences } from '@/hooks/useAuth';
+import { UserProfile } from '@/features/auth/useAuth';
+import type { UserPreferences } from '@/types/auth';
 import { EventType } from '@/lib/events-api';
 import GradientTypography from '@/components/ui/GradientTypography';
 

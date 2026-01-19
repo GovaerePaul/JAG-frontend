@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/features/auth/useAuth';
 import { CircularProgress } from '@mui/material';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { useEffect, useRef } from 'react';

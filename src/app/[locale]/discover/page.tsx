@@ -13,8 +13,8 @@ import {
 import { FilterList } from '@mui/icons-material';
 import { Explore } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
-import { UserProfile } from '@/hooks/useAuth';
-import { useDiscoverUsers } from '@/hooks/useDiscoverUsers';
+import type { UserProfile } from '@/features/auth/useAuth';
+import { useDiscoverUsers } from '@/features/user/useDiscoverUsers';
 import { DiscoverUsersFilters } from '@/lib/users-api';
 import UserCard from '@/components/discover/UserCard';
 import DiscoverFilters from '@/components/discover/DiscoverFilters';

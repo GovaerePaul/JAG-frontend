@@ -1,11 +1,14 @@
 'use client';
 
-import { useAppData } from '@/contexts/AppDataContext';
+import { useAuth } from '@/features/auth/useAuth';
+import { useUnreadMessages } from '@/features/messages/useUnreadMessages';
+import { useUserStats } from '@/features/user/useUserStats';
 import HomePage from '@/components/HomePage';
 
 export default function LocaleHomePage() {
-  // Use Context instead of hooks to avoid duplicate API calls
-  const { user, userProfile, canSend, canReceive, unreadCount, messageCounts } = useAppData();
+  const { user, userProfile, canSend, canReceive } = useAuth();
+  const { unreadCount } = useUnreadMessages();
+  const { messageCounts } = useUserStats();
 
   return (
     <HomePage

@@ -25,8 +25,8 @@ import { useTranslations } from 'next-intl';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { MessageSummary } from '@/lib/messages-api';
-import { useAppData } from '@/contexts/AppDataContext';
-import { useEventTypesContext } from '@/contexts/EventTypesContext';
+import { useReceivedMessages } from '@/features/messages/useReceivedMessages';
+import { useEventTypes } from '@/features/events/useEventTypes';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
 import MessageCard from './MessageCard';
@@ -40,10 +40,8 @@ export default function ReceivedMessagesPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const { receivedMessages, refetchReceivedMessages } = useAppData();
+  const { messages: receivedMessages, loading, error, refetch: refetchReceivedMessages } = useReceivedMessages();
   const refetch = refetchReceivedMessages;
-  const loading = false;
-  const error = null;
 
   const getSenderIds = useCallback(
     (msgs: MessageSummary[]) =>
@@ -83,7 +81,7 @@ export default function ReceivedMessagesPage() {
   }, [receivedMessages, getSenderIds]);
 
   const messages = receivedMessages;
-  const { eventTypes } = useEventTypesContext();
+  const { eventTypes } = useEventTypes();
 
   if (loading) {
     return (

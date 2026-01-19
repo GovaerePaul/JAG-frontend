@@ -21,7 +21,7 @@ import {
 } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { logout } from '@/lib/auth';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/features/auth/useAuth';
 import { useTranslations } from 'next-intl';
 import { getUserEmail } from '@/lib/userUtils';
 
@@ -41,9 +41,10 @@ export default function UserDropdown() {
   };
 
   const handleSignOut = async () => {
+    handleClose(); // Close menu first
     try {
       await logout();
-      handleClose();
+      // Redirect will be handled by AuthGuard
     } catch (error) {
       // Silent fail
     }

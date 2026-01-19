@@ -1,8 +1,17 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { discoverUsers, DiscoverUsersParams, DiscoveredUser, Coordinates } from '@/lib/users-api';
-import { useAuth } from './useAuth';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { discoverUsers as discoverUsersAction } from './userSlice';
+import {
+  selectDiscoveredUsers,
+  selectDiscoverUsersLoading,
+  selectUserError,
+  selectDiscoveredUsersList,
+  selectDiscoveredUsersHasMore,
+} from './userSelectors';
+import { useAuth } from '@/features/auth/useAuth';
+import type { DiscoverUsersParams, DiscoveredUser } from '@/lib/users-api';
 
 interface UseDiscoverUsersOptions {
   initialDistance?: number;
@@ -21,19 +30,61 @@ interface UseDiscoverUsersReturn {
   reset: () => void;
 }
 
-// Removed DISTANCE_STEPS - now using simple +100km increments
-
-// Global cache for city coordinates to avoid repeated API calls
+// Global cache for city coordinates
 const cityCoordinatesCache: Record<string, {
-  coordinates: Coordinates | null;
+  coordinates: { lat: number; lng: number } | null;
   timestamp: number;
 }> = {};
 
-const COORDINATES_CACHE_DURATION = 86400000; // 24 hours (coordinates don't change)
+const COORDINATES_CACHE_DURATION = 86400000; // 24 hours
+
+const getCityCoordinates = async (cityName: string): Promise<{ lat: number; lng: number } | null> => {
+  const cached = cityCoordinatesCache[cityName];
+  const now = Date.now();
+  
+  if (cached && (now - cached.timestamp) < COORDINATES_CACHE_DURATION) {
+    return cached.coordinates;
+  }
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`,
+      {
+        headers: {
+          'User-Agent': 'JustAGift/1.0',
+        },
+      }
+    );
+    const data = await response.json();
+    if (data && data.length > 0) {
+      const coordinates = {
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon),
+      };
+      
+      cityCoordinatesCache[cityName] = {
+        coordinates,
+        timestamp: Date.now(),
+      };
+      
+      return coordinates;
+    }
+  } catch (err) {
+    // Silent fail
+  }
+  
+  cityCoordinatesCache[cityName] = {
+    coordinates: null,
+    timestamp: Date.now(),
+  };
+  
+  return null;
+};
 
 export function useDiscoverUsers(
   options: UseDiscoverUsersOptions = {}
 ): UseDiscoverUsersReturn {
+  const dispatch = useAppDispatch();
   const { userProfile } = useAuth();
   const {
     initialDistance = 50,
@@ -41,24 +92,27 @@ export function useDiscoverUsers(
     autoExpand = true,
   } = options;
 
+  const discoveredUsers = useAppSelector(selectDiscoveredUsers);
+  const loading = useAppSelector(selectDiscoverUsersLoading);
+  const error = useAppSelector(selectUserError);
+  const usersFromStore = useAppSelector(selectDiscoveredUsersList);
+  const hasMore = useAppSelector(selectDiscoveredUsersHasMore);
+
   const [users, setUsers] = useState<DiscoveredUser[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [currentDistance, setCurrentDistance] = useState(initialDistance);
   const [isExpanding, setIsExpanding] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<DiscoverUsersParams['filters']>();
   const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
-  const attemptCountRef = useRef(0);
   const [userLocation, setUserLocation] = useState<{
     city: string;
-    coordinates: Coordinates;
+    coordinates: { lat: number; lng: number };
   } | null>(null);
+  const attemptCountRef = useRef(0);
+  const hasSearchedRef = useRef(false);
 
   // Get user location on mount
   useEffect(() => {
     if (userProfile?.location?.city && userProfile.preferences?.shareLocation) {
-      // Get coordinates for the city (simplified - in production, cache this)
       getCityCoordinates(userProfile.location.city).then((coords) => {
         if (coords) {
           setUserLocation({
@@ -70,56 +124,12 @@ export function useDiscoverUsers(
     }
   }, [userProfile]);
 
-  // Trigger initial search when location becomes available
-  const hasSearchedRef = useRef(false);
-
-  // Get coordinates from city name with caching
-  const getCityCoordinates = async (cityName: string): Promise<Coordinates | null> => {
-    // Check cache first
-    const cached = cityCoordinatesCache[cityName];
-    const now = Date.now();
-    
-    if (cached && (now - cached.timestamp) < COORDINATES_CACHE_DURATION) {
-      return cached.coordinates;
+  // Sync users from store
+  useEffect(() => {
+    if (usersFromStore.length > 0) {
+      setUsers(usersFromStore);
     }
-
-    // Fetch from API
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`,
-        {
-          headers: {
-            'User-Agent': 'JustAGift/1.0',
-          },
-        }
-      );
-      const data = await response.json();
-      if (data && data.length > 0) {
-        const coordinates = {
-          lat: parseFloat(data[0].lat),
-          lng: parseFloat(data[0].lon),
-        };
-        
-        // Cache the result
-        cityCoordinatesCache[cityName] = {
-          coordinates,
-          timestamp: Date.now(),
-        };
-        
-        return coordinates;
-      }
-    } catch (err) {
-      // Silent fail
-    }
-    
-    // Cache null result to avoid repeated failed calls
-    cityCoordinatesCache[cityName] = {
-      coordinates: null,
-      timestamp: Date.now(),
-    };
-    
-    return null;
-  };
+  }, [usersFromStore]);
 
   const performSearch = useCallback(
     async (
@@ -130,9 +140,6 @@ export function useDiscoverUsers(
       },
       expandDistance = false
     ) => {
-      setLoading(true);
-      setError(null);
-
       if (expandDistance) {
         setIsExpanding(true);
       }
@@ -142,10 +149,8 @@ export function useDiscoverUsers(
         setCurrentDistance(searchDistance);
       }
 
-      // Track attempt count for expansion logic
-      // Only reset on first search, not on expansion
       if (searchParams.reset && !expandDistance) {
-        attemptCountRef.current = 1; // First attempt
+        attemptCountRef.current = 1;
       }
 
       try {
@@ -159,10 +164,10 @@ export function useDiscoverUsers(
           offset: searchParams.reset ? 0 : offset,
         };
 
-        const response = await discoverUsers(params);
-
-        if (response.success && response.data) {
-          const data = response.data;
+        const result = await dispatch(discoverUsersAction(params));
+        
+        if (discoverUsersAction.fulfilled.match(result)) {
+          const data = result.payload;
           if (searchParams.reset) {
             setUsers(data.users);
             setOffset(data.users.length);
@@ -170,9 +175,8 @@ export function useDiscoverUsers(
             setUsers((prev) => [...prev, ...data.users]);
             setOffset((prev) => prev + data.users.length);
           }
-          setHasMore(data.hasMore);
 
-          // Auto-expand if no users found and autoExpand is enabled (max 3 attempts: current +100km, +200km)
+          // Auto-expand if no users found and autoExpand is enabled
           if (
             autoExpand &&
             data.users.length === 0 &&
@@ -180,11 +184,10 @@ export function useDiscoverUsers(
             searchDistance < maxDistance
           ) {
             const nextAttempt = attemptCountRef.current + 1;
-            const nextDistance = initialDistance + (nextAttempt - 1) * 100; // +100km per attempt
+            const nextDistance = initialDistance + (nextAttempt - 1) * 100;
 
             if (nextDistance <= maxDistance) {
               attemptCountRef.current = nextAttempt;
-              // Don't set loading to false here - let the next search handle it
               setTimeout(() => {
                 performSearch(
                   {
@@ -195,25 +198,19 @@ export function useDiscoverUsers(
                   true
                 );
               }, 500);
-              return; // Exit early, don't set loading to false
+              return;
             }
           }
           
-          // Set loading to false when done (found users or max attempts reached)
-          setLoading(false);
           setIsExpanding(false);
         } else {
-          setError(response.error || 'Failed to discover users');
-          setLoading(false);
           setIsExpanding(false);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to discover users');
-        setLoading(false);
         setIsExpanding(false);
       }
     },
-    [userLocation, currentDistance, offset, autoExpand, maxDistance, initialDistance]
+    [dispatch, userLocation, currentDistance, offset, autoExpand, maxDistance, initialDistance]
   );
 
   const search = useCallback(
@@ -253,18 +250,16 @@ export function useDiscoverUsers(
     setUsers([]);
     setOffset(0);
     setCurrentDistance(initialDistance);
-    setError(null);
     setCurrentFilters(undefined);
     attemptCountRef.current = 0;
     hasSearchedRef.current = false;
   }, [initialDistance]);
 
-  // Trigger initial search when location becomes available (only once)
+  // Trigger initial search when location becomes available
   const performSearchRef = useRef(performSearch);
   performSearchRef.current = performSearch;
 
   useEffect(() => {
-    // Only trigger search once when userLocation becomes available
     if (userLocation && autoExpand && !hasSearchedRef.current) {
       hasSearchedRef.current = true;
       attemptCountRef.current = 0;
@@ -293,4 +288,3 @@ export function useDiscoverUsers(
     reset,
   };
 }
-

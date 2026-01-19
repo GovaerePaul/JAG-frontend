@@ -2,11 +2,9 @@
 
 import React from 'react';
 import { CircularProgress, Box } from '@mui/material';
-import { useAuth } from '@/hooks/useAuth';
-import { useUnreadMessages } from '@/hooks/useUnreadMessages';
-import { useUserStats } from '@/hooks/useUserStats';
-import { AppDataProvider } from '@/contexts/AppDataContext';
-import { EventTypesProvider } from '@/contexts/EventTypesContext';
+import { useAuth } from '@/features/auth/useAuth';
+import { useUnreadMessages } from '@/features/messages/useUnreadMessages';
+import { useUserStats } from '@/features/user/useUserStats';
 import { usePathname } from '@/i18n/navigation';
 import Navbar from '../Navbar';
 
@@ -24,11 +22,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const { messageCounts, refetch: refetchUserStats } = useUserStats();
   // refetchReceivedMessages is the same as refetchUnreadMessages since they share the same hook
   const refetchReceivedMessages = refetchUnreadMessages;
-
-  // Debug log
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[AppLayout] render:', { isReady, hasUser: !!user, uid: user?.uid, authLoading, isAuthPage });
-  }
 
   // Auth page should always be accessible, render it directly without layout
   if (isAuthPage) {
@@ -73,30 +66,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
     );
   }
 
-  // Share data via Context - this avoids duplicate API calls and works perfectly with Next.js
+  // Redux handles all data now, no need for Context providers
   return (
-    <AppDataProvider
-      value={{
-        user,
-        userProfile,
-        canSend,
-        canReceive,
-        unreadCount,
-        messageCounts,
-        receivedMessages,
-        refetchReceivedMessages,
-        refetchUserStats,
-        refetchUnreadMessages,
-      }}
-    >
-      <EventTypesProvider>
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-          <Navbar user={user} canReceive={canReceive} unreadCount={unreadCount} />
-          <main style={{ flexGrow: 1 }}>
-            {children}
-          </main>
-        </div>
-      </EventTypesProvider>
-    </AppDataProvider>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Navbar user={user} canReceive={canReceive} unreadCount={unreadCount} />
+      <main style={{ flexGrow: 1 }}>
+        {children}
+      </main>
+    </div>
   );
 }
