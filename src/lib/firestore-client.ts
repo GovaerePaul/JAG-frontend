@@ -17,26 +17,14 @@ import type { MessageStatus, MessageSummary, Message } from '@/types/messages';
 import type { UserRole, ReceivableUser } from '@/types/users';
 import type { EventCategory, EventType } from '@/types/events';
 import type { QuestCategory, QuestActionType, Quest, UserQuestStatus } from '@/types/quests';
+import type { UserProfile } from '@/types/auth';
 
 // Re-export types for backward compatibility
 export type { MessageStatus, MessageSummary, Message };
 export type { UserRole, ReceivableUser };
 export type { EventCategory, EventType };
 export type { QuestCategory, QuestActionType, Quest, UserQuestStatus };
-
-export interface UserProfile {
-  uid: string;
-  email: string;
-  displayName?: string;
-  photoURL?: string;
-  isActive: boolean;
-  role: UserRole;
-  points: number;
-  level: number;
-  totalPointsEarned: number;
-  completedQuests?: string[];
-  questProgress?: Record<string, number>;
-}
+export type { UserProfile };
 
 interface EventTypeTranslation {
   name: string;
