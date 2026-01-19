@@ -12,7 +12,7 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
-  const { user, canReceive, authLoading } = useAuth();
+  const { user, canReceive, authLoading, isReady } = useAuth();
   const pathname = usePathname();
   const isAuthPage = pathname.includes('/auth');
   

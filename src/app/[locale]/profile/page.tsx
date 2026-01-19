@@ -24,7 +24,7 @@ import InfoCard from '@/components/ui/InfoCard';
 import BaseDialog from '@/components/dialogs/BaseDialog';
 
 export default function ProfilePage() {
-  const { user, userProfile, canReceive } = useAuth();
+  const { user, userProfile, canReceive, canSend } = useAuth();
   const { unreadCount } = useUnreadMessages();
   const { messageCounts } = useUserStats();
   const { eventTypes, loading } = useEventTypes();
