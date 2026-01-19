@@ -19,26 +19,12 @@ import type {
 import { auth } from './firebase';
 import { getReceivableUsersDirect } from './firestore-client';
 
-// Re-export types for backward compatibility
-export type {
-  UserRole,
-  ReceivableUser,
-  Coordinates,
-  UserLocation,
-  CitySuggestion,
-  SearchCitiesResponse,
-  DiscoverUsersFilters,
-  DiscoverUsersParams,
-  DiscoveredUser,
-  DiscoverUsersResponse,
-} from '@/types/users';
-
 // Firestore Direct
 export async function getReceivableUsers(): Promise<ApiResponse<ReceivableUser[]>> {
   try {
     const user = auth.currentUser;
     if (!user) return { success: false, error: 'User not authenticated' };
-    
+
     const users = await getReceivableUsersDirect(user.uid);
     return { success: true, data: users as ReceivableUser[] };
   } catch (error: unknown) {

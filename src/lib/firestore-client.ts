@@ -20,13 +20,6 @@ import type { QuestCategory, QuestActionType, Quest, UserQuestStatus } from '@/t
 import type { UserProfile } from '@/types/auth';
 import type { UserStats } from '@/types/common';
 
-// Re-export types for backward compatibility
-export type { MessageStatus, MessageSummary, Message };
-export type { UserRole, ReceivableUser };
-export type { EventCategory, EventType };
-export type { QuestCategory, QuestActionType, Quest, UserQuestStatus };
-export type { UserProfile };
-
 interface EventTypeTranslation {
   name: string;
   description: string;

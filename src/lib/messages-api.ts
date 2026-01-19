@@ -13,9 +13,6 @@ import {
 } from './firestore-client';
 import { auth } from './firebase';
 
-// Re-export types for backward compatibility
-export type { MessageStatus, Message, MessageSummary, SendMessageData } from '@/types/messages';
-
 // Cloud Functions
 export async function sendMessage(data: SendMessageData): Promise<ApiResponse<{ messageId: string }>> {
   try {

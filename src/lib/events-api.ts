@@ -4,9 +4,6 @@ import { ApiResponse } from '@/types/common';
 import type { EventType } from '@/types/events';
 import { getEventTypesDirect } from './firestore-client';
 
-// Re-export types for backward compatibility
-export type { EventCategory, EventType } from '@/types/events';
-
 export async function getEventTypes(locale: string = 'en'): Promise<ApiResponse<EventType[]>> {
   try {
     const eventTypes = await getEventTypesDirect(locale);

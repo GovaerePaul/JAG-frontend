@@ -5,9 +5,6 @@ import type { Quest, UserQuestStatus } from '@/types/quests';
 import { auth } from './firebase';
 import { getAllQuestsDirect, getUserQuestsDirect } from './firestore-client';
 
-// Re-export types for backward compatibility
-export type { QuestCategory, QuestActionType, Quest, UserQuestStatus } from '@/types/quests';
-
 export async function getUserQuests(): Promise<ApiResponse<UserQuestStatus[]>> {
   try {
     const user = auth.currentUser;
