@@ -28,11 +28,9 @@ interface DiscoverPageProps {
 
 export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) {
   const t = useTranslations('discover');
-  const { users, loading, error, currentDistance, isExpanding, search, loadMore } =
+  const { users, loading, error, currentDistance, search, loadMore, hasMore } =
     useDiscoverUsers({
       initialDistance: 50,
-      maxDistance: 500,
-      autoExpand: true,
     });
   const { eventTypes } = useEventTypes();
 
@@ -126,11 +124,9 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
           </Button>
         </Box>
 
-      {(isExpanding || currentDistance > 50) && (
+      {currentDistance > 50 && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          {isExpanding
-            ? t('expanding', { current: currentDistance - 25, next: currentDistance })
-            : t('searching', { distance: currentDistance })}
+          {t('searching', { distance: currentDistance })}
         </Alert>
       )}
 
@@ -222,7 +218,7 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
             ))}
           </Box>
 
-          {users.length > 0 && (
+          {users.length > 0 && hasMore && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
               {loading ? (
                 <CircularProgress />

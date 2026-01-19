@@ -44,7 +44,7 @@ export interface DiscoverUsersParams {
   };
   filters?: DiscoverUsersFilters;
   limit?: number;
-  offset?: number;
+  cursor?: string; // Document ID for cursor-based pagination
 }
 
 export interface DiscoveredUser {
@@ -53,13 +53,13 @@ export interface DiscoveredUser {
     displayName?: string;
     photoURL?: string;
     role: string;
+    city?: string;
   };
-  distance?: number;
   favoriteEventTypeIds?: string[];
 }
 
 export interface DiscoverUsersResponse {
   users: DiscoveredUser[];
-  total: number;
   hasMore: boolean;
+  nextCursor: string | null;
 }

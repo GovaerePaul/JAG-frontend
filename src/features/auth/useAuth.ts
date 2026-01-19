@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchUserProfile, clearAuth } from './authSlice';
 import { clearUser } from '@/features/user/userSlice';
@@ -22,9 +23,20 @@ export const useAuth = () => {
   const hasClearedRef = useRef(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       setAuthLoading(false);
+
+      // Update lastActiveAt on login for discover sorting
+      if (firebaseUser) {
+        try {
+          await updateDoc(doc(db, 'users', firebaseUser.uid), {
+            lastActiveAt: serverTimestamp(),
+          });
+        } catch {
+          // Silently fail - user profile might not exist yet on first login
+        }
+      }
     });
 
     return () => unsubscribe();

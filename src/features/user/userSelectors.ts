@@ -63,7 +63,7 @@ export const selectDiscoveredUsersHasMore = createSelector(
   (discoveredUsers) => discoveredUsers?.hasMore || false
 );
 
-export const selectDiscoveredUsersTotal = createSelector(
+export const selectDiscoveredUsersNextCursor = createSelector(
   [selectDiscoveredUsers],
-  (discoveredUsers) => discoveredUsers?.total || 0
+  (discoveredUsers) => discoveredUsers?.nextCursor || null
 );

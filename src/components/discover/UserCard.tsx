@@ -76,9 +76,9 @@ export default function UserCard({ user, eventTypes, onSendMessage }: UserCardPr
           {user.user.displayName || t('anonymous')}
         </Typography>
 
-        {user.distance !== undefined && (
+        {user.user.city && (
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            {t('distance', { distance: Math.round(user.distance) })}
+            {user.user.city}
           </Typography>
         )}
 
