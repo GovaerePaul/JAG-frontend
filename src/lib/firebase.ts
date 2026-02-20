@@ -41,7 +41,7 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && !
     connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
     connectFirestoreEmulator(db, '127.0.0.1', 8080);
     connectStorageEmulator(storage, '127.0.0.1', 9199);
-  } catch {}
+  } catch { }
 }
 
 async function setupAppCheck() {
@@ -49,10 +49,8 @@ async function setupAppCheck() {
 
   if (isCapacitor && process.env.NODE_ENV === 'production') {
     const { FirebaseAppCheck } = await import('@capacitor-firebase/app-check');
-    const useDebugProvider = process.env.NEXT_PUBLIC_APP_CHECK_CAPACITOR_DEBUG === 'true';
     await FirebaseAppCheck.initialize({
       isTokenAutoRefreshEnabled: true,
-      ...(useDebugProvider && { debugToken: true }),
     });
     const provider = new CustomProvider({
       getToken: async () => {
