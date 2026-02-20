@@ -23,8 +23,8 @@ export class MessagesRepository {
         return { success: false, error: 'User not authenticated' };
       }
 
-      const messages = await getReceivedMessagesDirect(user.uid);
-      return { success: true, data: messages as MessageSummary[] };
+      const result = await getReceivedMessagesDirect(user.uid);
+      return { success: true, data: result.messages as MessageSummary[] };
     } catch (error: unknown) {
       return {
         success: false,
@@ -40,8 +40,8 @@ export class MessagesRepository {
         return { success: false, error: 'User not authenticated' };
       }
 
-      const messages = await getSentMessagesDirect(user.uid);
-      return { success: true, data: messages as MessageSummary[] };
+      const result = await getSentMessagesDirect(user.uid);
+      return { success: true, data: result.messages as MessageSummary[] };
     } catch (error: unknown) {
       return {
         success: false,

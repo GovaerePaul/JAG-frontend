@@ -21,10 +21,11 @@ import { ArrowBack, Flag } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { markMessageAsRead, reportMessage } from '@/lib/messages-api';
-import { useUnreadMessages } from '@/features/messages/useUnreadMessages';
+import { reportMessage } from '@/lib/messages-api';
 import { useEventTypes } from '@/features/events/useEventTypes';
 import { useMessage } from '@/features/messages/useMessage';
+import { useAppDispatch } from '@/store/hooks';
+import { markMessageAsRead as markMessageAsReadThunk } from '@/features/messages/messagesSlice';
 import { formatDate } from '@/utils/date';
 import { getStatusColor, getStatusLabel } from '@/utils/messages';
 import EventTypeDisplay from './EventTypeDisplay';
@@ -40,6 +41,7 @@ export default function MessageDetailPage() {
   const isSentMessage = pathname?.includes('/messages/sent');
   const isReceivedMessage = pathname?.includes('/messages/received');
   
+  const dispatch = useAppDispatch();
   const { message, senderName, receiverName, loading, error: messageError, refetch: refetchMessage } = useMessage(messageId);
   
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -48,23 +50,19 @@ export default function MessageDetailPage() {
   const [markingAsRead, setMarkingAsRead] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { refetch: refetchUnreadMessages } = useUnreadMessages();
   const { eventTypes } = useEventTypes();
 
   useEffect(() => {
     if (message && isReceivedMessage && message.status !== 'read' && message.receiverId && messageId) {
       setMarkingAsRead(true);
-      markMessageAsRead(messageId)
-        .then(() => {
-          refetchMessage();
-          refetchUnreadMessages();
-        })
+      // Write to Firestore + update local Redux state (no refetch)
+      dispatch(markMessageAsReadThunk(messageId))
         .catch(() => {})
         .finally(() => {
           setMarkingAsRead(false);
         });
     }
-  }, [message, isReceivedMessage, messageId, refetchMessage, refetchUnreadMessages]);
+  }, [message, isReceivedMessage, messageId, dispatch]);
 
   const handleReport = async () => {
     if (!reportReason.trim() || !messageId) {

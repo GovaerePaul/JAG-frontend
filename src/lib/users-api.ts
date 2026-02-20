@@ -45,18 +45,69 @@ export async function discoverUsers(params: DiscoverUsersParams): Promise<ApiRes
   }
 }
 
-export async function searchCities(query: string, limit?: number): Promise<ApiResponse<SearchCitiesResponse>> {
+export async function searchCities(searchQuery: string, maxResults?: number): Promise<ApiResponse<SearchCitiesResponse>> {
   try {
-    const fn = httpsCallable<{ query: string; limit?: number }, SearchCitiesResponse>(
-      functions,
-      'searchCitiesFunction'
-    );
-    const result = await fn({ query, limit });
-    return { success: true, data: result.data };
+    const limitCount = maxResults || 10;
+    const encodedQuery = encodeURIComponent(searchQuery.trim());
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedQuery}&limit=${limitCount}&addressdetails=1&featuretype=settlement`;
+
+    const response = await fetch(url, {
+      headers: { 'User-Agent': 'JustAGift/1.0' },
+    });
+
+    if (!response.ok) {
+      return { success: false, error: `Nominatim API error: ${response.status}` };
+    }
+
+    const data = await response.json();
+    const cityTypes = ['city', 'town', 'village', 'municipality'];
+
+    interface NominatimResult {
+      type?: string;
+      class?: string;
+      address?: {
+        city?: string;
+        town?: string;
+        village?: string;
+        municipality?: string;
+        state?: string;
+        region?: string;
+        county?: string;
+        country?: string;
+      };
+      display_name?: string;
+    }
+
+    const cities = (data as NominatimResult[])
+      .filter((item) => {
+        const type = item.type || item.class;
+        if (type && cityTypes.includes(type.toLowerCase())) return true;
+        const address = item.address || {};
+        return !!(address.city || address.town || address.village || address.municipality);
+      })
+      .map((item) => {
+        const address = item.address || {};
+        const cityName = address.city || address.town || address.village || address.municipality || (item.display_name?.split(',')[0] || '');
+        const region = address.state || address.region || address.county;
+        const country = address.country;
+        const parts = [cityName];
+        if (region) parts.push(region);
+        if (country) parts.push(country);
+        return {
+          city: cityName,
+          region: region || undefined,
+          country: country || undefined,
+          displayName: parts.join(', '),
+        };
+      })
+      .filter((item) => item.city && item.city.trim().length > 0)
+      .slice(0, limitCount);
+
+    return { success: true, data: { cities } };
   } catch (error: unknown) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to search cities'
+      error: error instanceof Error ? error.message : 'Failed to search cities',
     };
   }
 }

@@ -27,53 +27,7 @@ interface UseDiscoverUsersReturn {
   hasMore: boolean;
 }
 
-const cityCoordinatesCache: Record<string, {
-  coordinates: { lat: number; lng: number } | null;
-  timestamp: number;
-}> = {};
-
-const COORDINATES_CACHE_DURATION = 86400000;
-
-const getCityCoordinates = async (cityName: string): Promise<{ lat: number; lng: number } | null> => {
-  const cached = cityCoordinatesCache[cityName];
-  const now = Date.now();
-  
-  if (cached && (now - cached.timestamp) < COORDINATES_CACHE_DURATION) {
-    return cached.coordinates;
-  }
-
-  try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`,
-      {
-        headers: {
-          'User-Agent': 'JustAGift/1.0',
-        },
-      }
-    );
-    const data = await response.json();
-    if (data && data.length > 0) {
-      const coordinates = {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon),
-      };
-      
-      cityCoordinatesCache[cityName] = {
-        coordinates,
-        timestamp: Date.now(),
-      };
-      
-      return coordinates;
-    }
-  } catch (_err) {}
-  
-  cityCoordinatesCache[cityName] = {
-    coordinates: null,
-    timestamp: Date.now(),
-  };
-  
-  return null;
-};
+// Coordinates are now read directly from userProfile.location (no external API call needed)
 
 export function useDiscoverUsers(
   options: UseDiscoverUsersOptions = {}
@@ -99,14 +53,18 @@ export function useDiscoverUsers(
   const hasSearchedRef = useRef(false);
 
   useEffect(() => {
-    if (userProfile?.location?.city && userProfile.preferences?.shareLocation) {
-      getCityCoordinates(userProfile.location.city).then((coords) => {
-        if (coords) {
-          setUserLocation({
-            city: userProfile.location!.city!,
-            coordinates: coords,
-          });
-        }
+    if (
+      userProfile?.location?.city &&
+      userProfile.preferences?.shareLocation &&
+      userProfile.location.latitude != null &&
+      userProfile.location.longitude != null
+    ) {
+      setUserLocation({
+        city: userProfile.location.city,
+        coordinates: {
+          lat: userProfile.location.latitude,
+          lng: userProfile.location.longitude,
+        },
       });
     }
   }, [userProfile]);

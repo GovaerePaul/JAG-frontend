@@ -27,12 +27,16 @@ export const useAuth = () => {
       setUser(firebaseUser);
       setAuthLoading(false);
 
-      // Update lastActiveAt on login for discover sorting
       if (firebaseUser) {
         try {
-          await updateDoc(doc(db, 'users', firebaseUser.uid), {
-            lastActiveAt: serverTimestamp(),
-          });
+          const THROTTLE_MS = 30 * 60 * 1000;
+          const lastUpdate = parseInt(localStorage.getItem('jag_lastActiveAt') || '0');
+          if (Date.now() - lastUpdate > THROTTLE_MS) {
+            await updateDoc(doc(db, 'users', firebaseUser.uid), {
+              lastActiveAt: serverTimestamp(),
+            });
+            localStorage.setItem('jag_lastActiveAt', String(Date.now()));
+          }
         } catch {
           // Silently fail - user profile might not exist yet on first login
         }

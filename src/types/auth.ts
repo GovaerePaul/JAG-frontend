@@ -6,6 +6,8 @@ export interface UserLocation {
   city?: string;
   region?: string;
   country?: string;
+  latitude?: number;
+  longitude?: number;
   lastUpdated?: string; // ISO string for Redux serialization
 }
 
@@ -33,4 +35,6 @@ export interface UserProfile {
   preferences?: UserPreferences;
   completedQuests?: string[];
   questProgress?: Record<string, number>;
+  messagesSentCount?: number;
+  messagesReceivedCount?: number;
 }

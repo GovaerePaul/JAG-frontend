@@ -5,12 +5,16 @@ import {
   query,
   where,
   orderBy,
+  limit as firestoreLimit,
+  startAfter,
   getDocs,
   getDoc,
   doc,
   updateDoc,
   serverTimestamp,
   Timestamp,
+  QueryDocumentSnapshot,
+  DocumentData,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { MessageSummary, Message } from '@/types/messages';
@@ -47,50 +51,78 @@ function timestampToISORequired(timestamp: Timestamp | Date | undefined | null):
   return result;
 }
 
-export async function getReceivedMessagesDirect(userId: string): Promise<MessageSummary[]> {
-  const q = query(
-    collection(db, 'messages'),
-    where('receiverId', '==', userId),
-    orderBy('createdAt', 'desc')
-  );
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((docSnap) => {
-    const data = docSnap.data();
-    return {
-      id: docSnap.id,
-      senderId: data.isAnonymous ? null : data.senderId,
-      receiverId: data.receiverId,
-      eventTypeId: data.eventTypeId,
-      isAnonymous: data.isAnonymous ?? false,
-      status: data.status ?? 'pending',
-      isReported: data.isReported ?? false,
-      createdAt: timestampToISORequired(data.createdAt),
-    };
-  });
+function mapMessageDoc(docSnap: QueryDocumentSnapshot<DocumentData>): MessageSummary {
+  const data = docSnap.data();
+  return {
+    id: docSnap.id,
+    senderId: data.isAnonymous ? null : data.senderId,
+    receiverId: data.receiverId,
+    eventTypeId: data.eventTypeId,
+    isAnonymous: data.isAnonymous ?? false,
+    status: data.status ?? 'pending',
+    isReported: data.isReported ?? false,
+    createdAt: timestampToISORequired(data.createdAt),
+  };
 }
 
-export async function getSentMessagesDirect(userId: string): Promise<MessageSummary[]> {
-  const q = query(
-    collection(db, 'messages'),
-    where('senderId', '==', userId),
-    orderBy('createdAt', 'desc')
-  );
+const MESSAGES_PAGE_SIZE = 20;
+
+export interface PaginatedMessages {
+  messages: MessageSummary[];
+  lastDoc: QueryDocumentSnapshot<DocumentData> | null;
+  hasMore: boolean;
+}
+
+export async function getReceivedMessagesDirect(
+  userId: string,
+  afterDoc?: QueryDocumentSnapshot<DocumentData> | null
+): Promise<PaginatedMessages> {
+  const constraints = [
+    where('receiverId', '==', userId),
+    orderBy('createdAt', 'desc'),
+    firestoreLimit(MESSAGES_PAGE_SIZE),
+  ];
+  if (afterDoc) {
+    constraints.push(startAfter(afterDoc));
+  }
+
+  const q = query(collection(db, 'messages'), ...constraints);
   const snapshot = await getDocs(q);
 
-  return snapshot.docs.map((docSnap) => {
-    const data = docSnap.data();
-    return {
-      id: docSnap.id,
-      senderId: data.senderId,
-      receiverId: data.receiverId,
-      eventTypeId: data.eventTypeId,
-      isAnonymous: data.isAnonymous ?? false,
-      status: data.status ?? 'pending',
-      isReported: data.isReported ?? false,
-      createdAt: timestampToISORequired(data.createdAt),
-    };
-  });
+  const messages = snapshot.docs.map(mapMessageDoc);
+  const lastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+
+  return {
+    messages,
+    lastDoc,
+    hasMore: snapshot.docs.length === MESSAGES_PAGE_SIZE,
+  };
+}
+
+export async function getSentMessagesDirect(
+  userId: string,
+  afterDoc?: QueryDocumentSnapshot<DocumentData> | null
+): Promise<PaginatedMessages> {
+  const constraints = [
+    where('senderId', '==', userId),
+    orderBy('createdAt', 'desc'),
+    firestoreLimit(MESSAGES_PAGE_SIZE),
+  ];
+  if (afterDoc) {
+    constraints.push(startAfter(afterDoc));
+  }
+
+  const q = query(collection(db, 'messages'), ...constraints);
+  const snapshot = await getDocs(q);
+
+  const messages = snapshot.docs.map(mapMessageDoc);
+  const lastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+
+  return {
+    messages,
+    lastDoc,
+    hasMore: snapshot.docs.length === MESSAGES_PAGE_SIZE,
+  };
 }
 
 export async function getMessageDirect(messageId: string, currentUserId: string): Promise<Message | null> {
@@ -135,7 +167,12 @@ export async function markMessageAsReadDirect(messageId: string): Promise<void> 
 }
 
 export async function getReceivableUsersDirect(currentUserId: string): Promise<ReceivableUser[]> {
-  const q = query(collection(db, 'users'), where('isActive', '==', true));
+  const q = query(
+    collection(db, 'users'),
+    where('isActive', '==', true),
+    where('role', 'in', ['receiver', 'both']),
+    firestoreLimit(50)
+  );
   const snapshot = await getDocs(q);
 
   return snapshot.docs
@@ -148,11 +185,7 @@ export async function getReceivableUsersDirect(currentUserId: string): Promise<R
         role: data.role as UserRole,
       };
     })
-    .filter(
-      (user) =>
-        user.uid !== currentUserId &&
-        (user.role === 'receiver' || user.role === 'both')
-    );
+    .filter((user) => user.uid !== currentUserId);
 }
 
 export async function getUserProfileDirect(userId: string): Promise<UserProfile | null> {
@@ -162,11 +195,13 @@ export async function getUserProfileDirect(userId: string): Promise<UserProfile 
   if (!docSnap.exists()) return null;
 
   const data = docSnap.data();
-  
+
   const location = data.location ? {
     city: data.location.city,
     region: data.location.region,
     country: data.location.country,
+    latitude: data.location.latitude,
+    longitude: data.location.longitude,
     lastUpdated: data.location.lastUpdated ? timestampToISO(data.location.lastUpdated) : undefined,
   } : undefined;
 
@@ -187,17 +222,14 @@ export async function getUserProfileDirect(userId: string): Promise<UserProfile 
     preferences: data.preferences,
     completedQuests: data.completedQuests,
     questProgress: data.questProgress,
+    messagesSentCount: data.messagesSentCount ?? 0,
+    messagesReceivedCount: data.messagesReceivedCount ?? 0,
   };
 }
 
 export async function getUserStatsDirect(userId: string): Promise<UserStats | null> {
   const profile = await getUserProfileDirect(userId);
   if (!profile) return null;
-
-  const [sentSnapshot, receivedSnapshot] = await Promise.all([
-    getDocs(query(collection(db, 'messages'), where('senderId', '==', userId))),
-    getDocs(query(collection(db, 'messages'), where('receiverId', '==', userId))),
-  ]);
 
   return {
     uid: profile.uid,
@@ -208,8 +240,8 @@ export async function getUserStatsDirect(userId: string): Promise<UserStats | nu
     points: profile.points ?? 0,
     level: profile.level ?? 1,
     totalPointsEarned: profile.totalPointsEarned ?? 0,
-    messagesSentCount: sentSnapshot.size,
-    messagesReceivedCount: receivedSnapshot.size,
+    messagesSentCount: profile.messagesSentCount ?? 0,
+    messagesReceivedCount: profile.messagesReceivedCount ?? 0,
   };
 }
 

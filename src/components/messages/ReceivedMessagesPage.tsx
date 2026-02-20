@@ -22,8 +22,7 @@ import {
 import { Inbox, ArrowBack } from '@mui/icons-material';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getCachedUserDisplayNames } from '@/lib/user-cache';
 import type { MessageSummary } from '@/types/messages';
 import { useReceivedMessages } from '@/features/messages/useReceivedMessages';
 import { useEventTypes } from '@/features/events/useEventTypes';
@@ -53,24 +52,8 @@ export default function ReceivedMessagesPage() {
   useEffect(() => {
     const loadUserNames = async () => {
       const uniqueUserIds = [...new Set(getSenderIds(receivedMessages))];
-      const namesMap: Record<string, string> = {};
-
-      await Promise.all(
-        uniqueUserIds.map(async (userId) => {
-          try {
-            const userDoc = await getDoc(doc(db, 'users', userId));
-            if (userDoc.exists()) {
-              const userData = userDoc.data();
-              namesMap[userId] = userData.displayName || userData.email || userId;
-            } else {
-              namesMap[userId] = userId;
-            }
-          } catch (_err) {
-            namesMap[userId] = userId;
-          }
-        })
-      );
-
+      if (uniqueUserIds.length === 0) return;
+      const namesMap = await getCachedUserDisplayNames(uniqueUserIds);
       setUserNames(namesMap);
     };
 

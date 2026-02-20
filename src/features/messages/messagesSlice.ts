@@ -71,24 +71,22 @@ export const fetchMessage = createAsyncThunk(
 
 export const sendMessage = createAsyncThunk(
   'messages/sendMessage',
-  async (data: SendMessageData, { rejectWithValue, dispatch }) => {
+  async (data: SendMessageData, { rejectWithValue }) => {
     const response = await messagesRepository.sendMessage(data);
     if (!response.success || !response.data) {
       return rejectWithValue(response.error || 'Failed to send message');
     }
-    await dispatch(fetchSentMessages());
     return response.data;
   }
 );
 
 export const markMessageAsRead = createAsyncThunk(
   'messages/markMessageAsRead',
-  async (messageId: string, { rejectWithValue, dispatch }) => {
+  async (messageId: string, { rejectWithValue }) => {
     const response = await messagesRepository.markMessageAsRead(messageId);
     if (!response.success) {
       return rejectWithValue(response.error || 'Failed to mark message as read');
     }
-    await dispatch(fetchReceivedMessages());
     return { messageId, ...response.data };
   }
 );
@@ -106,12 +104,11 @@ export const reportMessage = createAsyncThunk(
 
 export const deleteMessage = createAsyncThunk(
   'messages/deleteMessage',
-  async (messageId: string, { rejectWithValue, dispatch }) => {
+  async (messageId: string, { rejectWithValue }) => {
     const response = await messagesRepository.deleteMessage(messageId);
     if (!response.success) {
       return rejectWithValue(response.error || 'Failed to delete message');
     }
-    await dispatch(fetchSentMessages());
     return { messageId, ...response.data };
   }
 );
