@@ -1,18 +1,18 @@
 # 🚀 Next.js Full-Stack Boilerplate
 
-Boilerplate ultra-générique pour applications Next.js avec authentification Firebase, i18n, tests, et déploiement multi-plateforme.
+Ultra-generic boilerplate for Next.js applications with Firebase authentication, i18n, tests, and multi-platform deployment.
 
-## ✨ Fonctionnalités
+## ✨ Features
 
-- **Next.js 15** avec App Router
+- **Next.js 15** with App Router
 - **React 19** + TypeScript
 - **Firebase** (Auth + Firestore)
 - **i18n** (next-intl) - FR/EN
 - **Styling** (Tailwind CSS + Emotion)
 - **Tests** (Jest + RTL)
-- **Multi-plateforme** (Web + Mobile + Desktop)
-- **CI/CD** prêt
-- **Configuration** centralisée
+- **Multi-platform** (Web + Mobile + Desktop)
+- **CI/CD** ready
+- Centralized configuration
 
 ## 🛠️ Technologies
 
@@ -90,26 +90,26 @@ Boilerplate ultra-générique pour applications Next.js avec authentification Fi
 └── package.json               # Dependencies & scripts
 ```
 
-## 🚀 Démarrage rapide
+## 🚀 Quick start
 
 ### 1. Installation
 ```bash
 npm install
 ```
 
-### 2. Configuration Firebase
-1. Créez un projet Firebase
-2. Activez Authentication (Email/Password)
-3. Activez Firestore Database
-4. Copiez `env.example` vers `.env`
-5. Configurez vos variables Firebase
+### 2. Firebase setup
+1. Create a Firebase project
+2. Enable Authentication (Email/Password)
+3. Enable Firestore Database
+4. Copy `env.example` to `.env`
+5. Configure your Firebase variables
 
-### 3. Développement
+### 3. Development
 ```bash
 # Web
 npm run dev
 
-# Mobile (après configuration)
+# Mobile (after setup)
 npm run cap:android
 npm run cap:ios
 
@@ -119,31 +119,31 @@ npm run electron:dev
 
 ### 4. Tests
 ```bash
-# Tests unitaires
+# Unit tests
 npm test
 
-# Tests avec couverture
+# Tests with coverage
 npm run test:coverage
 
-# Tests en mode watch
+# Watch mode
 npm run test:watch
 ```
 
 ### 5. Build & Deploy
 ```bash
-# Build web
+# Web build
 npm run build
 
-# Build mobile
+# Mobile build
 npm run build:mobile
 
-# Build desktop
+# Desktop build
 npm run build:desktop
 ```
 
 ## ⚙️ Configuration
 
-### Variables d'environnement
+### Environment variables
 ```bash
 # Firebase
 NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
@@ -152,6 +152,8 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
 NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your-recaptcha-key
 
 # App
 NEXT_PUBLIC_APP_NAME=Your App Name
@@ -162,60 +164,64 @@ NEXT_PUBLIC_APP_VERSION=1.0.0
 NODE_ENV=development
 ```
 
-### Personnalisation
-- **Traductions** : Modifiez `src/i18n/messages/`
-- **Styling** : Modifiez `tailwind.config.js`
-- **Composants** : Ajoutez dans `src/components/`
-- **Pages** : Ajoutez dans `src/app/`
+### GitHub Pages deploy
+For the `.github/workflows/deploy.yml` workflow, set the repository **environment variables** (Settings → Environments → github-pages → Environment variables) using the same names as above:  
+`NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`, `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`, `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`, `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`.
+
+### Customization
+- **Translations**: Edit `src/i18n/messages/`
+- **Styling**: Edit `tailwind.config.js`
+- **Components**: Add under `src/components/`
+- **Pages**: Add under `src/app/`
 
 ## 🧪 Tests
 
-### Structure des tests
+### Test structure
 ```
 src/
 ├── components/
-│   └── __tests__/           # Tests des composants
+│   └── __tests__/           # Component tests
 ├── hooks/
-│   └── __tests__/           # Tests des hooks
+│   └── __tests__/           # Hook tests
 ├── lib/
-│   └── __tests__/           # Tests des utilitaires
-└── __tests__/               # Tests d'intégration
+│   └── __tests__/           # Utility tests
+└── __tests__/               # Integration tests
 ```
 
-### Configuration Jest
-- **Environment** : jsdom
-- **Coverage** : 80% minimum
-- **Mocks** : Firebase, next-intl, next/navigation
-- **Setup** : `jest.setup.js`
+### Jest configuration
+- **Environment**: jsdom
+- **Coverage**: 80% minimum
+- **Mocks**: Firebase, next-intl, next/navigation
+- **Setup**: `jest.setup.js`
 
-### Exécution
+### Running tests
 ```bash
-# Tous les tests
+# All tests
 npm test
 
-# Tests spécifiques
+# Specific tests
 npm test -- LoginForm
 
-# Couverture
+# Coverage
 npm run test:coverage
 
-# Mode watch
+# Watch mode
 npm run test:watch
 ```
 
-## 🌍 Internationalisation
+## 🌍 Internationalization
 
 ### Configuration
-- **Langues** : Français (défaut), Anglais
-- **Routing** : `/[locale]/page`
-- **Middleware** : Détection automatique de langue
+- **Languages**: French (default), English
+- **Routing**: `/[locale]/page`
+- **Middleware**: Automatic language detection
 
-### Ajout de langues
-1. Ajoutez la langue dans `src/i18n/request.ts`
-2. Créez le fichier de traduction dans `src/i18n/messages/`
-3. Mettez à jour `middleware.ts`
+### Adding languages
+1. Add the locale in `src/i18n/request.ts`
+2. Create the translation file in `src/i18n/messages/`
+3. Update `middleware.ts`
 
-### Utilisation
+### Usage
 ```typescript
 import { useTranslations } from 'next-intl';
 
@@ -225,10 +231,10 @@ function MyComponent() {
 }
 ```
 
-## 📱 Multi-plateforme
+## 📱 Multi-platform
 
 ### Web
-- Next.js avec App Router
+- Next.js with App Router
 - Static export support
 - PWA ready
 
@@ -246,7 +252,7 @@ npm run cap:sync
 
 ### Desktop (Electron)
 ```bash
-# Développement
+# Development
 npm run electron:dev
 
 # Build
@@ -256,94 +262,94 @@ npm run electron:build
 npm run electron:dist
 ```
 
-## 🔧 Scripts disponibles
+## 🔧 Available scripts
 
-### Développement
-- `npm run dev` - Serveur de développement
-- `npm run build` - Build de production
-- `npm run start` - Serveur de production
+### Development
+- `npm run dev` - Development server
+- `npm run build` - Production build
+- `npm run start` - Production server
 
 ### Tests
-- `npm test` - Tests unitaires
-- `npm run test:watch` - Tests en mode watch
-- `npm run test:coverage` - Tests avec couverture
+- `npm test` - Unit tests
+- `npm run test:watch` - Tests in watch mode
+- `npm run test:coverage` - Tests with coverage
 
 ### Mobile
-- `npm run cap:android` - Ouvrir Android Studio
-- `npm run cap:ios` - Ouvrir Xcode
-- `npm run cap:sync` - Synchroniser avec Capacitor
+- `npm run cap:android` - Open Android Studio
+- `npm run cap:ios` - Open Xcode
+- `npm run cap:sync` - Sync with Capacitor
 
 ### Desktop
-- `npm run electron:dev` - Electron en développement
-- `npm run electron:build` - Build Electron
-- `npm run electron:dist` - Distribution Electron
+- `npm run electron:dev` - Electron in development
+- `npm run electron:build` - Electron build
+- `npm run electron:dist` - Electron distribution
 
 ### Linting
-- `npm run lint` - Linter ESLint
-- `npm run lint:fix` - Corriger automatiquement
+- `npm run lint` - ESLint
+- `npm run lint:fix` - Auto-fix
 
-## 🚀 Déploiement
+## 🚀 Deployment
 
 ### Web (Vercel/Netlify)
-1. Connectez votre repo
-2. Configurez les variables d'environnement
-3. Déployez automatiquement
+1. Connect your repo
+2. Configure environment variables
+3. Deploy automatically
 
 ### Mobile (Google Play/App Store)
-1. Build : `npm run build:mobile`
-2. Ouvrez Android Studio/Xcode
-3. Suivez le processus de publication
+1. Build: `npm run build:mobile`
+2. Open Android Studio/Xcode
+3. Follow the release process
 
 ### Desktop
-1. Build : `npm run electron:dist`
-2. Distribuez les fichiers générés
+1. Build: `npm run electron:dist`
+2. Distribute the generated files
 
 ## 📚 Documentation
 
-### Composants
-- Utilisez JSDoc pour documenter vos composants
-- Exemples d'utilisation dans les tests
-- Props et types TypeScript
+### Components
+- Use JSDoc to document your components
+- Usage examples in tests
+- Props and TypeScript types
 
 ### Hooks
-- Documentez les hooks personnalisés
-- Exemples d'utilisation
-- Types de retour
+- Document custom hooks
+- Usage examples
+- Return types
 
 ### API
-- Documentez les fonctions d'API
-- Exemples de requêtes
-- Gestion d'erreurs
+- Document API functions
+- Request examples
+- Error handling
 
-## 🤝 Contribution
+## 🤝 Contributing
 
-### Structure des commits
+### Commit structure
 ```
-feat: nouvelle fonctionnalité
-fix: correction de bug
+feat: new feature
+fix: bug fix
 docs: documentation
-style: formatage
+style: formatting
 refactor: refactoring
 test: tests
 chore: maintenance
 ```
 
-### Pull Requests
-1. Créez une branche feature
-2. Commitez vos changements
-3. Ouvrez une PR
-4. Attendez la review
+### Pull requests
+1. Create a feature branch
+2. Commit your changes
+3. Open a PR
+4. Wait for review
 
-## 📄 Licence
+## 📄 License
 
-MIT License - Voir LICENSE pour plus de détails.
+MIT License - See LICENSE for details.
 
 ## 🆘 Support
 
-- **Issues** : GitHub Issues
-- **Documentation** : README.md
-- **Exemples** : Dossier `examples/`
+- **Issues**: GitHub Issues
+- **Documentation**: README.md
+- **Examples**: `examples/` folder
 
 ---
 
-**🎉 Votre boilerplate est prêt ! Commencez à développer votre application.**
+**🎉 Your boilerplate is ready! Start building your application.**
