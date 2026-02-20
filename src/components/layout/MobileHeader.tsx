@@ -4,7 +4,6 @@ import { AppBar, Toolbar, Box, Container } from '@mui/material';
 import { useRouter } from '@/i18n/navigation';
 import Image from 'next/image';
 import { getLogoPath } from '@/utils/level-icons';
-import UserDropdown from '@/components/UserDropdown';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { DISPLAY_MOBILE_ONLY } from '@/theme/layoutConstants';
 
@@ -59,7 +58,6 @@ export default function MobileHeader() {
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <LanguageSwitcher />
-            <UserDropdown />
           </Box>
         </Toolbar>
       </Container>

@@ -1,18 +1,21 @@
 'use client';
 
-import { BottomNavigation, BottomNavigationAction, Box } from '@mui/material';
+import { BottomNavigation, BottomNavigationAction, Box, Avatar } from '@mui/material';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
+import type { User } from 'firebase/auth';
 import NotificationBadge from '@/components/NotificationBadge';
 import { NAV_ITEMS } from '@/config/navigation';
 import { DISPLAY_MOBILE_ONLY } from '@/theme/layoutConstants';
 import { BOTTOM_NAV_HEIGHT } from '@/theme/layoutConstants';
+import { getUserEmail } from '@/lib/userUtils';
 
 interface BottomNavProps {
   unreadCount: number;
+  user: User | null;
 }
 
-export default function BottomNav({ unreadCount }: BottomNavProps) {
+export default function BottomNav({ unreadCount, user }: BottomNavProps) {
   const router = useRouter();
   const pathname = usePathname();
   const t = useTranslations();
@@ -24,6 +27,33 @@ export default function BottomNav({ unreadCount }: BottomNavProps) {
     if (path.includes('/messages')) return 'messages';
     if (path.includes('/profile')) return 'profile';
     return 'home';
+  };
+
+  const renderIcon = (item: (typeof NAV_ITEMS)[number]) => {
+    if (item.id === 'profile' && user) {
+      return (
+        <Avatar
+          src={user.photoURL || undefined}
+          sx={{
+            width: 24,
+            height: 24,
+            fontSize: '0.75rem',
+          }}
+        >
+          {user.displayName
+            ? user.displayName[0].toUpperCase()
+            : getUserEmail(user)?.[0]?.toUpperCase() ?? '?'}
+        </Avatar>
+      );
+    }
+    if (item.showBadge) {
+      return (
+        <NotificationBadge count={unreadCount} pulse={unreadCount > 0}>
+          <item.icon />
+        </NotificationBadge>
+      );
+    }
+    return <item.icon />;
   };
 
   return (
@@ -65,15 +95,7 @@ export default function BottomNav({ unreadCount }: BottomNavProps) {
           <BottomNavigationAction
             key={item.id}
             value={item.id}
-            icon={
-              item.showBadge ? (
-                <NotificationBadge count={unreadCount} pulse={unreadCount > 0}>
-                  <item.icon />
-                </NotificationBadge>
-              ) : (
-                <item.icon />
-              )
-            }
+            icon={renderIcon(item)}
             label={t(item.labelKey)}
           />
         ))}

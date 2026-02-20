@@ -75,7 +75,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       >
         {children}
       </Box>
-      <BottomNav unreadCount={unreadCount} />
+      <BottomNav unreadCount={unreadCount} user={user} />
     </div>
   );
 }
