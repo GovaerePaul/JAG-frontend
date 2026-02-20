@@ -77,16 +77,21 @@ export async function getReceivedMessagesDirect(
   userId: string,
   afterDoc?: QueryDocumentSnapshot<DocumentData> | null
 ): Promise<PaginatedMessages> {
-  const constraints = [
-    where('receiverId', '==', userId),
-    orderBy('createdAt', 'desc'),
-    firestoreLimit(MESSAGES_PAGE_SIZE),
-  ];
-  if (afterDoc) {
-    constraints.push(startAfter(afterDoc));
-  }
-
-  const q = query(collection(db, 'messages'), ...constraints);
+  const messagesRef = collection(db, 'messages');
+  const q = afterDoc
+    ? query(
+      messagesRef,
+      where('receiverId', '==', userId),
+      orderBy('createdAt', 'desc'),
+      firestoreLimit(MESSAGES_PAGE_SIZE),
+      startAfter(afterDoc)
+    )
+    : query(
+      messagesRef,
+      where('receiverId', '==', userId),
+      orderBy('createdAt', 'desc'),
+      firestoreLimit(MESSAGES_PAGE_SIZE)
+    );
   const snapshot = await getDocs(q);
 
   const messages = snapshot.docs.map(mapMessageDoc);
@@ -103,16 +108,21 @@ export async function getSentMessagesDirect(
   userId: string,
   afterDoc?: QueryDocumentSnapshot<DocumentData> | null
 ): Promise<PaginatedMessages> {
-  const constraints = [
-    where('senderId', '==', userId),
-    orderBy('createdAt', 'desc'),
-    firestoreLimit(MESSAGES_PAGE_SIZE),
-  ];
-  if (afterDoc) {
-    constraints.push(startAfter(afterDoc));
-  }
-
-  const q = query(collection(db, 'messages'), ...constraints);
+  const messagesRef = collection(db, 'messages');
+  const q = afterDoc
+    ? query(
+      messagesRef,
+      where('senderId', '==', userId),
+      orderBy('createdAt', 'desc'),
+      firestoreLimit(MESSAGES_PAGE_SIZE),
+      startAfter(afterDoc)
+    )
+    : query(
+      messagesRef,
+      where('senderId', '==', userId),
+      orderBy('createdAt', 'desc'),
+      firestoreLimit(MESSAGES_PAGE_SIZE)
+    );
   const snapshot = await getDocs(q);
 
   const messages = snapshot.docs.map(mapMessageDoc);
