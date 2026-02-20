@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 /* Safe area for mobile (notch, home indicator) - 0 on web */
+html, body {
+  background-color: #fff;
+}
 body {
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);

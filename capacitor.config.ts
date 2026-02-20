@@ -25,8 +25,9 @@ const config: CapacitorConfig = {
       providers: ['google.com', 'apple.com'],
     },
     StatusBar: {
-      style: 'LIGHT',
-      backgroundColor: '#1976d2',
+      overlaysWebView: false,
+      style: 'DARK',
+      backgroundColor: '#FFFFFF',
     },
   },
 };

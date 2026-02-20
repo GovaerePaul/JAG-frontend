@@ -50,10 +50,14 @@ export default function BottomNav({ unreadCount }: BottomNavProps) {
         }}
         showLabels
         sx={{
+          width: '100%',
+          maxWidth: '100%',
           height: BOTTOM_NAV_HEIGHT,
           '& .MuiBottomNavigationAction-root': {
             minWidth: 0,
             paddingTop: 1,
+            flex: 1,
+            maxWidth: 'none',
           },
         }}
       >

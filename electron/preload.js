@@ -1,9 +1,9 @@
-// Preload script pour sécuriser les communications entre Electron et React
+// Preload script to secure communications between Electron and React
 const { contextBridge } = require('electron');
 
-// Exposer des APIs sécurisées au renderer process
+// Expose secure APIs to renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,
   version: process.versions.electron,
-  // Ajouter d'autres APIs sécurisées ici si nécessaire
+  // Add other secure APIs here if needed
 });
