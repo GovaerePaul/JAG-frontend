@@ -3,7 +3,7 @@ import { getAuth, connectAuthEmulator, Auth } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, Firestore } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator, FirebaseStorage } from 'firebase/storage';
 import { getAnalytics, type Analytics } from 'firebase/analytics';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+import { initializeAppCheck, ReCaptchaV3Provider, CustomProvider } from 'firebase/app-check';
 
 const isCapacitor = typeof window !== 'undefined' && (window as { Capacitor?: unknown }).Capacitor !== undefined;
 
@@ -44,11 +44,34 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && !
   } catch {}
 }
 
-if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && !isCapacitor) {
-  initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY),
-    isTokenAutoRefreshEnabled: true,
-  });
+async function setupAppCheck() {
+  if (typeof window === 'undefined') return;
+
+  if (isCapacitor) {
+    const { FirebaseAppCheck } = await import('@capacitor-firebase/app-check');
+    const useDebugProvider = process.env.NEXT_PUBLIC_APP_CHECK_CAPACITOR_DEBUG === 'true';
+    await FirebaseAppCheck.initialize({
+      isTokenAutoRefreshEnabled: true,
+      ...(useDebugProvider && { debugToken: true }),
+    });
+    const provider = new CustomProvider({
+      getToken: async () => {
+        const result = await FirebaseAppCheck.getToken();
+        return {
+          token: result.token,
+          expireTimeMillis: result.expireTimeMillis ?? Date.now() + 3600_000,
+        };
+      },
+    });
+    initializeAppCheck(app, { provider, isTokenAutoRefreshEnabled: true });
+  } else if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY),
+      isTokenAutoRefreshEnabled: true,
+    });
+  }
 }
+
+setupAppCheck();
 
 export default app;
