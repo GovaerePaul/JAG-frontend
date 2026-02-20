@@ -6,6 +6,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import createEmotionCache from '@/lib/emotion-cache';
 import ReduxProvider from './providers/ReduxProvider';
+import CookieConsent from './CookieConsent';
 
 const theme = createTheme({
   palette: {
@@ -46,6 +47,7 @@ export default function ClientAppWrapper({ children }: ClientAppWrapperProps) {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           {children}
+          <CookieConsent />
         </ThemeProvider>
       </CacheProvider>
     </ReduxProvider>

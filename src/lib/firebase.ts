@@ -2,7 +2,7 @@ import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator, Auth } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, Firestore } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator, FirebaseStorage } from 'firebase/storage';
-import { getAnalytics, Analytics } from 'firebase/analytics';
+import { getAnalytics, type Analytics } from 'firebase/analytics';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 const isCapacitor = typeof window !== 'undefined' && (window as { Capacitor?: unknown }).Capacitor !== undefined;
@@ -26,8 +26,15 @@ export const storage: FirebaseStorage = getStorage(
   firebaseConfig.storageBucket ? `gs://${firebaseConfig.storageBucket}` : undefined
 );
 
-export const analytics: Analytics | null =
-  typeof window !== 'undefined' ? getAnalytics(app) : null;
+let analyticsInstance: Analytics | null = null;
+
+export function initAnalytics(): Analytics | null {
+  if (typeof window === 'undefined') return null;
+  if (!analyticsInstance) {
+    analyticsInstance = getAnalytics(app);
+  }
+  return analyticsInstance;
+}
 
 if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && !isCapacitor) {
   try {
