@@ -1,7 +1,7 @@
 {
   "auth": {
     "errors": {
-      "emailAlreadyInUse": "Cette adresse email est déjà utilisée",
+      "emailAlreadyInUse": "Un compte existe déjà avec cette adresse email. Connectez-vous via Google ou Apple si vous avez utilisé un de ces providers.",
       "weakPassword": "Le mot de passe doit contenir au moins 6 caractères",
       "invalidEmail": "Adresse email invalide",
       "userNotFound": "Aucun compte associé à cette adresse email",

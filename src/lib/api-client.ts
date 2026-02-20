@@ -12,18 +12,6 @@ export interface UpdateProfileRequest {
 }
 
 class AuthApiClient {
-  
-  public setAuthToken(token: string): void {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth-token', token);
-    }
-  }
-
-  public clearAuthToken(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth-token');
-    }
-  }
 
   public async getUserProfile(): Promise<ApiResponse> {
     try {
@@ -76,7 +64,6 @@ class AuthApiClient {
     try {
       const fn = httpsCallable(functions, 'deleteUserAccountFunction');
       const result = await fn();
-      this.clearAuthToken();
       return { success: true, data: result.data };
     } catch (error: unknown) {
       return {

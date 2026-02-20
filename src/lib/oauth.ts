@@ -9,7 +9,6 @@ import {
 } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import authApiClient from './api-client';
 
 const isCapacitor = typeof window !== 'undefined' && (window as { Capacitor?: unknown }).Capacitor !== undefined;
 
@@ -81,8 +80,6 @@ const handleOAuthSignIn = async (result: UserCredential) => {
       throw new Error('User document not found after sign-in');
     }
     
-    const token = await user.getIdToken();
-    authApiClient.setAuthToken(token);
   } catch (error) {
     console.error('Error in handleOAuthSignIn:', error);
     throw error;

@@ -3,7 +3,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   updateProfile,
-  fetchSignInMethodsForEmail
+  AuthError,
 } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
@@ -24,22 +24,6 @@ export interface SignInData {
 
 export const signUp = async ({ email, password, displayName, role }: SignUpData) => {
   try {
-    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-    
-    if (signInMethods.length > 0) {
-      const hasGoogle = signInMethods.includes('google.com');
-      if (hasGoogle) {
-        return { 
-          user: null, 
-          error: 'auth/account-exists-with-different-credential' 
-        };
-      }
-      return { 
-        user: null, 
-        error: 'auth/email-already-in-use' 
-      };
-    }
-    
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -87,6 +71,10 @@ export const signUp = async ({ email, password, displayName, role }: SignUpData)
 
     return { user, error: null };
   } catch (error: unknown) {
+    const authError = error as AuthError;
+    if (authError.code) {
+      return { user: null, error: authError.code };
+    }
     return { user: null, error: error instanceof Error ? error.message : 'Authentication failed' };
   }
 };
@@ -94,10 +82,6 @@ export const signUp = async ({ email, password, displayName, role }: SignUpData)
 export const signIn = async ({ email, password }: SignInData) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    
-    const token = await userCredential.user.getIdToken();
-    authApiClient.setAuthToken(token);
-    
     return { user: userCredential.user, error: null };
   } catch (error: unknown) {
     return { user: null, error: error instanceof Error ? error.message : 'Authentication failed' };
@@ -107,7 +91,6 @@ export const signIn = async ({ email, password }: SignInData) => {
 export const logout = async () => {
   try {
     await signOut(auth);
-    authApiClient.clearAuthToken();
     return { error: null };
   } catch (error: unknown) {
     return { error: error instanceof Error ? error.message : 'Logout failed' };
