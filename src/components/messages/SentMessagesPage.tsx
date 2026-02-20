@@ -7,16 +7,6 @@ import {
   Box,
   CircularProgress,
   Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Chip,
-  useTheme,
-  useMediaQuery,
   Button,
 } from '@mui/material';
 import { Outbox, ArrowBack } from '@mui/icons-material';
@@ -26,20 +16,12 @@ import { getCachedUserDisplayNames } from '@/lib/user-cache';
 import type { MessageSummary } from '@/types/messages';
 import { useSentMessages } from '@/features/messages/useSentMessages';
 import { useEventTypes } from '@/features/events/useEventTypes';
-import { formatDate } from '@/utils/date';
-import { getStatusColor, getStatusLabel } from '@/utils/messages';
-import MessageCard from './MessageCard';
+import MessageListView from './MessageListView';
 import EmptyState from './EmptyState';
-import EventTypeDisplay from './EventTypeDisplay';
 
 export default function SentMessagesPage() {
   const router = useRouter();
   const t = useTranslations('messages');
-  const tCommon = useTranslations('common');
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  const { messages: sentMessages, loading, error } = useSentMessages();
 
   const getReceiverIds = useCallback(
     (msgs: MessageSummary[]) => msgs.map((msg) => msg.receiverId).filter((id) => id),
@@ -47,6 +29,8 @@ export default function SentMessagesPage() {
   );
 
   const [userNames, setUserNames] = useState<Record<string, string>>({});
+
+  const { messages: sentMessages, loading, error } = useSentMessages();
 
   useEffect(() => {
     const loadUserNames = async () => {
@@ -97,86 +81,13 @@ export default function SentMessagesPage() {
       )}
 
       {messages.length > 0 && (
-        <>
-          {isMobile ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {messages.map((message) => (
-                <MessageCard
-                  key={message.id}
-                  message={message}
-                  receiverName={message.receiverId ? userNames[message.receiverId] : undefined}
-                  onClick={() => router.push(`/messages/sent?id=${message.id}`)}
-                  eventTypes={eventTypes}
-                  isSent={true}
-                />
-              ))}
-            </Box>
-          ) : (
-            <TableContainer component={Paper} elevation={2}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('table.to')}</TableCell>
-                    <TableCell>{t('table.eventType')}</TableCell>
-                    <TableCell>{t('table.status')}</TableCell>
-                    <TableCell>{t('table.date')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {messages.map((message) => (
-                    <TableRow
-                      key={message.id}
-                      hover
-                      sx={{
-                        cursor: 'pointer',
-                        '&:hover': {
-                          backgroundColor: 'action.hover',
-                        },
-                      }}
-                      onClick={() => router.push(`/messages/sent?id=${message.id}`)}
-                    >
-                      <TableCell>
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                            {message.receiverId
-                              ? userNames[message.receiverId] || message.receiverId
-                              : tCommon('unknown')}
-                          </Typography>
-                          {message.isAnonymous && (
-                            <Chip label={t('anonymous')} size="small" sx={{ mt: 0.5 }} />
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <EventTypeDisplay
-                          eventTypeId={message.eventTypeId}
-                          eventTypes={eventTypes}
-                          variant="body2"
-                          iconSize="1.2rem"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={getStatusLabel(message.status, t)}
-                          color={getStatusColor(message.status)}
-                          size="small"
-                        />
-                        {message.isReported && (
-                          <Chip label={t('reported')} color="error" size="small" sx={{ ml: 1 }} />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {formatDate(message.createdAt) || tCommon('unknown')}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </>
+        <MessageListView
+          variant="sent"
+          messages={messages}
+          userNames={userNames}
+          eventTypes={eventTypes}
+          onMessageClick={(message) => router.push(`/messages/sent?id=${message.id}`)}
+        />
       )}
     </Container>
   );

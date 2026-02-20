@@ -2,22 +2,15 @@
 
 import { useSyncExternalStore } from 'react';
 import { CacheProvider } from '@emotion/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import createEmotionCache from '@/lib/emotion-cache';
 import ReduxProvider from './providers/ReduxProvider';
 import CookieConsent from './CookieConsent';
+import appTheme from '@/theme/appTheme';
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
+// Temporairement désactivé pour isoler le crash - réactiver si l'app fonctionne sans
+// const AndroidBackHandler = dynamic(() => import('./AndroidBackHandler'), { ssr: false, loading: () => null });
 
 const emotionCache = createEmotionCache();
 
@@ -44,7 +37,7 @@ export default function ClientAppWrapper({ children }: ClientAppWrapperProps) {
   return (
     <ReduxProvider>
       <CacheProvider value={emotionCache}>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={appTheme}>
           <CssBaseline />
           {children}
           <CookieConsent />

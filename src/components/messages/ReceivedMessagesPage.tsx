@@ -7,16 +7,6 @@ import {
   Box,
   CircularProgress,
   Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Chip,
-  useTheme,
-  useMediaQuery,
   Button,
 } from '@mui/material';
 import { Inbox, ArrowBack } from '@mui/icons-material';
@@ -26,20 +16,12 @@ import { getCachedUserDisplayNames } from '@/lib/user-cache';
 import type { MessageSummary } from '@/types/messages';
 import { useReceivedMessages } from '@/features/messages/useReceivedMessages';
 import { useEventTypes } from '@/features/events/useEventTypes';
-import { formatDate } from '@/utils/date';
-import { getStatusColor, getStatusLabel } from '@/utils/messages';
-import MessageCard from './MessageCard';
+import MessageListView from './MessageListView';
 import EmptyState from './EmptyState';
-import EventTypeDisplay from './EventTypeDisplay';
 
 export default function ReceivedMessagesPage() {
   const router = useRouter();
   const t = useTranslations('messages');
-  const tCommon = useTranslations('common');
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  const { messages: receivedMessages, loading, error } = useReceivedMessages();
 
   const getSenderIds = useCallback(
     (msgs: MessageSummary[]) =>
@@ -48,6 +30,8 @@ export default function ReceivedMessagesPage() {
   );
 
   const [userNames, setUserNames] = useState<Record<string, string>>({});
+
+  const { messages: receivedMessages, loading, error } = useReceivedMessages();
 
   useEffect(() => {
     const loadUserNames = async () => {
@@ -98,87 +82,13 @@ export default function ReceivedMessagesPage() {
       )}
 
       {messages.length > 0 && (
-        <>
-          {isMobile ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {messages.map((message) => (
-                <MessageCard
-                  key={message.id}
-                  message={message}
-                  senderName={message.senderId ? userNames[message.senderId] : undefined}
-                  onClick={() => router.push(`/messages/received?id=${message.id}`)}
-                  eventTypes={eventTypes}
-                />
-              ))}
-            </Box>
-          ) : (
-            <TableContainer component={Paper} elevation={2}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('table.from')}</TableCell>
-                    <TableCell>{t('table.eventType')}</TableCell>
-                    <TableCell>{t('table.status')}</TableCell>
-                    <TableCell>{t('table.date')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {messages.map((message) => (
-                    <TableRow
-                      key={message.id}
-                      hover
-                      sx={{
-                        cursor: 'pointer',
-                        '&:hover': {
-                          backgroundColor: 'action.hover',
-                        },
-                      }}
-                      onClick={() => router.push(`/messages/received?id=${message.id}`)}
-                    >
-                      <TableCell>
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                            {message.isAnonymous
-                              ? t('anonymousSender')
-                              : message.senderId
-                                ? userNames[message.senderId] || message.senderId
-                                : tCommon('unknown')}
-                          </Typography>
-                          {message.isAnonymous && (
-                            <Chip label={t('anonymous')} size="small" sx={{ mt: 0.5 }} />
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <EventTypeDisplay
-                          eventTypeId={message.eventTypeId}
-                          eventTypes={eventTypes}
-                          variant="body2"
-                          iconSize="1.2rem"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={getStatusLabel(message.status, t)}
-                          color={getStatusColor(message.status)}
-                          size="small"
-                        />
-                        {message.isReported && (
-                          <Chip label={t('reported')} color="error" size="small" sx={{ ml: 1 }} />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {formatDate(message.createdAt) || tCommon('unknown')}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </>
+        <MessageListView
+          variant="received"
+          messages={messages}
+          userNames={userNames}
+          eventTypes={eventTypes}
+          onMessageClick={(message) => router.push(`/messages/received?id=${message.id}`)}
+        />
       )}
     </Container>
   );

@@ -6,6 +6,9 @@ import { useAuth } from '@/features/auth/useAuth';
 import { useUnreadMessages } from '@/features/messages/useUnreadMessages';
 import { usePathname } from '@/i18n/navigation';
 import Navbar from '../Navbar';
+import MobileHeader from './MobileHeader';
+import BottomNav from './BottomNav';
+import { BOTTOM_NAV_HEIGHT } from '@/theme/layoutConstants';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -59,9 +62,20 @@ export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar user={user} canReceive={canReceive} unreadCount={unreadCount} />
-      <main style={{ flexGrow: 1 }}>
+      <MobileHeader />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          paddingBottom: {
+            xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom))`,
+            md: 0,
+          },
+        }}
+      >
         {children}
-      </main>
+      </Box>
+      <BottomNav unreadCount={unreadCount} />
     </div>
   );
 }

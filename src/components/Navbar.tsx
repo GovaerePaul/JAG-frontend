@@ -16,6 +16,7 @@ import NotificationBadge from '@/components/NotificationBadge';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { getLogoPath } from '@/utils/level-icons';
+import { DISPLAY_DESKTOP_ONLY } from '@/theme/layoutConstants';
 
 interface NavbarProps {
   user: User | null;
@@ -48,6 +49,7 @@ export default function Navbar({ user, canReceive, unreadCount }: NavbarProps) {
       position="sticky"
       elevation={0}
       sx={{
+        display: DISPLAY_DESKTOP_ONLY,
         background: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(10px)',
         borderBottom: '1px solid rgba(254, 107, 139, 0.1)',

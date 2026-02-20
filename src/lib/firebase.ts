@@ -47,29 +47,36 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && !
 async function setupAppCheck() {
   if (typeof window === 'undefined') return;
 
-  if (isCapacitor && process.env.NODE_ENV === 'production') {
-    const { FirebaseAppCheck } = await import('@capacitor-firebase/app-check');
-    await FirebaseAppCheck.initialize({
-      isTokenAutoRefreshEnabled: true,
-    });
-    const provider = new CustomProvider({
-      getToken: async () => {
-        const result = await FirebaseAppCheck.getToken();
-        return {
-          token: result.token,
-          expireTimeMillis: result.expireTimeMillis ?? Date.now() + 3600_000,
-        };
-      },
-    });
-    initializeAppCheck(app, { provider, isTokenAutoRefreshEnabled: true });
-  } else if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
-    initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY),
-      isTokenAutoRefreshEnabled: true,
-    });
+  try {
+    if (isCapacitor && process.env.NODE_ENV === 'production') {
+      const { FirebaseAppCheck } = await import('@capacitor-firebase/app-check');
+      await FirebaseAppCheck.initialize({
+        isTokenAutoRefreshEnabled: true,
+      });
+      const provider = new CustomProvider({
+        getToken: async () => {
+          const result = await FirebaseAppCheck.getToken();
+          return {
+            token: result.token,
+            expireTimeMillis: result.expireTimeMillis ?? Date.now() + 3600_000,
+          };
+        },
+      });
+      initializeAppCheck(app, { provider, isTokenAutoRefreshEnabled: true });
+    } else if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
+      initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY),
+        isTokenAutoRefreshEnabled: true,
+      });
+    }
+  } catch (e) {
+    // App Check setup failed (Capacitor plugin, ReCaptcha, etc.) - app continues without it
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[Firebase] App Check setup failed:', e);
+    }
   }
 }
 
-setupAppCheck();
+setupAppCheck().catch(() => {});
 
 export default app;

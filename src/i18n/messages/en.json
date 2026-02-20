@@ -88,6 +88,13 @@
     "unknown": "Unknown",
     "ok": "OK"
   },
+  "nav": {
+    "home": "Home",
+    "quests": "Quests",
+    "discover": "Discover",
+    "messages": "Messages",
+    "profile": "Profile"
+  },
   "metadata": {
     "title": "JustGift - Organize Your Gifts",
     "description": "Platform to organize and plan your gifts"
