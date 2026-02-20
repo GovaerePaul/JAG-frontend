@@ -47,7 +47,7 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && !
 async function setupAppCheck() {
   if (typeof window === 'undefined') return;
 
-  if (isCapacitor) {
+  if (isCapacitor && process.env.NODE_ENV === 'production') {
     const { FirebaseAppCheck } = await import('@capacitor-firebase/app-check');
     const useDebugProvider = process.env.NEXT_PUBLIC_APP_CHECK_CAPACITOR_DEBUG === 'true';
     await FirebaseAppCheck.initialize({
