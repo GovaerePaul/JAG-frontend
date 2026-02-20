@@ -18,7 +18,6 @@ export default function UserCard({ user, eventTypes, onSendMessage }: UserCardPr
   const t = useTranslations('discover');
   const router = useRouter();
   const locale = useLocale();
-  const isNew = false;
 
   const favoriteEventTypes = user.favoriteEventTypeIds
     ? eventTypes.filter((et) => user.favoriteEventTypeIds?.includes(et.id))
@@ -57,19 +56,6 @@ export default function UserCard({ user, eventTypes, onSendMessage }: UserCardPr
           >
             <Person sx={{ fontSize: 40 }} />
           </Avatar>
-          {isNew && (
-            <Chip
-              label={t('newUser')}
-              color="primary"
-              size="small"
-              sx={{
-                position: 'absolute',
-                top: -8,
-                right: -8,
-                fontSize: '0.7rem',
-              }}
-            />
-          )}
         </Box>
 
         <Typography variant="h6" component="div" align="center" gutterBottom>
