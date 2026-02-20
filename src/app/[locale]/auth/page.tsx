@@ -13,7 +13,7 @@ import { Favorite, AutoAwesome } from '@mui/icons-material';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { useAuth } from '@/features/auth/useAuth';
-import { checkGoogleRedirectResult } from '@/lib/oauth';
+import { checkOAuthRedirectResult } from '@/lib/oauth';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,7 +26,7 @@ export default function AuthPage() {
   useEffect(() => {
     if (!hasCheckedRedirectRef.current && !loading) {
       hasCheckedRedirectRef.current = true;
-      checkGoogleRedirectResult().then(({ user: redirectUser, error }) => {
+      checkOAuthRedirectResult().then(({ user: redirectUser, error }) => {
         if (redirectUser) {
           hasRedirectedRef.current = true;
           router.push('/');

@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff, Login as LoginIcon, Email, Lock } from '@mui/icons-material';
 import { signIn, getFirebaseErrorKey } from '@/lib/auth';
-import { signInWithGoogle } from '@/lib/oauth';
+import { signInWithGoogle, signInWithApple } from '@/lib/oauth';
 
 interface LoginFormProps {
   onSuccess: () => void;
@@ -65,6 +65,22 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
     setError('');
 
     const { user, error: authError } = await signInWithGoogle();
+
+    if (authError) {
+      const errorKey = getFirebaseErrorKey(authError);
+      setError(t(errorKey));
+    } else if (user) {
+      onSuccess();
+    }
+
+    setLoading(false);
+  };
+
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    setError('');
+
+    const { user, error: authError } = await signInWithApple();
 
     if (authError) {
       const errorKey = getFirebaseErrorKey(authError);
@@ -133,7 +149,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
       )}
 
       {/* OAuth Buttons */}
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         <Button
           fullWidth
           variant="outlined"
@@ -166,6 +182,37 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
           }}
         >
           {t('oauth.continueWithGoogle')}
+        </Button>
+
+        <Button
+          fullWidth
+          variant="outlined"
+          onClick={handleAppleSignIn}
+          disabled={loading}
+          startIcon={
+            <svg width="18" height="18" viewBox="0 0 814 1000">
+              <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57.8-155.5-127.4c-58.5-81.5-105.6-207.4-105.6-327.1 0-192.8 125.3-295.2 248.3-295.2 65.4 0 119.9 42.9 161 42.9 39.2 0 100.2-45.5 174.5-45.5 28.2 0 129.5 2.6 196.4 99.3zM554.1 159.4c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 103.3-30.4 135.5-71.3z"/>
+            </svg>
+          }
+          sx={{
+            py: 1.5,
+            borderRadius: 2,
+            borderColor: 'divider',
+            color: 'text.primary',
+            textTransform: 'none',
+            fontSize: '1rem',
+            fontWeight: 500,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderColor: '#000',
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            },
+            '&:disabled': {
+              opacity: 0.6,
+            },
+          }}
+        >
+          {t('oauth.continueWithApple')}
         </Button>
       </Box>
 

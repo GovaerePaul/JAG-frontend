@@ -45,6 +45,7 @@
     },
     "oauth": {
       "continueWithGoogle": "Continue with Google",
+      "continueWithApple": "Continue with Apple",
       "continueWithFacebook": "Continue with Facebook",
       "orDivider": "or",
       "quickSignup": "Quick and easy signup with",

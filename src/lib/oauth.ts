@@ -1,5 +1,6 @@
 import {
   GoogleAuthProvider,
+  OAuthProvider,
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
@@ -31,7 +32,26 @@ export const signInWithGoogle = async () => {
   }
 };
 
-export const checkGoogleRedirectResult = async () => {
+export const signInWithApple = async () => {
+  try {
+    const provider = new OAuthProvider('apple.com');
+    provider.addScope('email');
+    provider.addScope('name');
+
+    if (isCapacitor) {
+      await signInWithRedirect(auth, provider);
+      return { user: null, error: null };
+    } else {
+      const result = await signInWithPopup(auth, provider);
+      await handleOAuthSignIn(result);
+      return { user: result.user, error: null };
+    }
+  } catch (error) {
+    return handleOAuthError(error);
+  }
+};
+
+export const checkOAuthRedirectResult = async () => {
   try {
     const result = await getRedirectResult(auth);
     if (result) {
