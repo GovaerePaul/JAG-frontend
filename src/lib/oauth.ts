@@ -3,11 +3,9 @@ import {
   OAuthProvider,
   signInWithPopup,
   signInWithCredential,
-  UserCredential,
   AuthError
 } from 'firebase/auth';
-import { auth, db } from './firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { auth } from './firebase';
 
 const isCapacitor = typeof window !== 'undefined' && (window as { Capacitor?: unknown }).Capacitor !== undefined;
 
@@ -22,14 +20,12 @@ export const signInWithGoogle = async () => {
       }
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
-      await handleOAuthSignIn(userCredential);
       return { user: userCredential.user, error: null };
     } else {
       const provider = new GoogleAuthProvider();
       provider.addScope('profile');
       provider.addScope('email');
       const result = await signInWithPopup(auth, provider);
-      await handleOAuthSignIn(result);
       return { user: result.user, error: null };
     }
   } catch (error) {
@@ -50,39 +46,17 @@ export const signInWithApple = async () => {
       const appleProvider = new OAuthProvider('apple.com');
       const credential = appleProvider.credential({ idToken, rawNonce: nonce });
       const userCredential = await signInWithCredential(auth, credential);
-      await handleOAuthSignIn(userCredential);
       return { user: userCredential.user, error: null };
     } else {
       const provider = new OAuthProvider('apple.com');
       provider.addScope('email');
       provider.addScope('name');
       const result = await signInWithPopup(auth, provider);
-      await handleOAuthSignIn(result);
       return { user: result.user, error: null };
     }
   } catch (error) {
     return handleOAuthError(error);
   }
-};
-
-const handleOAuthSignIn = async (result: UserCredential) => {
-  const user = result.user;
-  
-  if (!user.email) {
-    throw new Error('User email not available');
-  }
-  
-  const userRef = doc(db, 'users', user.uid);
-  
-  for (let attempt = 0; attempt < 10; attempt++) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const userDoc = await getDoc(userRef);
-    if (userDoc.exists()) {
-      return;
-    }
-  }
-  
-  throw new Error('User document not found after sign-in');
 };
 
 const handleOAuthError = (error: unknown): { user: null; error: string } => {
