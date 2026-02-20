@@ -44,7 +44,7 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && !
   } catch {}
 }
 
-if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
+if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && !isCapacitor) {
   initializeAppCheck(app, {
     provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY),
     isTokenAutoRefreshEnabled: true,

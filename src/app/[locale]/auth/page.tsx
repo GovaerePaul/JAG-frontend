@@ -13,7 +13,6 @@ import { Favorite, AutoAwesome } from '@mui/icons-material';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { useAuth } from '@/features/auth/useAuth';
-import { checkOAuthRedirectResult } from '@/lib/oauth';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -21,21 +20,6 @@ export default function AuthPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const hasRedirectedRef = useRef(false);
-  const hasCheckedRedirectRef = useRef(false);
-
-  useEffect(() => {
-    if (!hasCheckedRedirectRef.current && !loading) {
-      hasCheckedRedirectRef.current = true;
-      checkOAuthRedirectResult().then(({ user: redirectUser, error }) => {
-        if (redirectUser) {
-          hasRedirectedRef.current = true;
-          router.push('/');
-        } else if (error && error !== 'auth/unknown-error') {
-          console.error('Google redirect error:', error);
-        }
-      });
-    }
-  }, [loading, router]);
 
   useEffect(() => {
     if (!loading && user && !hasRedirectedRef.current) {

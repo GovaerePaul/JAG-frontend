@@ -2,8 +2,7 @@ import {
   GoogleAuthProvider,
   OAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithCredential,
   UserCredential,
   AuthError
 } from 'firebase/auth';
@@ -14,14 +13,21 @@ const isCapacitor = typeof window !== 'undefined' && (window as { Capacitor?: un
 
 export const signInWithGoogle = async () => {
   try {
-    const provider = new GoogleAuthProvider();
-    provider.addScope('profile');
-    provider.addScope('email');
-    
     if (isCapacitor) {
-      await signInWithRedirect(auth, provider);
-      return { user: null, error: null };
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      const result = await FirebaseAuthentication.signInWithGoogle();
+      const idToken = result.credential?.idToken;
+      if (!idToken) {
+        return { user: null, error: 'auth/no-id-token' };
+      }
+      const credential = GoogleAuthProvider.credential(idToken);
+      const userCredential = await signInWithCredential(auth, credential);
+      await handleOAuthSignIn(userCredential);
+      return { user: userCredential.user, error: null };
     } else {
+      const provider = new GoogleAuthProvider();
+      provider.addScope('profile');
+      provider.addScope('email');
       const result = await signInWithPopup(auth, provider);
       await handleOAuthSignIn(result);
       return { user: result.user, error: null };
@@ -33,14 +39,23 @@ export const signInWithGoogle = async () => {
 
 export const signInWithApple = async () => {
   try {
-    const provider = new OAuthProvider('apple.com');
-    provider.addScope('email');
-    provider.addScope('name');
-
     if (isCapacitor) {
-      await signInWithRedirect(auth, provider);
-      return { user: null, error: null };
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      const result = await FirebaseAuthentication.signInWithApple();
+      const idToken = result.credential?.idToken;
+      const nonce = result.credential?.nonce;
+      if (!idToken) {
+        return { user: null, error: 'auth/no-id-token' };
+      }
+      const appleProvider = new OAuthProvider('apple.com');
+      const credential = appleProvider.credential({ idToken, rawNonce: nonce });
+      const userCredential = await signInWithCredential(auth, credential);
+      await handleOAuthSignIn(userCredential);
+      return { user: userCredential.user, error: null };
     } else {
+      const provider = new OAuthProvider('apple.com');
+      provider.addScope('email');
+      provider.addScope('name');
       const result = await signInWithPopup(auth, provider);
       await handleOAuthSignIn(result);
       return { user: result.user, error: null };
@@ -50,40 +65,24 @@ export const signInWithApple = async () => {
   }
 };
 
-export const checkOAuthRedirectResult = async () => {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result) {
-      await handleOAuthSignIn(result);
-      return { user: result.user, error: null };
-    }
-    return { user: null, error: null };
-  } catch (error) {
-    return handleOAuthError(error);
-  }
-};
-
 const handleOAuthSignIn = async (result: UserCredential) => {
   const user = result.user;
   
-  try {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (!user.email) {
-      throw new Error('User email not available');
-    }
-    
-    const userRef = doc(db, 'users', user.uid);
-    const userDoc = await getDoc(userRef);
-    
-    if (!userDoc.exists()) {
-      throw new Error('User document not found after sign-in');
-    }
-    
-  } catch (error) {
-    console.error('Error in handleOAuthSignIn:', error);
-    throw error;
+  if (!user.email) {
+    throw new Error('User email not available');
   }
+  
+  const userRef = doc(db, 'users', user.uid);
+  
+  for (let attempt = 0; attempt < 10; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const userDoc = await getDoc(userRef);
+    if (userDoc.exists()) {
+      return;
+    }
+  }
+  
+  throw new Error('User document not found after sign-in');
 };
 
 const handleOAuthError = (error: unknown): { user: null; error: string } => {

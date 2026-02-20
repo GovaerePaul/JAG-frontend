@@ -10,12 +10,16 @@ const config: CapacitorConfig = {
   // Remove basePath for mobile builds
   plugins: {
     CapacitorHttp: {
-      enabled: true
+      enabled: false
     },
     SplashScreen: {
       launchShowDuration: 2000,
       backgroundColor: '#1976d2',
       showSpinner: false,
+    },
+    FirebaseAuthentication: {
+      skipNativeAuth: true,
+      providers: ['google.com', 'apple.com'],
     },
   },
 };
