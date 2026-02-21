@@ -20,6 +20,7 @@ export default function MobileHeader() {
       elevation={0}
       sx={{
         display: DISPLAY_MOBILE_ONLY,
+        top: { xs: 'max(env(safe-area-inset-top, 0px), 28px)', md: 0 },
         background: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(10px)',
         borderBottom: '1px solid rgba(254, 107, 139, 0.1)',

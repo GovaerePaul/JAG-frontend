@@ -14,7 +14,7 @@
     "start": "next start",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "cap:android": "npx cap add android",
+    "cap:android": "npx cap add android && npx cap open android",
     "cap:ios": "npx cap add ios && npx cap open ios",
     "cap:sync": "npx cap sync",
     "cap:syncopenandroid": "npx cap sync && npx cap open android",

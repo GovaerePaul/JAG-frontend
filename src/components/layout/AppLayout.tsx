@@ -59,8 +59,31 @@ export default function AppLayout({ children }: AppLayoutProps) {
     );
   }
 
+  const statusBarHeight = {
+    xs: 'max(env(safe-area-inset-top, 0px), 28px)',
+    md: 'env(safe-area-inset-top, 0px)',
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+      }}
+    >
+      {/* Sticky spacer: réserve toujours la zone status bar, même au scroll */}
+      <Box
+        sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1300,
+          flexShrink: 0,
+          height: statusBarHeight,
+          minHeight: statusBarHeight,
+          background: '#ffffff',
+        }}
+      />
       <Navbar user={user} canReceive={canReceive} unreadCount={unreadCount} />
       <MobileHeader />
       <Box
@@ -76,6 +99,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
         {children}
       </Box>
       <BottomNav unreadCount={unreadCount} user={user} />
-    </div>
+    </Box>
   );
 }
