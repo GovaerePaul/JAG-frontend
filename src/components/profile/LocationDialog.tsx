@@ -61,7 +61,7 @@ export default function LocationDialog({
         selectedLocationCity.latitude,
         selectedLocationCity.longitude,
       );
-      if (response.success) {
+      if (response.success && response.data) {
         onLocationUpdated(response.data);
         onClose();
         setLocationCity('');
