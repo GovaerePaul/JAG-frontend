@@ -7,9 +7,7 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https'
   },
-  android: {
-    adjustMarginsForEdgeToEdge: 'auto',
-  },
+  android: {},
   // Remove basePath for mobile builds
   plugins: {
     CapacitorHttp: {
