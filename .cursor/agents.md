@@ -9,7 +9,7 @@
 - Always respond in English
 - Always write code in ENGLISH. Same for comments, descriptions, etc. All code in English
 - Be concise and to the point
-- Do not over-engineer solutions
+- Avoid duplication code
 - Respect existing code and its style
 - Follow Next.JS and Firebase conventions
 
@@ -54,7 +54,6 @@
 
 - Do not create README or documentation files without explicit request
 - Do not add features that were not requested
-- Do not refactor working code without reason
 - Do not add dependencies without validation
 - Do not write code in French
 

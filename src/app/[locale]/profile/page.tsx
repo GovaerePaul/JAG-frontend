@@ -6,6 +6,8 @@ import { Container, Box, Divider, TextField, Button } from '@mui/material';
 import { Edit, Save, Cancel, LocationOn } from '@mui/icons-material';
 import { updateUserPreferences } from '@/lib/users-api';
 import { useAuth } from '@/features/auth/useAuth';
+import { setUserProfileLocation } from '@/features/auth/authSlice';
+import { useAppDispatch } from '@/store/hooks';
 import { useUnreadMessages } from '@/features/messages/useUnreadMessages';
 import { useUserStats } from '@/features/user/useUserStats';
 import { useEventTypes } from '@/features/events/useEventTypes';
@@ -24,6 +26,7 @@ import InfoCard from '@/components/ui/InfoCard';
 import BaseDialog from '@/components/dialogs/BaseDialog';
 
 export default function ProfilePage() {
+  const dispatch = useAppDispatch();
   const { user, userProfile, canReceive, canSend } = useAuth();
   const { unreadCount } = useUnreadMessages();
   const { messageCounts } = useUserStats();
@@ -242,7 +245,7 @@ export default function ProfilePage() {
           open={locationDialogOpen}
           onClose={() => setLocationDialogOpen(false)}
           currentLocation={getLocationDisplay()}
-          onLocationUpdated={() => {}}
+          onLocationUpdated={(location) => dispatch(setUserProfileLocation(location))}
         />
       </Container>
     </Box>

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authRepository } from './authRepository';
-import type { UserProfile } from '@/types/auth';
+import type { UserProfile, UserLocation } from '@/types/auth';
 
 interface AuthState {
   userProfile: UserProfile | null;
@@ -59,6 +59,14 @@ const authSlice = createSlice({
       state.error = null;
       state.lastFetched = null;
     },
+    setUserProfileLocation: (state, action: { payload: UserLocation }) => {
+      if (state.userProfile) {
+        state.userProfile.location = {
+          ...state.userProfile.location,
+          ...action.payload,
+        };
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -105,5 +113,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearAuth } = authSlice.actions;
+export const { clearAuth, setUserProfileLocation } = authSlice.actions;
 export default authSlice.reducer;

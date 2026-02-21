@@ -8,12 +8,13 @@ import { updateUserLocationByCity } from '@/lib/users-api';
 import CityAutocomplete from '@/components/discover/CityAutocomplete';
 import BaseDialog from '@/components/dialogs/BaseDialog';
 import GradientButton from '@/components/ui/GradientButton';
+import type { UserLocation } from '@/types/auth';
 
 interface LocationDialogProps {
   open: boolean;
   onClose: () => void;
   currentLocation: string;
-  onLocationUpdated: () => void;
+  onLocationUpdated: (location: UserLocation) => void;
 }
 
 export default function LocationDialog({
@@ -29,6 +30,8 @@ export default function LocationDialog({
     city: string;
     region?: string;
     country?: string;
+    latitude?: number;
+    longitude?: number;
   } | null>(null);
   const [updatingLocation, setUpdatingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -51,9 +54,15 @@ export default function LocationDialog({
     setLocationError(null);
 
     try {
-      const response = await updateUserLocationByCity(selectedLocationCity.city);
+      const response = await updateUserLocationByCity(
+        selectedLocationCity.city,
+        selectedLocationCity.region,
+        selectedLocationCity.country,
+        selectedLocationCity.latitude,
+        selectedLocationCity.longitude,
+      );
       if (response.success) {
-        onLocationUpdated();
+        onLocationUpdated(response.data);
         onClose();
         setLocationCity('');
         setSelectedLocationCity(null);
@@ -133,7 +142,13 @@ export default function LocationDialog({
           value={locationCity}
           onChange={(value) => setLocationCity(value || '')}
           onSelect={(cityData) => {
-            setSelectedLocationCity(cityData);
+            setSelectedLocationCity({
+              city: cityData.city,
+              region: cityData.region,
+              country: cityData.country,
+              latitude: cityData.latitude,
+              longitude: cityData.longitude,
+            });
             const parts = [cityData.city];
             if (cityData.region) parts.push(cityData.region);
             if (cityData.country) parts.push(cityData.country);

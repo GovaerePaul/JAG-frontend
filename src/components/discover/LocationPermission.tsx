@@ -15,12 +15,13 @@ import {
 import { LocationOn, Close } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
 import { updateUserLocationByCity } from '@/lib/users-api';
+import type { UserLocation } from '@/types/auth';
 import CityAutocomplete from './CityAutocomplete';
 
 interface LocationPermissionProps {
   open: boolean;
   onClose: () => void;
-  onLocationEnabled: () => void;
+  onLocationEnabled: (location: UserLocation) => void;
 }
 
 export default function LocationPermission({
@@ -37,6 +38,8 @@ export default function LocationPermission({
     city: string;
     region?: string;
     country?: string;
+    latitude?: number;
+    longitude?: number;
   } | null>(null);
 
   const handleSave = async () => {
@@ -49,10 +52,16 @@ export default function LocationPermission({
     setError(null);
 
     try {
-      const response = await updateUserLocationByCity(selectedCity.city);
+      const response = await updateUserLocationByCity(
+        selectedCity.city,
+        selectedCity.region,
+        selectedCity.country,
+        selectedCity.latitude,
+        selectedCity.longitude,
+      );
 
-      if (response.success) {
-        onLocationEnabled();
+      if (response.success && response.data) {
+        onLocationEnabled(response.data);
         onClose();
       } else {
         setError(response.error || t('error'));
@@ -90,7 +99,13 @@ export default function LocationPermission({
             value={city}
             onChange={(value) => setCity(value || '')}
             onSelect={(cityData) => {
-              setSelectedCity(cityData);
+              setSelectedCity({
+                city: cityData.city,
+                region: cityData.region,
+                country: cityData.country,
+                latitude: cityData.latitude,
+                longitude: cityData.longitude,
+              });
               const parts = [cityData.city];
               if (cityData.region) parts.push(cityData.region);
               if (cityData.country) parts.push(cityData.country);

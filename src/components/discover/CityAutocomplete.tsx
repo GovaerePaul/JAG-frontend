@@ -8,13 +8,13 @@ import {
   Box,
 } from '@mui/material';
 import { useTranslations } from 'next-intl';
-import { searchCities } from '@/lib/users-api';
+import { searchCities, getCityDetails } from '@/lib/users-api';
 import type { CitySuggestion } from '@/types/users';
 
 interface CityAutocompleteProps {
   value: string;
   onChange: (city: string | null) => void;
-  onSelect: (city: { city: string; region?: string; country?: string }) => void;
+  onSelect: (city: { city: string; region?: string; country?: string; latitude?: number; longitude?: number }) => void;
   disabled?: boolean;
   error?: boolean;
   helperText?: string;
@@ -82,7 +82,7 @@ export default function CityAutocomplete({
     debouncedSearch(newInputValue);
   };
 
-  const handleChange = (
+  const handleChange = async (
     _event: React.SyntheticEvent,
     newValue: string | CitySuggestion | null
   ) => {
@@ -90,11 +90,22 @@ export default function CityAutocomplete({
       onChange(newValue);
     } else if (newValue) {
       onChange(newValue.displayName);
-      onSelect({
-        city: newValue.city,
-        region: newValue.region,
-        country: newValue.country,
-      });
+      const details = await getCityDetails(newValue.placeId);
+      if (details.success && details.data) {
+        onSelect({
+          city: details.data.city || newValue.city,
+          region: details.data.region ?? newValue.region,
+          country: details.data.country ?? newValue.country,
+          latitude: details.data.latitude,
+          longitude: details.data.longitude,
+        });
+      } else {
+        onSelect({
+          city: newValue.city,
+          region: newValue.region,
+          country: newValue.country,
+        });
+      }
     } else {
       onChange(null);
     }
@@ -135,7 +146,7 @@ export default function CityAutocomplete({
         />
       )}
       renderOption={(props, option) => (
-        <Box component="li" {...props} key={option.city}>
+        <Box component="li" {...props} key={option.placeId}>
           {option.displayName}
         </Box>
       )}

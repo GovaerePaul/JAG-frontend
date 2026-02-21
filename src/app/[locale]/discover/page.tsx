@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container,
   Box,
@@ -12,7 +12,10 @@ import {
 import { FilterList } from '@mui/icons-material';
 import { Explore } from '@mui/icons-material';
 import { useTranslations } from 'next-intl';
-import type { UserProfile } from '@/types/auth';
+import type { UserLocation } from '@/types/auth';
+import { useAuth } from '@/features/auth/useAuth';
+import { useAppDispatch } from '@/store/hooks';
+import { setUserProfileLocation } from '@/features/auth/authSlice';
 import { useDiscoverUsers } from '@/features/user/useDiscoverUsers';
 import { useEventTypes } from '@/features/events/useEventTypes';
 import UserCard from '@/components/discover/UserCard';
@@ -20,12 +23,10 @@ import DiscoverFilters from '@/components/discover/DiscoverFilters';
 import LocationPermission from '@/components/discover/LocationPermission';
 import SendMessageForm from '@/components/messages/SendMessageForm';
 
-interface DiscoverPageProps {
-  userProfile?: UserProfile | null;
-}
-
-export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) {
+export default function DiscoverPage() {
   const t = useTranslations('discover');
+  const dispatch = useAppDispatch();
+  const { userProfile } = useAuth();
   const { users, loading, error, currentDistance, search, loadMore, hasMore } =
     useDiscoverUsers({
       initialDistance: 50,
@@ -33,16 +34,13 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
   const { eventTypes } = useEventTypes();
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [locationPermissionOpen, setLocationPermissionOpen] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    if (!userProfile || userProfile.preferences?.shareLocation === true) return false;
-    const hasSeenPrompt = localStorage.getItem('discover_location_prompt_seen');
-    if (!hasSeenPrompt) {
-      localStorage.setItem('discover_location_prompt_seen', 'true');
-      return true;
+  const [locationPermissionOpen, setLocationPermissionOpen] = useState(false);
+
+  useEffect(() => {
+    if (userProfile && !userProfile.location?.city) {
+      setLocationPermissionOpen(true);
     }
-    return false;
-  });
+  }, [userProfile]);
   const [sendMessageOpen, setSendMessageOpen] = useState(false);
   const [selectedReceiverId, setSelectedReceiverId] = useState<string>();
   const [selectedReceiverName, setSelectedReceiverName] = useState<string>();
@@ -57,8 +55,8 @@ export default function DiscoverPage({ userProfile = null }: DiscoverPageProps) 
     setSendMessageOpen(true);
   };
 
-  const handleLocationEnabled = () => {
-    search({ filters: { maxDistance: currentDistance } });
+  const handleLocationEnabled = (location: UserLocation) => {
+    dispatch(setUserProfileLocation(location));
   };
 
   return (

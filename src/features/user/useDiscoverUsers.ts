@@ -55,7 +55,6 @@ export function useDiscoverUsers(
   useEffect(() => {
     if (
       userProfile?.location?.city &&
-      userProfile.preferences?.shareLocation &&
       userProfile.location.latitude != null &&
       userProfile.location.longitude != null
     ) {

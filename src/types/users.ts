@@ -19,6 +19,7 @@ export interface UserLocation {
 }
 
 export interface CitySuggestion {
+  placeId: string;
   city: string;
   region?: string;
   country?: string;

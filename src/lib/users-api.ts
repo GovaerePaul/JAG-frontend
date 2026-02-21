@@ -1,5 +1,6 @@
 'use client';
 
+import axios from 'axios';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from './firebase-functions';
 import { ApiResponse } from '@/types/common';
@@ -45,63 +46,58 @@ export async function discoverUsers(params: DiscoverUsersParams): Promise<ApiRes
   }
 }
 
+interface GooglePlacePrediction {
+  placeId: string;
+  text?: { text: string };
+  structuredFormat?: {
+    mainText?: { text: string };
+    secondaryText?: { text: string };
+  };
+}
+
+interface GoogleAddressComponent {
+  longText: string;
+  types: string[];
+}
+
 export async function searchCities(searchQuery: string, maxResults?: number): Promise<ApiResponse<SearchCitiesResponse>> {
   try {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      return { success: false, error: 'Google Maps API key not configured' };
+    }
+
     const limitCount = maxResults || 10;
-    const encodedQuery = encodeURIComponent(searchQuery.trim());
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedQuery}&limit=${limitCount}&addressdetails=1&featuretype=settlement`;
+    const response = await axios.post(
+      'https://places.googleapis.com/v1/places:autocomplete',
+      { input: searchQuery.trim(), includedPrimaryTypes: ['locality', 'sublocality'] },
+      { headers: { 'X-Goog-Api-Key': apiKey } }
+    );
 
-    const response = await fetch(url, {
-      headers: { 'User-Agent': 'JustAGift/1.0' },
-    });
+    const data = response.data;
+    const suggestions: { placePrediction: GooglePlacePrediction }[] = data.suggestions || [];
 
-    if (!response.ok) {
-      return { success: false, error: `Nominatim API error: ${response.status}` };
-    }
-
-    const data = await response.json();
-    const cityTypes = ['city', 'town', 'village', 'municipality'];
-
-    interface NominatimResult {
-      type?: string;
-      class?: string;
-      address?: {
-        city?: string;
-        town?: string;
-        village?: string;
-        municipality?: string;
-        state?: string;
-        region?: string;
-        county?: string;
-        country?: string;
-      };
-      display_name?: string;
-    }
-
-    const cities = (data as NominatimResult[])
-      .filter((item) => {
-        const type = item.type || item.class;
-        if (type && cityTypes.includes(type.toLowerCase())) return true;
-        const address = item.address || {};
-        return !!(address.city || address.town || address.village || address.municipality);
-      })
-      .map((item) => {
-        const address = item.address || {};
-        const cityName = address.city || address.town || address.village || address.municipality || (item.display_name?.split(',')[0] || '');
-        const region = address.state || address.region || address.county;
-        const country = address.country;
-        const parts = [cityName];
-        if (region) parts.push(region);
-        if (country) parts.push(country);
+    const cities = suggestions
+      .slice(0, limitCount)
+      .map((s) => {
+        const pred = s.placePrediction;
+        const mainText = pred.structuredFormat?.mainText?.text || pred.text?.text?.split(',')[0] || '';
+        const secondaryText = pred.structuredFormat?.secondaryText?.text || '';
+        const parts = secondaryText.split(',').map((p) => p.trim()).filter(Boolean);
+        const region = parts.length > 1 ? parts[0] : undefined;
+        const country = parts.length > 0 ? parts[parts.length - 1] : undefined;
+        const displayParts = [mainText];
+        if (region) displayParts.push(region);
+        if (country && country !== region) displayParts.push(country);
         return {
-          city: cityName,
-          region: region || undefined,
-          country: country || undefined,
-          displayName: parts.join(', '),
+          placeId: pred.placeId,
+          city: mainText,
+          region,
+          country,
+          displayName: displayParts.join(', '),
         };
       })
-      .filter((item) => item.city && item.city.trim().length > 0)
-      .slice(0, limitCount);
+      .filter((c) => c.city.trim().length > 0);
 
     return { success: true, data: { cities } };
   } catch (error: unknown) {
@@ -112,13 +108,71 @@ export async function searchCities(searchQuery: string, maxResults?: number): Pr
   }
 }
 
-export async function updateUserLocationByCity(city: string): Promise<ApiResponse<UserLocation>> {
+export async function getCityDetails(placeId: string): Promise<ApiResponse<{
+  city: string;
+  region?: string;
+  country?: string;
+  latitude: number;
+  longitude: number;
+}>> {
   try {
-    const fn = httpsCallable<{ city: string }, { success: boolean; location: UserLocation }>(
-      functions,
-      'updateUserLocationByCityFunction'
-    );
-    const result = await fn({ city });
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      return { success: false, error: 'Google Maps API key not configured' };
+    }
+
+    const response = await axios.get(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`, {
+      headers: {
+        'X-Goog-Api-Key': apiKey,
+        'X-Goog-FieldMask': 'id,displayName,addressComponents,location',
+      },
+    });
+
+    const data = response.data;
+    const location = data.location as { latitude?: number; longitude?: number } | undefined;
+    if (!location?.latitude || !location?.longitude) {
+      return { success: false, error: 'No coordinates found for this place' };
+    }
+
+    const components: GoogleAddressComponent[] = data.addressComponents || [];
+    const city =
+      components.find((c) => c.types.includes('locality') || c.types.includes('sublocality'))?.longText ||
+      (data.displayName as { text?: string } | undefined)?.text ||
+      '';
+    const region = components.find((c) => c.types.includes('administrative_area_level_1'))?.longText;
+    const country = components.find((c) => c.types.includes('country'))?.longText;
+
+    return {
+      success: true,
+      data: {
+        city,
+        region,
+        country,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      },
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get city details',
+    };
+  }
+}
+
+export async function updateUserLocationByCity(
+  city: string,
+  region?: string,
+  country?: string,
+  latitude?: number,
+  longitude?: number,
+): Promise<ApiResponse<UserLocation>> {
+  try {
+    const fn = httpsCallable<
+      { city: string; region?: string; country?: string; latitude?: number; longitude?: number },
+      { success: boolean; location: UserLocation }
+    >(functions, 'updateUserLocationByCityFunction');
+    const result = await fn({ city, region, country, latitude, longitude });
     if (result.data.success) {
       return { success: true, data: result.data.location };
     }
@@ -126,7 +180,7 @@ export async function updateUserLocationByCity(city: string): Promise<ApiRespons
   } catch (error: unknown) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to update location'
+      error: error instanceof Error ? error.message : 'Failed to update location',
     };
   }
 }
