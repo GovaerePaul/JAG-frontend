@@ -48,7 +48,9 @@
     },
     "@capacitor-firebase/app-check": {
       "firebase": "$firebase"
-    }
+    },
+    "minimatch": "^10.2.1",
+    "glob": "^11.0.0"
   },
   "devDependencies": {
     "@capacitor-firebase/app-check": "^8.0.0",
