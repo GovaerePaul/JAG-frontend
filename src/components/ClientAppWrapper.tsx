@@ -1,23 +1,19 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useSyncExternalStore } from 'react';
 import { CacheProvider } from '@emotion/react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import createEmotionCache from '@/lib/emotion-cache';
 import ReduxProvider from './providers/ReduxProvider';
 import CookieConsent from './CookieConsent';
+import appTheme from '@/theme/appTheme';
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
+const StatusBarInit = dynamic(() => import('./StatusBarInit'), { ssr: false });
+
+// Temporarily disabled to isolate crash - re-enable if app works without it
+// const AndroidBackHandler = dynamic(() => import('./AndroidBackHandler'), { ssr: false, loading: () => null });
 
 const emotionCache = createEmotionCache();
 
@@ -44,8 +40,9 @@ export default function ClientAppWrapper({ children }: ClientAppWrapperProps) {
   return (
     <ReduxProvider>
       <CacheProvider value={emotionCache}>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={appTheme}>
           <CssBaseline />
+          <StatusBarInit />
           {children}
           <CookieConsent />
         </ThemeProvider>

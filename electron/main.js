@@ -3,7 +3,7 @@ const path = require('path');
 const isDev = process.env.NODE_ENV === 'development';
 
 function createWindow() {
-  // Créer la fenêtre principale
+  // Create main window
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -21,17 +21,17 @@ function createWindow() {
     autoHideMenuBar: false,
   });
 
-  // Charger l'app
+  // Load app
   if (isDev) {
-    // Mode développement : Next.js dev server
+    // Development mode: Next.js dev server
     mainWindow.loadURL('http://localhost:3000');
     mainWindow.webContents.openDevTools();
   } else {
-    // Mode production : fichiers exportés
+    // Production mode: exported files
     mainWindow.loadFile(path.join(__dirname, '../out/index.html'));
   }
 
-  // Ajouter CSP headers pour la sécurité
+  // Add CSP headers for security
   mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
@@ -41,12 +41,12 @@ function createWindow() {
     });
   });
 
-  // Événements de la fenêtre
+  // Window events
   mainWindow.on('closed', () => {
     app.quit();
   });
 
-  // Liens externes dans le navigateur par défaut
+  // Open external links in default browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     require('electron').shell.openExternal(url);
     return { action: 'deny' };

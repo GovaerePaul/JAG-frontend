@@ -3,7 +3,7 @@ import '@testing-library/jest-dom'
 // Mock global de next-intl
 jest.mock('next-intl', () => ({
   useTranslations: (namespace) => (key) => {
-    // Mock simple qui retourne la clé pour éviter les erreurs
+    // Simple mock that returns the key to avoid errors
     return key
   },
   useLocale: () => 'fr',

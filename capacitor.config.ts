@@ -7,6 +7,7 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https'
   },
+  android: {},
   // Remove basePath for mobile builds
   plugins: {
     CapacitorHttp: {
@@ -20,6 +21,11 @@ const config: CapacitorConfig = {
     FirebaseAuthentication: {
       skipNativeAuth: true,
       providers: ['google.com', 'apple.com'],
+    },
+    StatusBar: {
+      overlaysWebView: false,
+      style: 'DARK',
+      backgroundColor: '#FFFFFF',
     },
   },
 };

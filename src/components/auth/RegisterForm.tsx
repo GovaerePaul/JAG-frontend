@@ -43,7 +43,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
       ...formData,
       [e.target.name]: e.target.value
     });
-    // Effacer l'erreur quand l'utilisateur tape
+    // Clear error when user types
     if (error) setError('');
   };
 

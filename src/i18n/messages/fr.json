@@ -88,6 +88,13 @@
     "unknown": "Inconnu",
     "ok": "OK"
   },
+  "nav": {
+    "home": "Accueil",
+    "quests": "Quêtes",
+    "discover": "Découvrir",
+    "messages": "Messages",
+    "profile": "Profil"
+  },
   "metadata": {
     "title": "JustGift - Organisez vos cadeaux",
     "description": "Plateforme pour organiser et planifier vos cadeaux"
